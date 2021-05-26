@@ -1,0 +1,6 @@
+[submodule "esp-idf"]
+	path = esp-idf
+	url = https://github.com/espressif/esp-idf.git
+[submodule "connectedhomeip"]
+	path = connectedhomeip
+	url = https://github.com/project-chip/connectedhomeip.git
