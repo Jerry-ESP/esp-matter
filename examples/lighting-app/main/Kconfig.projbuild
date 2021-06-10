@@ -1,0 +1,10 @@
+menu "Example Options"
+
+    config LED_PIN
+       int "The example LED pin"
+       range 1 35
+       default 12
+       help
+            The output pin for LED to connnect to. 
+
+endmenu
