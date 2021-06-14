@@ -1,0 +1,44 @@
+stages:
+  - build
+
+build_esp_matter_examples:
+    stage: build
+    image: $CI_DOCKER_REGISTRY/esp32-ci-env:matter
+    tags:
+      - build
+    variables:
+        IDF_PATH: "$CI_PROJECT_DIR/esp-idf"
+        GIT_STRATEGY: fetch
+        GIT_SUBMODULE_STRATEGY: recursive
+        GIT_DEPTH: "1"
+    script:
+        - . export.sh
+        - cd $ESP_MATTER_PATH/esp-idf
+        - ./install.sh
+        - . export.sh
+
+        - cd $ESP_MATTER_PATH/connectedhomeip
+        - source ./scripts/bootstrap.sh
+        - source ./scripts/activate.sh
+
+        - cd $ESP_MATTER_PATH/esp-idf
+        - pip install -r $IDF_PATH/requirements.txt
+
+        - export CHIP_EXAMPLES_PATH=$ESP_MATTER_PATH/connectedhomeip/examples
+
+        - cd $CHIP_EXAMPLES_PATH/all-clusters-app/esp32
+        - idf.py build
+        - cd $CHIP_EXAMPLES_PATH/temperature-measurement-app/esp32
+        - idf.py build
+        - cd $CHIP_EXAMPLES_PATH/lock-app/esp32
+        - idf.py build
+        - cd $CHIP_EXAMPLES_PATH/pigweed-app/esp32
+        - idf.py build
+        - cd $CHIP_EXAMPLES_PATH/persistent-storage/esp32
+        - idf.py build
+        
+        - cd $ESP_MATTER_PATH/examples/lighting-app
+        - idf.py build
+        - cd $ESP_MATTER_PATH/examples/esp-rainmaker-matter-app
+        - git clone --depth 1 --single-branch --recursive https://github.com/espressif/esp-rainmaker.git
+        - export RMAKER_PATH=$PWD/esp-rainmaker
