@@ -38,15 +38,15 @@ esp_err_t led_manager_init(uint8_t default_brightness)
         ESP_LOGE(APP_LOG_TAG, "led_timerc_config failed");
         return error;
     }
-    ledc_channel_config_t ledc_channel = {.gpio_num = CONFIG_LED_PIN,
-                                          .speed_mode = LEDC_LOW_SPEED_MODE,
-                                          .channel = LEDC_CHANNEL_0,
-                                          .intr_type = LEDC_INTR_DISABLE,
-                                          .timer_sel = LEDC_TIMER_1,
-                                          .duty = 0,
-                                          .hpoint = 0,
-                                          .flags = {}};
-    ledc_channel.flags.output_invert = 0;
+    ledc_channel_config_t ledc_channel = {
+        .gpio_num = CONFIG_LED_PIN,
+        .speed_mode = LEDC_LOW_SPEED_MODE,
+        .channel = LEDC_CHANNEL_0,
+        .intr_type = LEDC_INTR_DISABLE,
+        .timer_sel = LEDC_TIMER_1,
+        .duty = 0,
+        .hpoint = 0,
+    };
     error = ledc_channel_config(&ledc_channel);
     if (error != ESP_OK) {
         ESP_LOGE(APP_LOG_TAG, "ledc_channel_config failed");
