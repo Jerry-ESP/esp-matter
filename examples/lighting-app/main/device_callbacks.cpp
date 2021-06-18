@@ -78,6 +78,6 @@ void update_current_brightness(uint8_t level)
     EmberAfStatus status;
 
     status = emberAfWriteAttribute(1, ZCL_LEVEL_CONTROL_CLUSTER_ID, ZCL_CURRENT_LEVEL_ATTRIBUTE_ID, CLUSTER_MASK_SERVER,
-                                   &level, ZCL_DATA8_ATTRIBUTE_TYPE);
+                                   &level, ZCL_INT8U_ATTRIBUTE_TYPE);
     assert(status == EMBER_ZCL_STATUS_SUCCESS);
 }

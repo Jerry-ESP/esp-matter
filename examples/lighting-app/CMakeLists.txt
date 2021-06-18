@@ -25,6 +25,11 @@ include($ENV{IDF_PATH}/tools/cmake/project.cmake)
 set(EXTRA_COMPONENT_DIRS
     "${ESP_MATTER_PATH}/connectedhomeip/config/esp32/components"
 )
+if(${IDF_TARGET} STREQUAL "esp32c3")
+    list(APPEND EXTRA_COMPONENT_DIRS
+        "${ESP_MATTER_PATH}/esp-idf/examples/peripherals/rmt/led_strip/components"
+    )
+endif()
 
 project(esp-lighting-app)
 idf_build_set_property(CXX_COMPILE_OPTIONS "-std=gnu++14;-Os;-DLWIP_IPV6_SCOPES=0;-DCHIP_HAVE_CONFIG_H" APPEND)

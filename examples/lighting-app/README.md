@@ -4,7 +4,14 @@
 
 ### Build and flash firmware
 
-The LED output pin is set by Kconfig option `LED_PIN`, by default it is PIN 12.
+Choose IDF_TARGET(esp32 or esp32c3) by
+
+```bash
+$ idf.py set-target ${IDF_TARGET}
+```
+
+For ESP32, The LED output pin is set by Kconfig option `LED_PIN`, by default it is PIN 12.
+For ESP32C3, The LED output pin is set as the on-board RGB_LED(WS2812) DI pin(PIN 8).
 
 ```bash
 $ idf.py build
