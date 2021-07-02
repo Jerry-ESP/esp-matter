@@ -25,7 +25,12 @@ include($ENV{IDF_PATH}/tools/cmake/project.cmake)
 set(EXTRA_COMPONENT_DIRS
     "${ESP_MATTER_PATH}/connectedhomeip/config/esp32/components"
 )
-if(${IDF_TARGET} STREQUAL "esp32c3")
+if(${IDF_TARGET} STREQUAL "esp32")
+    list(APPEND EXTRA_COMPONENT_DIRS
+        "${ESP_MATTER_PATH}/connectedhomeip/examples/common/m5stack-tft/repo/components/tft"
+        "${ESP_MATTER_PATH}/connectedhomeip/examples/common/m5stack-tft/repo/components/spidriver"
+   )
+elseif(${IDF_TARGET} STREQUAL "esp32c3")
     list(APPEND EXTRA_COMPONENT_DIRS
         "${ESP_MATTER_PATH}/esp-idf/examples/peripherals/rmt/led_strip/components"
     )

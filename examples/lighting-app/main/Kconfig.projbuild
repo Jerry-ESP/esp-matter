@@ -9,6 +9,9 @@ menu "Example Options"
         config DEVICE_TYPE_ESP32_DEVKITC
             bool "ESP32-DevKitC"
             depends on IDF_TARGET_ESP32
+        config DEVICE_TYPE_M5STACK
+            bool "M5Stack"
+            depends on IDF_TARGET_ESP32
         config DEVICE_TYPE_ESP32C3_DEVKITM
             bool "ESP32C3_DevKitM"
             depends on IDF_TARGET_ESP32C3

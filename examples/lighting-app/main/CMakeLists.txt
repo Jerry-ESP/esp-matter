@@ -28,17 +28,25 @@ set(SRC_DIRS_LIST          "${CMAKE_CURRENT_LIST_DIR}"
                            "${ESP_MATTER_PATH}/connectedhomeip/src/app/clusters/level-control")
 
 if("${CONFIG_DEVICE_TYPE_ESP32_DEVKITC}" STREQUAL "y")
-    set(EXCLUDE_SRCS_LIST "${CMAKE_CURRENT_LIST_DIR}/led_manager_rmt.cpp")
+    set(EXCLUDE_SRCS_LIST "${CMAKE_CURRENT_LIST_DIR}/led_manager_rmt.cpp"
+                          "${CMAKE_CURRENT_LIST_DIR}/led_manager_vled.cpp"
+    )
     set(PRIV_REQUIRES_LIST chip bt esp32_mbedtls)
 elseif("${CONFIG_DEVICE_TYPE_ESP32C3_DEVKITM}" STREQUAL "y")
-    set(EXCLUDE_SRCS_LIST "${CMAKE_CURRENT_LIST_DIR}/led_manager_gpio.cpp")
+    set(EXCLUDE_SRCS_LIST "${CMAKE_CURRENT_LIST_DIR}/led_manager_gpio.cpp"
+                          "${CMAKE_CURRENT_LIST_DIR}/led_manager_vled.cpp"
+    )
     set(PRIV_REQUIRES_LIST chip bt esp32_mbedtls led_strip)
+elseif("${CONFIG_DEVICE_TYPE_M5STACK}" STREQUAL "y")
+    set(EXCLUDE_SRCS_LIST "${CMAKE_CURRENT_LIST_DIR}/led_manager_rmt.cpp"
+                          "${CMAKE_CURRENT_LIST_DIR}/led_manager_gpio.cpp"
+    )
+    set(PRIV_REQUIRES_LIST chip bt esp32_mbedtls tft spidriver)
 endif()
-
 idf_component_register(PRIV_INCLUDE_DIRS ${PRIV_INCLUDE_DIRS_LIST}
                       SRC_DIRS           ${SRC_DIRS_LIST}
                       EXCLUDE_SRCS       ${EXCLUDE_SRCS_LIST}
-                      PRIV_REQUIRES ${PRIV_REQUIRES_LIST})
+                      PRIV_REQUIRES      ${PRIV_REQUIRES_LIST})
 
 set_property(TARGET ${COMPONENT_LIB} PROPERTY CXX_STANDARD 14) 
 target_compile_options(${COMPONENT_LIB} PRIVATE "-DLWIP_IPV6_SCOPES=0" "-DCHIP_HAVE_CONFIG_H")
