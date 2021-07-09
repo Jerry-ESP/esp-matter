@@ -11,7 +11,21 @@
 // See the License for the specific language governing permissions and
 // limitations under the License
 
-#define APP_LOG_TAG "lighting-app"
+#pragma once
 
-#define DEFAULT_POWER true
-#define DEFAULT_BRIGHTNESS 100
+#ifdef __cplusplus
+extern "C"
+{
+#endif
+
+#include <esp_err.h>
+
+typedef struct button_driver_config {
+    int gpio;
+} button_driver_config_t;
+
+esp_err_t button_driver_init(button_driver_config_t *config);
+
+#ifdef __cplusplus
+}
+#endif

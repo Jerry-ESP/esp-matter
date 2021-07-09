@@ -11,7 +11,15 @@
 // See the License for the specific language governing permissions and
 // limitations under the License
 
-#define APP_LOG_TAG "lighting-app"
+#include <esp_log.h>
+#include <button_driver.h>
 
-#define DEFAULT_POWER true
-#define DEFAULT_BRIGHTNESS 100
+static const char *TAG = "button_driver_hollow";
+
+esp_err_t button_driver_init(button_driver_config_t *config)
+{
+    ESP_LOGI(TAG, "Initializing button driver");
+    /* Initialize the button driver here*/
+
+    return ESP_OK;
+}

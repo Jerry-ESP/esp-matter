@@ -11,12 +11,31 @@
 // See the License for the specific language governing permissions and
 // limitations under the License
 
-#pragma once
+#include <esp_log.h>
 
-#include "esp_err.h"
+#include <led_driver.h>
+#include <button_driver.h>
 
-esp_err_t led_manager_init(uint8_t default_brightness);
+static const char *TAG = "board";
 
-esp_err_t led_set_onoff(bool onoff);
+static esp_err_t board_led_init()
+{
+    led_driver_config_t config = {
+        .gpio = 32,             /* PIN_NUM_BCKL for M5Stack TFT */
+        .channel = 7,           /* LEDC_CHANNEL_7 */
+    };
+    return led_driver_init(&config);
+}
 
-esp_err_t led_set_brightness(uint8_t brightness);
+static esp_err_t board_button_init()
+{
+    return button_driver_init(NULL);
+}
+
+esp_err_t board_init()
+{
+    ESP_LOGI(TAG, "Initializing board");
+    board_led_init();
+    board_button_init();
+    return ESP_OK;
+}

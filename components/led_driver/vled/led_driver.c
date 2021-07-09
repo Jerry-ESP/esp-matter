@@ -11,31 +11,31 @@
 // See the License for the specific language governing permissions and
 // limitations under the License
 
-#include "led_manager.hpp"
+#include <string.h>
+#include <esp_system.h>
+#include <esp_log.h>
+#include <driver/ledc.h>
+#include <tft.h>
+#include <tftspi.h>
 
-#include "esp_err.h"
-#include "esp_log.h"
-#include "esp_system.h"
-#include "string.h"
-
-#include "tft.h"
-#include "tftspi.h"
-#include "driver/ledc.h"
+#include <led_driver.h>
 
 #define TFT_SPI_CLOCK_INIT_HZ 8000000
 #define LEDC_PWM_HZ 1000
 #define BRIGHTNESS_MAX 255
-#define BACKLIGHT_CHANNEL LEDC_CHANNEL_7
-#define TAG "VLED"
+
+static const char *TAG = "led_driver_vled";
+static bool current_power = false;
+static uint8_t current_brightness = 0;
 static uint16_t DisplayHeight;
 static uint16_t DisplayWidth;
-static uint8_t last_brightness;
-static bool current_onoff;
+static int led_driver_channel = -1;
 
-void SetupBrightnessControl()
+static void SetupBrightnessControl(led_driver_config_t *config)
 {
     ledc_timer_config_t ledc_timer;
     memset(&ledc_timer, 0, sizeof(ledc_timer));
+    led_driver_channel = config->channel;
 
     ledc_timer.duty_resolution = LEDC_TIMER_8_BIT;     // resolution of PWM duty
     ledc_timer.freq_hz         = LEDC_PWM_HZ;          // frequency of PWM signal
@@ -46,24 +46,24 @@ void SetupBrightnessControl()
 
     ledc_channel_config_t ledc_channel;
     memset(&ledc_channel, 0, sizeof(ledc_channel));
-    ledc_channel.channel    = BACKLIGHT_CHANNEL;
+    ledc_channel.channel    = led_driver_channel;
     ledc_channel.duty       = BRIGHTNESS_MAX;
-    ledc_channel.gpio_num   = PIN_NUM_BCKL;
+    ledc_channel.gpio_num   = config->gpio;
     ledc_channel.speed_mode = LEDC_HIGH_SPEED_MODE;
     ledc_channel.timer_sel  = LEDC_TIMER_0;
     ledc_channel_config(&ledc_channel);
 }
 
-void SetDisplayBrightness(uint8_t brightness)
+static void SetDisplayBrightness(uint8_t brightness)
 {
-    if (ledc_set_duty(LEDC_HIGH_SPEED_MODE, BACKLIGHT_CHANNEL, brightness) ||
-        ledc_update_duty(LEDC_HIGH_SPEED_MODE, BACKLIGHT_CHANNEL))
+    if (ledc_set_duty(LEDC_HIGH_SPEED_MODE, led_driver_channel, brightness) ||
+        ledc_update_duty(LEDC_HIGH_SPEED_MODE, led_driver_channel))
     {
         ESP_LOGE(TAG, "Failed to set display brightness...");
     }
 }
 
-esp_err_t InitDisplay(uint8_t default_brightness)
+static esp_err_t InitDisplay()
 {
     esp_err_t err;
     spi_lobo_device_handle_t spi;
@@ -83,14 +83,14 @@ esp_err_t InitDisplay(uint8_t default_brightness)
     devcfg.spics_ext_io_num = PIN_NUM_CS;               // external CS pi
     devcfg.flags            = LB_SPI_DEVICE_HALFDUPLEX; // ALWAYS SET  to HALF DUPLEX MODE!! for display spi
     tft_max_rdclock         = TFT_SPI_CLOCK_INIT_HZ;
-    
+
     // Initialize all pins used by display driver.
     TFT_PinsInit();
     // Initialize SPI bus and add a device for the display.
     err = spi_lobo_bus_add_device(TFT_HSPI_HOST, &buscfg, &devcfg, &spi);
     if (err != ESP_OK)
         return err;
-    
+
     // Configure the display to use the new SPI device. 
     tft_disp_spi = spi;
     err = spi_lobo_device_select(spi, 1);
@@ -114,38 +114,35 @@ esp_err_t InitDisplay(uint8_t default_brightness)
     ESP_LOGI(TAG, "Display initialized (height %u, width %u)", DisplayHeight, DisplayWidth);
 
     TFT_invertDisplay(INVERT_ON);
-    SetupBrightnessControl();
-    SetDisplayBrightness(default_brightness);
 
     return ESP_OK;
 }
 
-esp_err_t led_manager_init(uint8_t default_brightness)
+esp_err_t led_driver_init(led_driver_config_t *config)
 {
-    esp_err_t err = InitDisplay(default_brightness);
-    if(err != ESP_OK)
+    ESP_LOGI(TAG, "Initializing led driver");
+    esp_err_t err = ESP_OK;
+    err = InitDisplay();
+    if (err != ESP_OK) {
         return err;
-    TFT_fillWindow(TFT_BLACK);
-    
-    TFT_fillCircle(DisplayWidth/2, DisplayHeight/2, DisplayWidth/4, (color_t){ default_brightness, 0, 0 });
-    TFT_drawCircle(DisplayWidth/2, DisplayHeight/2, DisplayWidth/4,
-                   (color_t){ default_brightness, default_brightness, default_brightness});
-    last_brightness = default_brightness;
-    return ESP_OK;
+    }
+    SetupBrightnessControl(config);
+
+    return err;
 }
 
-esp_err_t led_set_onoff(bool onoff)
+esp_err_t led_driver_set_power(bool power)
 {
-    current_onoff = onoff;
+    current_power = power;
     return ESP_OK;
 }
 
-esp_err_t led_set_brightness(uint8_t brightness)
+esp_err_t led_driver_set_brightness(uint8_t brightness)
 {
     if (brightness != 0) {
-        last_brightness = brightness;
+        current_brightness = brightness;
     }
-    if (!current_onoff) {
+    if (!current_power) {
         brightness = 0;
     }
 

@@ -14,7 +14,7 @@
 #include "device_callbacks.hpp"
 #include "esp_heap_caps.h"
 #include "esp_log.h"
-#include "led_manager.hpp"
+#include "led_driver.h"
 #include "lighting_app_constants.hpp"
 
 #include "app/common/gen/att-storage.h"
@@ -47,7 +47,7 @@ void on_on_off_attribute_changed(chip::EndpointId endpoint, chip::AttributeId at
 {
     if (attribute == ZCL_ON_OFF_ATTRIBUTE_ID) {
         ESP_LOGI(APP_LOG_TAG, "On/Off set to: %d", *value);
-        led_set_onoff(*value);
+        led_driver_set_power(*value);
     } else {
         ESP_LOGW(APP_LOG_TAG, "Unknown attribute in On/Off cluster: %d", attribute);
     }
@@ -58,7 +58,7 @@ void on_level_control_atrribute_changed(chip::EndpointId endpoint, chip::Attribu
 {
     if (attribute == ZCL_CURRENT_LEVEL_ATTRIBUTE_ID) {
         ESP_LOGI(APP_LOG_TAG, "Brightness set to: %d", *value);
-        led_set_brightness(*value);
+        led_driver_set_brightness(*value);
     } else {
         ESP_LOGW(APP_LOG_TAG, "Unknown attribute in level control cluster: %d", attribute);
     }
