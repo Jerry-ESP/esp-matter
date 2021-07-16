@@ -1,0 +1,44 @@
+menu "ESP Matter Board Selection"
+
+    choice BOARD_NAME
+        prompt "Board name"
+        default BOARD_NAME_ESP32_DEVKIT_C if IDF_TARGET_ESP32
+        default BOARD_NAME_ESP32C3_DEVKIT_M if IDF_TARGET_ESP32C3
+        help
+            Board name from esp-matter/components/board
+
+        config BOARD_NAME_ESP32_DEVKIT_C
+            bool "esp32_devkit_c"
+            depends on IDF_TARGET_ESP32
+
+        config BOARD_NAME_ESP32C3_DEVKIT_M
+            bool "esp32c3_devkit_m"
+            depends on IDF_TARGET_ESP32C3
+
+        config BOARD_NAME_M5STACK
+            bool "m5stack"
+            depends on IDF_TARGET_ESP32
+
+        config BOARD_NAME_HOLLOW
+            bool "hollow"
+    endchoice
+
+    config BOARD_NAME
+        string
+        default "esp32_devkit_c" if BOARD_NAME_ESP32_DEVKIT_C
+        default "esp32c3_devkit_m" if BOARD_NAME_ESP32C3_DEVKIT_M
+        default "m5stack" if BOARD_NAME_M5STACK
+        default "hollow" if BOARD_NAME_HOLLOW
+
+    config LED_DRIVER
+        string
+        default "gpio" if BOARD_NAME_ESP32_DEVKIT_C
+        default "rmt" if BOARD_NAME_ESP32C3_DEVKIT_M
+        default "vled" if BOARD_NAME_M5STACK
+        default "hollow" if LED_DRIVER_HOLLOW
+
+    config BUTTON_DRIVER
+        string
+        default "hollow"
+
+endmenu

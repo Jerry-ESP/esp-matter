@@ -27,12 +27,16 @@ set(EXTRA_COMPONENT_DIRS
     "${ESP_MATTER_PATH}/connectedhomeip/config/esp32/components"
     "${ESP_MATTER_PATH}/components")
 
-# Set the BOARD_NAME from environment, if exported. Set the default BOARD_NAME based on IDF_TARGET, if not exported.
-# This also adds any chip specific components to EXTRA_COMPONENT_DIRS.
-include(${ESP_MATTER_PATH}/components/board/get_board.cmake)
-
-# Include the board.cmake file from the selected BOARD_NAME.
-include(${ESP_MATTER_PATH}/components/board/${BOARD_NAME}/board.cmake)
+if(${IDF_TARGET} STREQUAL "esp32")
+    list(APPEND EXTRA_COMPONENT_DIRS
+        "${ESP_MATTER_PATH}/connectedhomeip/examples/common/m5stack-tft/repo/components/tft"
+        "${ESP_MATTER_PATH}/connectedhomeip/examples/common/m5stack-tft/repo/components/spidriver"
+    )
+elseif(${IDF_TARGET} STREQUAL "esp32c3")
+    list(APPEND EXTRA_COMPONENT_DIRS
+        "${ESP_MATTER_PATH}/esp-idf/examples/peripherals/rmt/led_strip/components"
+    )
+endif()
 
 project(esp-lighting-app)
 
