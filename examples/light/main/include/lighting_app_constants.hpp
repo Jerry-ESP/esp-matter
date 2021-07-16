@@ -11,7 +11,7 @@
 // See the License for the specific language governing permissions and
 // limitations under the License
 
-#define APP_LOG_TAG "lighting-app"
+#define APP_LOG_TAG "light"
 
 #define DEFAULT_POWER true
 #define DEFAULT_BRIGHTNESS 100

@@ -20,13 +20,19 @@ if(NOT DEFINED ENV{ESP_MATTER_PATH})
 endif(NOT DEFINED ENV{ESP_MATTER_PATH})
 set(ESP_MATTER_PATH $ENV{ESP_MATTER_PATH})
 
+if(NOT DEFINED ENV{ESP_RMAKER_PATH})
+    message(FATAL_ERROR "Please set ESP_RMAKER_PATH to the path of esp-rainmaker repo")
+endif(NOT DEFINED ENV{ESP_RMAKER_PATH})
+
 # This should be done before using the IDF_TARGET variable.
 include($ENV{IDF_PATH}/tools/cmake/project.cmake)
 
 set(EXTRA_COMPONENT_DIRS
     "../common"
     "${ESP_MATTER_PATH}/connectedhomeip/config/esp32/components"
-    "${ESP_MATTER_PATH}/components")
+    "${ESP_MATTER_PATH}/components"
+    "$ENV{ESP_RMAKER_PATH}/components"
+)
 
 if(${IDF_TARGET} STREQUAL "esp32")
     list(APPEND EXTRA_COMPONENT_DIRS
@@ -39,7 +45,7 @@ elseif(${IDF_TARGET} STREQUAL "esp32c3")
     )
 endif()
 
-project(esp-lighting-app)
+project(rainmaker_light)
 
 idf_build_set_property(CXX_COMPILE_OPTIONS "-std=gnu++14;-Os;-DLWIP_IPV6_SCOPES=0;-DCHIP_HAVE_CONFIG_H" APPEND)
 idf_build_set_property(C_COMPILE_OPTIONS "-Os;-DLWIP_IPV6_SCOPES=0" APPEND)
