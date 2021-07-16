@@ -24,4 +24,8 @@ void on_level_control_atrribute_changed(chip::EndpointId endpoint, chip::Attribu
 
 void on_device_event(const chip::DeviceLayer::ChipDeviceEvent *event, intptr_t arg);
 
+void update_current_power(bool power);
+
 void update_current_brightness(uint8_t level);
+
+void device_callbacks_init();

@@ -14,7 +14,7 @@
 #include "device_callbacks.hpp"
 #include "esp_heap_caps.h"
 #include "esp_log.h"
-#include "led_driver.h"
+#include "app_driver.h"
 #include "lighting_app_constants.hpp"
 
 #include "app/common/gen/att-storage.h"
@@ -47,7 +47,7 @@ void on_on_off_attribute_changed(chip::EndpointId endpoint, chip::AttributeId at
 {
     if (attribute == ZCL_ON_OFF_ATTRIBUTE_ID) {
         ESP_LOGI(APP_LOG_TAG, "On/Off set to: %d", *value);
-        led_driver_set_power(*value);
+        app_driver_update_and_report_power(*value, SRC_MATTER);
     } else {
         ESP_LOGW(APP_LOG_TAG, "Unknown attribute in On/Off cluster: %d", attribute);
     }
@@ -58,7 +58,7 @@ void on_level_control_atrribute_changed(chip::EndpointId endpoint, chip::Attribu
 {
     if (attribute == ZCL_CURRENT_LEVEL_ATTRIBUTE_ID) {
         ESP_LOGI(APP_LOG_TAG, "Brightness set to: %d", *value);
-        led_driver_set_brightness(*value);
+        app_driver_update_and_report_brightness(*value, SRC_MATTER);
     } else {
         ESP_LOGW(APP_LOG_TAG, "Unknown attribute in level control cluster: %d", attribute);
     }
@@ -73,6 +73,11 @@ void on_device_event(const ChipDeviceEvent *event, intptr_t arg)
     ESP_LOGI(APP_LOG_TAG, "Current free heap: %zu", heap_caps_get_free_size(MALLOC_CAP_8BIT));
 }
 
+void update_current_power(bool power)
+{
+    return;
+}
+
 void update_current_brightness(uint8_t level)
 {
     EmberAfStatus status;
@@ -80,4 +85,10 @@ void update_current_brightness(uint8_t level)
     status = emberAfWriteAttribute(1, ZCL_LEVEL_CONTROL_CLUSTER_ID, ZCL_CURRENT_LEVEL_ATTRIBUTE_ID, CLUSTER_MASK_SERVER,
                                    &level, ZCL_INT8U_ATTRIBUTE_TYPE);
     assert(status == EMBER_ZCL_STATUS_SUCCESS);
+}
+
+void device_callbacks_init()
+{
+    update_current_brightness(app_driver_get_brightness());
+    app_driver_set_callbacks(SRC_MATTER, update_current_power, update_current_brightness);
 }

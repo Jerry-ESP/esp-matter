@@ -6,14 +6,14 @@ This sections talks about setting up your development host, fetching the git rep
 
 ### 1.1 Host Setup
 
-You should install drivers and support packages for your development host. Windows, Linux and Mac OS-X, are supported development hosts. Please see [Get Started](https://docs.espressif.com/projects/esp-idf/en/release-v4.2/get-started/index.html) for the host setup instructions.
+You should install drivers and support packages for your development host. Windows, Linux and Mac OS-X, are supported development hosts. Please see [Get Started](https://docs.espressif.com/projects/esp-idf/en/v4.3/esp32/index.html) for the host setup instructions.
 
 ### 1.2 Getting the Repositories
 
 This only needs to be done once:
 ```
 $ git clone --recursive https://github.com/espressif/esp-idf.git
-$ cd esp-idf; git checkout release/v4.2; git submodule init; git submodule update --init --recursive;
+$ cd esp-idf; git checkout v4.3; git submodule init; git submodule update --init --recursive;
 $ ./install.sh
 $ cd ..
 
@@ -27,7 +27,7 @@ $ cd ..
 
 This needs to be done everytime a new terminal is opened:
 ```
-$ cd esp-matter/examples/lighting-app/
+$ cd esp-matter/examples/light/
 
 $ export ESPPORT=/dev/cu.SLAB_USBtoUART (or /dev/ttyUSB0 or /dev/ttyUSB1 on Linux or COMxx on MinGW)
 $ export IDF_PATH=/path/to/esp-idf
@@ -46,7 +46,7 @@ $ idf.py menuconfig
 *   menuconfig -> ESP Matter Board Selection -> Select the supported board
     *   The boards here are dependent on the IDF_TARGET. If your board uses a different chip, set the correct target and try again.
     ```
-    idf.py set-target esp32s3 (or esp32 or other supported targets)
+    idf.py set-target esp32c3 (or esp32 or other supported targets)
     ```
     *   The other peripheral components like led_driver, button_driver, etc are selected based on the board selected.
     *   The configuration of the peripheral components can be found in `esp-matter/components/board/<board_name>/board.c`.
@@ -103,7 +103,7 @@ chip-device-ctrl > zcl NetworkCommissioning AddWiFiNetwork 12344321 0 0 ssid=str
 chip-device-ctrl > zcl NetworkCommissioning EnableNetwork 12344321 0 0 networkID=str:${WIFI_SSID} breadcrumb=0 timeoutMs=1000
 ```
 
-Close connection: (Currently, doing this hangs the device and the controller, and can be skipped)
+Close connection:
 ```
 chip-device-ctrl > close-ble
 ```
@@ -119,7 +119,7 @@ Control the device:
 ```
 chip-device-ctrl > zcl OnOff On 12344321 1 1
 chip-device-ctrl > zcl LevelControl MoveToLevel 12344321 1 1 level=10 transitionTime=0 optionMask=0 optionOverride=0
-chip-device-ctrl > zcl LevelControl MoveToLevel 12344321 1 1 level=255 transitionTime=0 optionMask=0 optionOverride=0
+chip-device-ctrl > zcl LevelControl MoveToLevel 12344321 1 1 level=100 transitionTime=0 optionMask=0 optionOverride=0
 chip-device-ctrl > zcl OnOff Toggle 12344321 1 1
 ```
 

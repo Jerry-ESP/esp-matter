@@ -13,19 +13,18 @@
 
 #pragma once
 
-#include "app/util/basic-types.h"
-#include "gen/callback.h"
-#include "platform/CHIPDeviceLayer.h"
+#ifdef __cplusplus
+extern "C"
+{
+#endif
 
-void on_on_off_attribute_changed(chip::EndpointId endpoint, chip::AttributeId attribute, uint8_t *value, size_t size);
+#include <stdint.h>
+#include <stdbool.h>
 
-void on_level_control_atrribute_changed(chip::EndpointId endpoint, chip::AttributeId attribute, uint8_t *value,
-                                        size_t size);
+void app_rmaker_init();
+void app_rmaker_update_power(bool power);
+void app_rmaker_update_brightness(uint8_t brightness);
 
-void on_device_event(const chip::DeviceLayer::ChipDeviceEvent *event, intptr_t arg);
-
-void update_current_power(bool power);
-
-void update_current_brightness(uint8_t level);
-
-void device_callbacks_init();
+#ifdef __cplusplus
+}
+#endif

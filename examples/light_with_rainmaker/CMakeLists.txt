@@ -20,12 +20,19 @@ if(NOT DEFINED ENV{ESP_MATTER_PATH})
 endif(NOT DEFINED ENV{ESP_MATTER_PATH})
 set(ESP_MATTER_PATH $ENV{ESP_MATTER_PATH})
 
+if(NOT DEFINED ENV{ESP_RMAKER_PATH})
+    message(FATAL_ERROR "Please set ESP_RMAKER_PATH to the path of esp-rainmaker repo")
+endif(NOT DEFINED ENV{ESP_RMAKER_PATH})
+
 # This should be done before using the IDF_TARGET variable.
 include($ENV{IDF_PATH}/tools/cmake/project.cmake)
 
 set(EXTRA_COMPONENT_DIRS
+    "../common"
     "${ESP_MATTER_PATH}/connectedhomeip/config/esp32/components"
-    "${ESP_MATTER_PATH}/components")
+    "${ESP_MATTER_PATH}/components"
+    "$ENV{ESP_RMAKER_PATH}/components"
+)
 
 if(${IDF_TARGET} STREQUAL "esp32")
     list(APPEND EXTRA_COMPONENT_DIRS
@@ -34,7 +41,7 @@ if(${IDF_TARGET} STREQUAL "esp32")
     )
 elseif(${IDF_TARGET} STREQUAL "esp32c3")
     list(APPEND EXTRA_COMPONENT_DIRS
-        "${ESP_MATTER_PATH}/esp-idf/examples/peripherals/rmt/led_strip/components"
+        "$ENV{IDF_PATH}/examples/peripherals/rmt/led_strip/components"
     )
 endif()
 

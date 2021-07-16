@@ -31,3 +31,13 @@ esp_err_t led_driver_set_brightness(uint8_t brightness)
 {
     return ESP_OK;
 }
+
+bool led_driver_get_power()
+{
+    return false;
+}
+
+uint8_t led_driver_get_brightness()
+{
+    return 0;
+}

@@ -27,7 +27,7 @@ set(SRC_DIRS_LIST          "${CMAKE_CURRENT_LIST_DIR}"
                            "${ESP_MATTER_PATH}/connectedhomeip/src/app/clusters/operational-credentials-server"
                            "${ESP_MATTER_PATH}/connectedhomeip/src/app/clusters/level-control")
 
-set(PRIV_REQUIRES_LIST chip bt esp32_mbedtls board led_driver button_driver)
+set(PRIV_REQUIRES_LIST chip bt esp32_mbedtls app_driver esp_rainmaker)
 
 idf_component_register(PRIV_INCLUDE_DIRS ${PRIV_INCLUDE_DIRS_LIST}
                       SRC_DIRS           ${SRC_DIRS_LIST}

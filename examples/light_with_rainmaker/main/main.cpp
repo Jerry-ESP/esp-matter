@@ -12,10 +12,11 @@
 // limitations under the License
 
 #include "device_callbacks.hpp"
+#include "app_driver.h"
+#include "app_rainmaker.h"
+
 #include "esp_err.h"
 #include "esp_log.h"
-#include "board.h"
-#include "led_driver.h"
 #include "lighting_app_constants.hpp"
 #include "nvs_flash.h"
 #include "app/util/af-enums.h"
@@ -72,18 +73,28 @@ extern "C" void app_main()
     ESP_ERROR_CHECK(nvs_flash_init());
 
     /* Initialize and set the default params */
-    ESP_ERROR_CHECK(board_init());
-    led_driver_set_power(DEFAULT_POWER);
-    led_driver_set_brightness(DEFAULT_BRIGHTNESS);
+    app_driver_init();
+    app_driver_update_and_report_power(DEFAULT_POWER, SRC_LOCAL);
+    app_driver_update_and_report_brightness(DEFAULT_BRIGHTNESS, SRC_LOCAL);
 
     ESP_LOGI(APP_LOG_TAG, "==================================================");
     ESP_LOGI(APP_LOG_TAG, "chip-esp32-lighting-example starting");
     ESP_LOGI(APP_LOG_TAG, "==================================================");
 
+    /* Initialize chip */
     ESP_ERROR_CHECK(init_chip_stack());
+
+    /* Initialize rainmaker */
+    app_rmaker_init();
+
     InitServer();
-    update_current_brightness(DEFAULT_BRIGHTNESS);
+    device_callbacks_init();
+
+    /* Register CLI commands with esp_console (indirectly, rainmaker's console). */
+    app_driver_register_cli();
+
 #if CONFIG_ENABLE_CHIP_SHELL
-    xTaskCreate(&ChipShellTask, "chip_shell", 2048, NULL, 5, NULL);
+    /* Rainmaker console is enabled. So disabling this. */
+    // xTaskCreate(&ChipShellTask, "chip_shell", 2048, NULL, 5, NULL);
 #endif
 }

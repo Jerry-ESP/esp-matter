@@ -24,6 +24,7 @@ set(ESP_MATTER_PATH $ENV{ESP_MATTER_PATH})
 include($ENV{IDF_PATH}/tools/cmake/project.cmake)
 
 set(EXTRA_COMPONENT_DIRS
+    "../common"
     "${ESP_MATTER_PATH}/connectedhomeip/config/esp32/components"
     "${ESP_MATTER_PATH}/components")
 
@@ -34,7 +35,7 @@ if(${IDF_TARGET} STREQUAL "esp32")
     )
 elseif(${IDF_TARGET} STREQUAL "esp32c3")
     list(APPEND EXTRA_COMPONENT_DIRS
-        "${ESP_MATTER_PATH}/esp-idf/examples/peripherals/rmt/led_strip/components"
+        "$ENV{IDF_PATH}/examples/peripherals/rmt/led_strip/components"
     )
 endif()
 

@@ -15,6 +15,8 @@
 #include <led_driver.h>
 
 static const char *TAG = "led_driver_hollow";
+static bool current_power = false;
+static uint8_t current_brightness = 0;
 
 esp_err_t led_driver_init(led_driver_config_t *config)
 {
@@ -38,4 +40,14 @@ esp_err_t led_driver_set_brightness(uint8_t brightness)
     /* Set the brightness level here */
 
     return ESP_OK;
+}
+
+bool led_driver_get_power()
+{
+    return current_power;
+}
+
+uint8_t led_driver_get_brightness()
+{
+    return current_brightness;
 }
