@@ -11,7 +11,34 @@
 // See the License for the specific language governing permissions and
 // limitations under the License
 
-#define APP_LOG_TAG "lighting-app"
+#include <esp_log.h>
 
-#define DEFAULT_POWER true
-#define DEFAULT_BRIGHTNESS 100
+#include <led_driver.h>
+#include <button_driver.h>
+
+static const char *TAG = "board";
+
+static esp_err_t board_led_init()
+{
+    led_driver_config_t config = {
+        .gpio = -1,
+        .channel = -1,
+    };
+    return led_driver_init(&config);
+}
+
+static esp_err_t board_button_init()
+{
+    button_driver_config_t config = {
+        .gpio = -1,
+    };
+    return button_driver_init(&config);
+}
+
+esp_err_t board_init()
+{
+    ESP_LOGI(TAG, "Initializing board");
+    board_led_init();
+    board_button_init();
+    return ESP_OK;
+}

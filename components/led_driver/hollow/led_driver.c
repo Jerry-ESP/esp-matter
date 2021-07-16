@@ -11,7 +11,31 @@
 // See the License for the specific language governing permissions and
 // limitations under the License
 
-#define APP_LOG_TAG "lighting-app"
+#include <esp_log.h>
+#include <led_driver.h>
 
-#define DEFAULT_POWER true
-#define DEFAULT_BRIGHTNESS 100
+static const char *TAG = "led_driver_hollow";
+
+esp_err_t led_driver_init(led_driver_config_t *config)
+{
+    ESP_LOGI(TAG, "Initializing led driver");
+    /* Initialize the driver here */
+
+    return ESP_OK;
+}
+
+esp_err_t led_driver_set_power(bool power)
+{
+    ESP_LOGI(TAG, "Setting power to: %d", power);
+    /* Set the power state here */
+
+    return ESP_OK;
+}
+
+esp_err_t led_driver_set_brightness(uint8_t brightness)
+{
+    ESP_LOGI(TAG, "Setting brightness to: %d", brightness);
+    /* Set the brightness level here */
+
+    return ESP_OK;
+}

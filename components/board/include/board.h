@@ -11,7 +11,17 @@
 // See the License for the specific language governing permissions and
 // limitations under the License
 
-#define APP_LOG_TAG "lighting-app"
+#pragma once
 
-#define DEFAULT_POWER true
-#define DEFAULT_BRIGHTNESS 100
+#ifdef __cplusplus
+extern "C"
+{
+#endif
+
+#include <esp_err.h>
+
+esp_err_t board_init();
+
+#ifdef __cplusplus
+}
+#endif

@@ -14,7 +14,8 @@
 #include "device_callbacks.hpp"
 #include "esp_err.h"
 #include "esp_log.h"
-#include "led_manager.hpp"
+#include "board.h"
+#include "led_driver.h"
 #include "lighting_app_constants.hpp"
 #include "nvs_flash.h"
 #include "app/util/af-enums.h"
@@ -67,11 +68,13 @@ void ChipShellTask(void *args)
 
 extern "C" void app_main()
 {
-    // UINT8_MAX is reserved for undefined brightness
-    uint8_t default_brightness_level = UINT8_MAX;
     // Initialize the ESP NVS layer.
     ESP_ERROR_CHECK(nvs_flash_init());
-    ESP_ERROR_CHECK(led_manager_init(default_brightness_level));
+
+    /* Initialize and set the default params */
+    ESP_ERROR_CHECK(board_init());
+    led_driver_set_power(DEFAULT_POWER);
+    led_driver_set_brightness(DEFAULT_BRIGHTNESS);
 
     ESP_LOGI(APP_LOG_TAG, "==================================================");
     ESP_LOGI(APP_LOG_TAG, "chip-esp32-lighting-example starting");
@@ -79,7 +82,7 @@ extern "C" void app_main()
 
     ESP_ERROR_CHECK(init_chip_stack());
     InitServer();
-    update_current_brightness(default_brightness_level);
+    update_current_brightness(DEFAULT_BRIGHTNESS);
 #if CONFIG_ENABLE_CHIP_SHELL
     xTaskCreate(&ChipShellTask, "chip_shell", 2048, NULL, 5, NULL);
 #endif
