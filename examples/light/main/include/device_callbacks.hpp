@@ -13,24 +13,19 @@
 
 #pragma once
 
-#ifdef __cplusplus
-extern "C"
-{
-#endif
+#include "app/util/basic-types.h"
+#include "gen/callback.h"
+#include "platform/CHIPDeviceLayer.h"
 
-#include <esp_err.h>
+void on_on_off_attribute_changed(chip::EndpointId endpoint, chip::AttributeId attribute, uint8_t *value, size_t size);
 
-typedef struct led_driver_config {
-    int gpio;
-    int channel;
-} led_driver_config_t;
+void on_level_control_atrribute_changed(chip::EndpointId endpoint, chip::AttributeId attribute, uint8_t *value,
+                                        size_t size);
 
-esp_err_t led_driver_init(led_driver_config_t *config);
-esp_err_t led_driver_set_power(bool power);
-esp_err_t led_driver_set_brightness(uint8_t brightness);
-bool led_driver_get_power();
-uint8_t led_driver_get_brightness();
+void on_device_event(const chip::DeviceLayer::ChipDeviceEvent *event, intptr_t arg);
 
-#ifdef __cplusplus
-}
-#endif
+void update_current_power(bool power);
+
+void update_current_brightness(uint8_t level);
+
+void device_callbacks_init();

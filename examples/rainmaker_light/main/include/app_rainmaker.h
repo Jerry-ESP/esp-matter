@@ -18,18 +18,12 @@ extern "C"
 {
 #endif
 
-#include <esp_err.h>
+#include <stdint.h>
+#include <stdbool.h>
 
-typedef struct led_driver_config {
-    int gpio;
-    int channel;
-} led_driver_config_t;
-
-esp_err_t led_driver_init(led_driver_config_t *config);
-esp_err_t led_driver_set_power(bool power);
-esp_err_t led_driver_set_brightness(uint8_t brightness);
-bool led_driver_get_power();
-uint8_t led_driver_get_brightness();
+void app_rmaker_init();
+void app_rmaker_update_power(bool power);
+void app_rmaker_update_brightness(uint8_t brightness);
 
 #ifdef __cplusplus
 }

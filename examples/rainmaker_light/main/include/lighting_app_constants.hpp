@@ -11,26 +11,7 @@
 // See the License for the specific language governing permissions and
 // limitations under the License
 
-#pragma once
+#define APP_LOG_TAG "rainmaker_light"
 
-#ifdef __cplusplus
-extern "C"
-{
-#endif
-
-#include <esp_err.h>
-
-typedef struct led_driver_config {
-    int gpio;
-    int channel;
-} led_driver_config_t;
-
-esp_err_t led_driver_init(led_driver_config_t *config);
-esp_err_t led_driver_set_power(bool power);
-esp_err_t led_driver_set_brightness(uint8_t brightness);
-bool led_driver_get_power();
-uint8_t led_driver_get_brightness();
-
-#ifdef __cplusplus
-}
-#endif
+#define DEFAULT_POWER true
+#define DEFAULT_BRIGHTNESS 100

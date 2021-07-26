@@ -77,3 +77,13 @@ esp_err_t led_driver_set_brightness(uint8_t brightness)
     }
     return err;
 }
+
+bool led_driver_get_power()
+{
+    return current_power;
+}
+
+uint8_t led_driver_get_brightness()
+{
+    return current_brightness;
+}
