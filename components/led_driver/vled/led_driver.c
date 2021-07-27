@@ -113,7 +113,7 @@ static esp_err_t InitDisplay()
     DisplayHeight = (uint16_t)(1 + tft_dispWin.y2 - tft_dispWin.y1);
     ESP_LOGI(TAG, "Display initialized (height %u, width %u)", DisplayHeight, DisplayWidth);
 
-    TFT_invertDisplay(INVERT_ON);
+    TFT_invertDisplay(INVERT_OFF);
 
     return ESP_OK;
 }
@@ -127,7 +127,7 @@ esp_err_t led_driver_init(led_driver_config_t *config)
         return err;
     }
     SetupBrightnessControl(config);
-
+    SetDisplayBrightness(BRIGHTNESS_MAX);
     return err;
 }
 
@@ -146,10 +146,9 @@ esp_err_t led_driver_set_brightness(uint8_t brightness)
         brightness = 0;
     }
 
-    SetDisplayBrightness(brightness);
-    TFT_fillWindow(TFT_BLACK);
+    TFT_fillWindow(TFT_BLACK); 
     TFT_fillCircle(DisplayWidth/2, DisplayHeight/2, DisplayWidth/4,(color_t){ brightness, 0, 0 });
-    TFT_drawCircle(DisplayWidth/2, DisplayHeight/2, DisplayWidth/4,(color_t){ brightness, brightness, brightness });
+    TFT_drawCircle(DisplayWidth/2, DisplayHeight/2, DisplayWidth/4,(color_t){ 255, 255, 255});
     return ESP_OK;
 }
 
