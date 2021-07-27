@@ -1,26 +1,26 @@
 menu "ESP Matter Board Selection"
 
     choice BOARD_NAME
-        prompt "Board name"
+        prompt "Board Name"
         default BOARD_NAME_ESP32_DEVKIT_C if IDF_TARGET_ESP32
         default BOARD_NAME_ESP32C3_DEVKIT_M if IDF_TARGET_ESP32C3
         help
             Board name from esp-matter/components/board
 
         config BOARD_NAME_ESP32_DEVKIT_C
-            bool "esp32_devkit_c"
+            bool "ESP32-DevKitC"
             depends on IDF_TARGET_ESP32
 
         config BOARD_NAME_ESP32C3_DEVKIT_M
-            bool "esp32c3_devkit_m"
+            bool "ESP32-C3-DevKitM"
             depends on IDF_TARGET_ESP32C3
 
         config BOARD_NAME_M5STACK
-            bool "m5stack"
+            bool "M5Stack"
             depends on IDF_TARGET_ESP32
 
         config BOARD_NAME_HOLLOW
-            bool "hollow"
+            bool "Hollow"
     endchoice
 
     config BOARD_NAME

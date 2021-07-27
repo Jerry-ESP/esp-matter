@@ -1,8 +1,15 @@
-## 1. Adding ESP RainMaker
+# RainMaker Light Example
+
+## Building and Flashing the Firmware
+
+See the [README.md](../../README.md) file for more information about building and flashing the firmware
+
+## What to expect in this example?
+- :Fill this in:
 
 You can use this rainmaker_light example for RainMaker + Matter. Make sure to follow these additional steps along with the steps in the top level readme.
 
-### 1.1 Getting the Repositories
+### Getting the Repositories
 
 This only needs to be done once:
 ```
@@ -10,7 +17,7 @@ $ git clone --recursive https://github.com/espressif/esp-rainmaker.git
 ```
 Setup the RainMaker CLI from here: https://rainmaker.espressif.com/docs/cli-setup.html
 
-### 1.2 Configuring Environment
+### Configuring the environment
 
 This needs to be done everytime a new terminal is opened:
 ```
@@ -19,7 +26,7 @@ cd esp-matter/examples/rainmaker_light/
 export ESP_RMAKER_PATH=/path/to/esp-rainmaker
 ```
 
-### 1.3 RainMaker Claiming
+### RainMaker Claiming
 
 This need to be done before flashing the firmware. Note the mac address of the device.
 
@@ -29,7 +36,7 @@ $ cd $ESP_RMAKER_PATH/cli
 $ rainmaker.py claim --platform esp32 --mac <12-digit-mac-all-caps> --addr 0x3E0000 $ESPPORT
 ```
 
-### 1.4 RainMaker User Node Association
+### RainMaker User Node Association
 
 This need to be done after commissioning.
 
