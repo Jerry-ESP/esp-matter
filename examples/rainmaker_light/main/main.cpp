@@ -11,52 +11,54 @@
 // See the License for the specific language governing permissions and
 // limitations under the License
 
-#include "device_callbacks.hpp"
 #include "app_driver.h"
+#include "app_matter.h"
 #include "app_rainmaker.h"
 
+#include "esp_console.h"
 #include "esp_err.h"
 #include "esp_log.h"
 #include "lighting_app_constants.hpp"
 #include "nvs_flash.h"
-#include "app/util/af-enums.h"
 #include "freertos/FreeRTOS.h"
 #include "freertos/task.h"
-
-// Matter includes
-#include "app/common/gen/att-storage.h"
-#include "app/common/gen/attribute-id.h"
-#include "app/common/gen/attribute-type.h"
-#include "app/common/gen/cluster-id.h"
-#include "app/server/Server.h"
-#include "app/util/af-types.h"
-#include "app/util/af.h"
-#include "core/CHIPError.h"
 #include "lib/shell/Engine.h"
-#include "lib/support/CHIPMem.h"
-#include "platform/CHIPDeviceLayer.h"
 
-using chip::DeviceLayer::ConnectivityMgr;
-using chip::DeviceLayer::PlatformMgr;
-
-static esp_err_t init_chip_stack()
+static int cli_handler(int argc, char *argv[])
 {
-    if (PlatformMgr().InitChipStack() != CHIP_NO_ERROR) {
-        ESP_LOGE(APP_LOG_TAG, "Failed to initialize CHIP stack");
-        return ESP_FAIL;
+    if (argc != 3) {
+        ESP_LOGE(APP_LOG_TAG, "Incorrect arguments");
+        return 0;
     }
-    ConnectivityMgr().SetBLEAdvertisingEnabled(true);
-    if (chip::Platform::MemoryInit() != CHIP_NO_ERROR) {
-        ESP_LOGE(APP_LOG_TAG, "Failed to initialize CHIP memory pool");
-        return ESP_ERR_NO_MEM;
-    }
-    if (PlatformMgr().StartEventLoopTask() != CHIP_NO_ERROR) {
-        chip::Platform::MemoryShutdown();
-        ESP_LOGE(APP_LOG_TAG, "Failed to launch Matter main task");
-        return ESP_FAIL;
-    }
-    PlatformMgr().AddEventHandler(on_device_event, static_cast<intptr_t>(NULL));
+    app_driver_param_type_t param_type = (app_driver_param_type_t)atoi(argv[1]);
+    int value = atoi(argv[2]);
 
+    if (param_type == PARAM_TYPE_POWER) {
+        app_driver_update_and_report_power(value, APP_DRIVER_SRC_LOCAL);
+    } else if (param_type == PARAM_TYPE_BRIGHTNESS) {
+        app_driver_update_and_report_brightness(value, APP_DRIVER_SRC_LOCAL);
+    } else {
+        ESP_LOGE(APP_LOG_TAG, "Param type not handled: %d", param_type);
+    }
+    return 0;
+}
+
+static esp_console_cmd_t driver_cmds[] = {
+    {
+        .command = "driver",
+        .help = "This can be used to simulate on-device control. Usage: driver <param_type> <value>",
+        .func = cli_handler,
+    },
+};
+
+static esp_err_t cli_init()
+{
+    int cmds_num = sizeof(driver_cmds) / sizeof(esp_console_cmd_t);
+    int i;
+    for (i = 0; i < cmds_num; i++) {
+        ESP_LOGI(APP_LOG_TAG, "Registering command: %s", driver_cmds[i].command);
+        esp_console_cmd_register(&driver_cmds[i]);
+    }
     return ESP_OK;
 }
 
@@ -74,8 +76,6 @@ extern "C" void app_main()
 
     /* Initialize and set the default params */
     app_driver_init();
-    app_driver_update_and_report_power(DEFAULT_POWER, SRC_LOCAL);
-    app_driver_update_and_report_brightness(DEFAULT_BRIGHTNESS, SRC_LOCAL);
 
     ESP_LOGI(APP_LOG_TAG, "==================================================");
     ESP_LOGI(APP_LOG_TAG, "chip-esp32-lighting-example starting");
@@ -87,11 +87,11 @@ extern "C" void app_main()
     /* Initialize rainmaker */
     app_rmaker_init();
 
-    InitServer();
-    device_callbacks_init();
+    app_driver_update_and_report_power(DEFAULT_POWER, APP_DRIVER_SRC_LOCAL);
+    app_driver_update_and_report_brightness(DEFAULT_BRIGHTNESS, APP_DRIVER_SRC_LOCAL);
 
     /* Register CLI commands with esp_console (indirectly, rainmaker's console). */
-    app_driver_register_cli();
+    cli_init();
 
 #if CONFIG_ENABLE_CHIP_SHELL
     /* Rainmaker console is enabled. So disabling this. */

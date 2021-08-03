@@ -21,20 +21,26 @@ extern "C"
 #include <stdbool.h>
 #include <esp_err.h>
 
-typedef enum app_driver_src {
-    SRC_MATTER = 0,
-    SRC_RAINMAKER,
-    SRC_LOCAL,
-    SRC_MAX,
-} app_driver_src_t;
+#define SRC_MAX_NAMELEN 20
+
+typedef enum app_driver_param_type {
+    PARAM_TYPE_POWER = 0,
+    PARAM_TYPE_BRIGHTNESS,
+    PARAM_TYPE_MAX,
+} app_driver_param_type_t;
+
+typedef struct app_driver_param_callback {
+    void (*update_power)(bool power);
+    void (*update_brightness)(uint8_t brightness);
+} app_driver_param_callback_t;
 
 esp_err_t app_driver_init();
-esp_err_t app_driver_update_and_report_power(bool power, app_driver_src_t src);
-esp_err_t app_driver_update_and_report_brightness(uint8_t brightness, app_driver_src_t src);
+esp_err_t app_driver_update_and_report_power(bool power, const char *src);
+esp_err_t app_driver_update_and_report_brightness(uint8_t brightness, const char *src);
 bool app_driver_get_power();
 uint8_t app_driver_get_brightness();
-void app_driver_set_callbacks(app_driver_src_t src, void (*update_power)(bool power), void (*update_brightness)(uint8_t brightness));
-esp_err_t app_driver_register_cli();
+
+esp_err_t app_driver_register_src(const char *name, app_driver_param_callback_t *callbacks);
 
 #ifdef __cplusplus
 }

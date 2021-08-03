@@ -18,12 +18,7 @@ extern "C"
 {
 #endif
 
-#include <stdint.h>
-#include <stdbool.h>
-
 void app_rmaker_init();
-void app_rmaker_update_power(bool power);
-void app_rmaker_update_brightness(uint8_t brightness);
 
 #ifdef __cplusplus
 }

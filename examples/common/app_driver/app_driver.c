@@ -11,74 +11,80 @@
 // See the License for the specific language governing permissions and
 // limitations under the License
 
+#include <string.h>
 #include <esp_log.h>
-#include <esp_console.h>
 
 #include <app_driver.h>
 #include <board.h>
 #include <led_driver.h>
 
-typedef enum app_driver_param_type {
-    PARAM_TYPE_POWER = 0,
-    PARAM_TYPE_BRIGHTNESS,
-    PARAM_TYPE_MAX,
-} app_driver_param_type_t;
+typedef struct driver_src {
+    char name[SRC_MAX_NAMELEN];
+    struct app_driver_param_callback callbacks;
+    struct driver_src *next;
+} driver_src_t;
 
-typedef struct {
-    void (*update_power)(bool power);
-    void (*update_brightness)(uint8_t brightness);
-} app_driver_cb_t;
-
-static const char* TAG = "app_driver";
-static app_driver_cb_t app_driver_cb[SRC_MAX];
+static const char *TAG = "app_driver";
+static driver_src_t *s_driver_src = NULL;
 
 esp_err_t app_driver_init()
 {
     return board_init();
 }
 
-void app_driver_set_callbacks(app_driver_src_t src, void (*update_power)(bool power), void (*update_brightness)(uint8_t brightness))
+esp_err_t app_driver_register_src(const char *name, app_driver_param_callback_t *callbacks)
 {
-    app_driver_cb[src].update_power = update_power;
-    app_driver_cb[src].update_brightness = update_brightness;
-}
+    driver_src_t *new_src = (driver_src_t *)malloc(sizeof(driver_src_t));
 
-void app_driver_update(app_driver_src_t src, app_driver_param_type_t type, void *value)
-{
-    for (int i = 0; i < SRC_MAX; i++) {
-        if (i == src) {
-            continue;
-        }
-        if (type == PARAM_TYPE_POWER) {
-            if (app_driver_cb[i].update_power) {
-                app_driver_cb[i].update_power(*(bool *)value);
-            }
-        } else if (type == PARAM_TYPE_BRIGHTNESS) {
-            if (app_driver_cb[i].update_brightness) {
-                app_driver_cb[i].update_brightness(*(uint8_t *)value);
-            }
-        }
+    if (new_src == NULL) {
+        ESP_LOGE(TAG, "Failed to alloc memory for driver_src_t");
+        return ESP_ERR_NO_MEM;
     }
-}
 
-esp_err_t app_driver_update_and_report_power(bool power, app_driver_src_t src)
-{
-    /* Update */
-    led_driver_set_power(power);
+    memset(new_src, 0, sizeof(driver_src_t));
+    strncpy(new_src->name, name, strnlen(name, SRC_MAX_NAMELEN));
+    memcpy(&new_src->callbacks, callbacks, sizeof(app_driver_param_callback_t));
 
-    /* Report to other sources */
-    app_driver_update(src, PARAM_TYPE_POWER, (void *)&power);
+    new_src->next = s_driver_src;
+    s_driver_src = new_src;
 
     return ESP_OK;
 }
 
-esp_err_t app_driver_update_and_report_brightness(uint8_t brightness, app_driver_src_t src)
+esp_err_t app_driver_update_and_report_power(bool power, const char *src)
 {
+    driver_src_t *cur_src = s_driver_src;
+
+    /* Update */
+    led_driver_set_power(power);
+
+    /* Report to other sources */
+    while (cur_src) {
+        if (strncmp(cur_src->name, src, strnlen(src, SRC_MAX_NAMELEN)) != 0 &&
+                cur_src->callbacks.update_power != NULL) {
+            cur_src->callbacks.update_power(power);
+        }
+        cur_src = cur_src->next;
+    }
+
+    return ESP_OK;
+}
+
+esp_err_t app_driver_update_and_report_brightness(uint8_t brightness, const char *src)
+{
+    driver_src_t *cur_src = s_driver_src;
+
     /* Update */
     led_driver_set_brightness(brightness);
 
     /* Report to other sources */
-    app_driver_update(src, PARAM_TYPE_BRIGHTNESS, (void *)&brightness);
+    while (cur_src) {
+        if (strncmp(cur_src->name, src, strnlen(src, SRC_MAX_NAMELEN)) != 0 &&
+                cur_src->callbacks.update_brightness != NULL) {
+            cur_src->callbacks.update_brightness(brightness);
+        }
+        cur_src = cur_src->next;
+    }
 
     return ESP_OK;
 }
@@ -91,42 +97,4 @@ bool app_driver_get_power()
 uint8_t app_driver_get_brightness()
 {
     return led_driver_get_brightness();
-}
-
-static int app_driver_cli_handler(int argc, char *argv[])
-{
-    if (argc != 3) {
-        ESP_LOGE(TAG, "Incorrect arguments");
-        return 0;
-    }
-    app_driver_param_type_t param_type = (app_driver_param_type_t)atoi(argv[1]);
-    int value = atoi(argv[2]);
-
-    if (param_type == PARAM_TYPE_POWER) {
-        app_driver_update_and_report_power(value, SRC_LOCAL);
-    } else if (param_type == PARAM_TYPE_BRIGHTNESS) {
-        app_driver_update_and_report_brightness(value, SRC_LOCAL);
-    } else {
-        ESP_LOGE(TAG, "Param type not handled: %d", param_type);
-    }
-    return 0;
-}
-
-static esp_console_cmd_t driver_cmds[] = {
-    {
-        .command = "driver",
-        .help = "This can be used to simulate on-device control. Usage: driver <param_type> <value>",
-        .func = app_driver_cli_handler,
-    },
-};
-
-esp_err_t app_driver_register_cli()
-{
-    int cmds_num = sizeof(driver_cmds) / sizeof(esp_console_cmd_t);
-    int i;
-    for (i = 0; i < cmds_num; i++) {
-        ESP_LOGI(TAG, "Registering command: %s", driver_cmds[i].command);
-        esp_console_cmd_register(&driver_cmds[i]);
-    }
-    return ESP_OK;
 }

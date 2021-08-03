@@ -15,3 +15,6 @@
 
 #define DEFAULT_POWER true
 #define DEFAULT_BRIGHTNESS 100
+
+#define APP_DRIVER_SRC_LOCAL  "local"
+#define APP_DRIVER_SRC_MATTER "matter"

@@ -37,11 +37,13 @@
 #include <app_rainmaker.h>
 #include <app_driver.h>
 
+#include "lighting_app_constants.hpp"
+
 static const char *TAG = "app_rainmaker";
 
 esp_rmaker_device_t *light_device;
 
-void app_rmaker_update_power(bool power)
+static void update_rmaker_power(bool power)
 {
     esp_rmaker_param_t *param = esp_rmaker_device_get_param_by_type(light_device, ESP_RMAKER_PARAM_POWER);
     if (!param) {
@@ -51,7 +53,7 @@ void app_rmaker_update_power(bool power)
     esp_rmaker_param_update_and_report(param, esp_rmaker_bool(power));
 }
 
-void app_rmaker_update_brightness(uint8_t brightness)
+static void update_rmaker_brightness(uint8_t brightness)
 {
     esp_rmaker_param_t *param = esp_rmaker_device_get_param_by_type(light_device, ESP_RMAKER_PARAM_BRIGHTNESS);
     if (!param) {
@@ -63,7 +65,7 @@ void app_rmaker_update_brightness(uint8_t brightness)
 
 /* Callback to handle commands received from the RainMaker cloud */
 static esp_err_t write_cb(const esp_rmaker_device_t *device, const esp_rmaker_param_t *param,
-            const esp_rmaker_param_val_t val, void *priv_data, esp_rmaker_write_ctx_t *ctx)
+                          const esp_rmaker_param_val_t val, void *priv_data, esp_rmaker_write_ctx_t *ctx)
 {
     if (ctx) {
         ESP_LOGI(TAG, "Received write request via : %s", esp_rmaker_device_cb_src_to_str(ctx->src));
@@ -72,12 +74,12 @@ static esp_err_t write_cb(const esp_rmaker_device_t *device, const esp_rmaker_pa
     const char *param_name = esp_rmaker_param_get_name(param);
     if (strcmp(param_name, ESP_RMAKER_DEF_POWER_NAME) == 0) {
         ESP_LOGI(TAG, "Received value = %s for %s - %s",
-                val.val.b? "true" : "false", device_name, param_name);
-        app_driver_update_and_report_power(val.val.b, SRC_RAINMAKER);
+                 val.val.b ? "true" : "false", device_name, param_name);
+        app_driver_update_and_report_power(val.val.b, APP_DRIVER_SRC_RAINMAKER);
     } else if (strcmp(param_name, ESP_RMAKER_DEF_BRIGHTNESS_NAME) == 0) {
         ESP_LOGI(TAG, "Received value = %d for %s - %s",
-                val.val.i, device_name, param_name);
-        app_driver_update_and_report_brightness(val.val.i, SRC_RAINMAKER);
+                 val.val.i, device_name, param_name);
+        app_driver_update_and_report_brightness(val.val.i, APP_DRIVER_SRC_RAINMAKER);
     } else {
         /* Silently ignoring invalid params */
         return ESP_OK;
@@ -88,6 +90,11 @@ static esp_err_t write_cb(const esp_rmaker_device_t *device, const esp_rmaker_pa
 
 void app_rmaker_init()
 {
+    app_driver_param_callback_t callbacks = {
+        .update_power = update_rmaker_power,
+        .update_brightness = update_rmaker_brightness,
+    };
+
     /* Initialize the ESP RainMaker Agent.
      * Note that this should be called after app_wifi_init() but before app_wifi_start()
      * */
@@ -99,7 +106,7 @@ void app_rmaker_init()
     esp_rmaker_node_t *node = esp_rmaker_node_init(&rainmaker_cfg, "ESP RainMaker Device", "Lightbulb");
     if (!node) {
         ESP_LOGE(TAG, "Could not initialise node. Aborting!!!");
-        vTaskDelay(5000/portTICK_PERIOD_MS);
+        vTaskDelay(5000 / portTICK_PERIOD_MS);
         abort();
     }
 
@@ -110,9 +117,6 @@ void app_rmaker_init()
     esp_rmaker_device_add_param(light_device, esp_rmaker_brightness_param_create(ESP_RMAKER_DEF_BRIGHTNESS_NAME, app_driver_get_brightness()));
 
     esp_rmaker_node_add_device(node, light_device);
-
-    /* Add callback */
-    app_driver_set_callbacks(SRC_RAINMAKER, app_rmaker_update_power, app_rmaker_update_brightness);
 
     /* Enable OTA */
     esp_rmaker_ota_config_t ota_config = {
@@ -132,4 +136,6 @@ void app_rmaker_init()
 
     /* Start the ESP RainMaker Agent */
     esp_rmaker_start();
+
+    app_driver_register_src(APP_DRIVER_SRC_RAINMAKER, &callbacks);
 }
