@@ -7,6 +7,57 @@ See the [README.md](../../README.md) file for more information about building an
 
 ## What to expect in this example?
 
-- :Fill this in:
+The examples provides a minimal implementation to build a Matter light device on an ESP32 series chip.
+
+Supported features:
+ - Matter pairing and Wi-Fi network configuration
+ - On/Off control
+ - Brightness control
+ - (Optional) Interactive shell
+
+### Useful shell commands
+
+- BLE commands
+
+```
+> chip ble <start|stop|state>
+```
+
+Set and get the BLE advertisement state.
+
+- Wi-Fi commands
+
+```
+> chip wifi mode [disable|ap|sta]
+```
+
+Set and get the Wi-Fi mode.
+
+```
+> chip wifi connect <ssid> <psk>
+```
+
+Connect to Wi-Fi network.
+
+- Device configuration
+
+```
+> chip config
+```
+
+Dump the device static configuration
 
 
+- Facotry reset
+
+```
+> chip device factoryreset
+```
+
+- On-boarding codes
+
+```
+> chip onboardingcodes
+```
+
+Dump the on-boarding pairing code payloads.
