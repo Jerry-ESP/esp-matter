@@ -1,5 +1,9 @@
 # ESP Matter
 
+[Matter](https://buildwithmatter.com/) is the unified IP-based connectivity protocol built on proven technologies, helping connect and build reliable, secure IoT ecosystems. This new technology and royalty-free connectivity standard enables communications among a wide range of smart devices.
+
+This repo is the official Matter development framework for the Espressif's ESP32 series SoCs.
+
 ## Development Setup
 
 This sections talks about setting up your development host, fetching the git repositories, and instructions for build and flash.
