@@ -97,7 +97,7 @@ void emberAfPostAttributeChangeCallback(EndpointId endpoint, ClusterId cluster, 
     }
 }
 
-esp_err_t init_chip_stack()
+esp_err_t app_matter_init()
 {
     app_driver_param_callback_t callbacks = {
         .update_power = update_matter_power,

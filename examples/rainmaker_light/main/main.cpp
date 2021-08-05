@@ -24,13 +24,19 @@
 #include "freertos/task.h"
 #include "lib/shell/Engine.h"
 
+typedef enum param_type {
+    PARAM_TYPE_POWER = 0,
+    PARAM_TYPE_BRIGHTNESS,
+    PARAM_TYPE_MAX,
+} param_type_t;
+
 static int cli_handler(int argc, char *argv[])
 {
     if (argc != 3) {
         ESP_LOGE(APP_LOG_TAG, "Incorrect arguments");
         return 0;
     }
-    app_driver_param_type_t param_type = (app_driver_param_type_t)atoi(argv[1]);
+    param_type_t param_type = (param_type_t)atoi(argv[1]);
     int value = atoi(argv[2]);
 
     if (param_type == PARAM_TYPE_POWER) {
@@ -82,7 +88,7 @@ extern "C" void app_main()
     ESP_LOGI(APP_LOG_TAG, "==================================================");
 
     /* Initialize chip */
-    ESP_ERROR_CHECK(init_chip_stack());
+    ESP_ERROR_CHECK(app_matter_init());
 
     /* Initialize rainmaker */
     app_rmaker_init();

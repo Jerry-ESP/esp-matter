@@ -15,4 +15,11 @@
 
 #include "esp_err.h"
 
-esp_err_t init_chip_stack(void);
+/**
+ * @brief Initializes the matter stack.
+ *
+ * @return
+ *      - ESP_OK on success
+ *
+ */
+esp_err_t app_matter_init(void);

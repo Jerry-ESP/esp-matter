@@ -34,8 +34,14 @@ esp_err_t app_driver_init()
 
 esp_err_t app_driver_register_src(const char *name, app_driver_param_callback_t *callbacks)
 {
-    driver_src_t *new_src = (driver_src_t *)malloc(sizeof(driver_src_t));
+    driver_src_t *new_src = NULL;
 
+    if (name == NULL || callbacks == NULL) {
+        ESP_LOGE(TAG, "invalid arguments");
+        return ESP_ERR_INVALID_ARG;
+    }
+
+    new_src = (driver_src_t *)malloc(sizeof(driver_src_t));
     if (new_src == NULL) {
         ESP_LOGE(TAG, "Failed to alloc memory for driver_src_t");
         return ESP_ERR_NO_MEM;

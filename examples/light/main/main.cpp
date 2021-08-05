@@ -42,7 +42,7 @@ extern "C" void app_main()
     ESP_LOGI(APP_LOG_TAG, "==================================================");
 
     /* Initialize chip */
-    ESP_ERROR_CHECK(init_chip_stack());
+    ESP_ERROR_CHECK(app_matter_init());
 
     app_driver_update_and_report_power(DEFAULT_POWER, APP_DRIVER_SRC_LOCAL);
     app_driver_update_and_report_brightness(DEFAULT_BRIGHTNESS, APP_DRIVER_SRC_LOCAL);
