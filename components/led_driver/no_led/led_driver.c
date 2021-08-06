@@ -32,12 +32,42 @@ esp_err_t led_driver_set_brightness(uint8_t brightness)
     return ESP_OK;
 }
 
+esp_err_t led_driver_set_hue(uint16_t hue)
+{
+    return ESP_OK;
+}
+
+esp_err_t led_driver_set_saturation(uint8_t saturation)
+{
+    return ESP_OK;
+}
+
+esp_err_t led_driver_set_temperature(uint32_t temperature)
+{
+    return ESP_OK;
+}
+
 bool led_driver_get_power()
 {
     return false;
 }
 
 uint8_t led_driver_get_brightness()
+{
+    return 0;
+}
+
+uint16_t led_driver_get_hue()
+{
+    return 0;
+}
+
+uint8_t led_driver_get_saturation()
+{
+    return 0;
+}
+
+uint32_t led_driver_get_temperature()
 {
     return 0;
 }

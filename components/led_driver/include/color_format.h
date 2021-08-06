@@ -12,31 +12,25 @@
 // limitations under the License
 
 #pragma once
-
+#include <stdint.h>
 #ifdef __cplusplus
 extern "C"
 {
 #endif
 
-#include <esp_err.h>
+typedef struct {
+    uint16_t hue;
+    uint8_t saturation;
+} HS_color_t;
 
-typedef struct led_driver_config {
-    int gpio;
-    int channel;
-} led_driver_config_t;
+typedef struct {
+    uint8_t red;
+    uint8_t green;
+    uint8_t blue;
+} RGB_color_t;
+void temp_to_hs(uint32_t temperature, HS_color_t *HS);
 
-esp_err_t led_driver_init(led_driver_config_t *config);
-esp_err_t led_driver_set_power(bool power);
-esp_err_t led_driver_set_brightness(uint8_t brightness);
-esp_err_t led_driver_set_hue(uint16_t hue);
-esp_err_t led_driver_set_saturation(uint8_t saturation);
-esp_err_t led_driver_set_temperature(uint32_t temperature);
-
-bool led_driver_get_power(void);
-uint8_t led_driver_get_brightness(void);
-uint16_t led_driver_get_hue(void);
-uint8_t led_driver_get_saturation(void);
-uint32_t led_driver_get_temperature(void);
+void hsb_to_rgb(HS_color_t HS,uint8_t brightness, RGB_color_t *RGB);
 
 #ifdef __cplusplus
 }
