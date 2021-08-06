@@ -95,6 +95,8 @@ extern "C" void app_main()
 
     app_driver_update_and_report_power(DEFAULT_POWER, APP_DRIVER_SRC_LOCAL);
     app_driver_update_and_report_brightness(DEFAULT_BRIGHTNESS, APP_DRIVER_SRC_LOCAL);
+    app_driver_update_and_report_hue(DEFAULT_HUE, APP_DRIVER_SRC_LOCAL);
+    app_driver_update_and_report_saturation(DEFAULT_SATURATION, APP_DRIVER_SRC_LOCAL);
 
     /* Register CLI commands with esp_console (indirectly, rainmaker's console). */
     cli_init();

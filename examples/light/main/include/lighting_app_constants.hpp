@@ -13,8 +13,11 @@
 
 #define APP_LOG_TAG "light"
 
-#define DEFAULT_POWER true
+#define DEFAULT_POWER false
 #define DEFAULT_BRIGHTNESS 100
+#define DEFAULT_HUE 0
+#define DEFAULT_SATURATION 0
 
 #define APP_DRIVER_SRC_LOCAL  "local"
 #define APP_DRIVER_SRC_MATTER "matter"
+

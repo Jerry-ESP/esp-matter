@@ -46,6 +46,8 @@ extern "C" void app_main()
 
     app_driver_update_and_report_power(DEFAULT_POWER, APP_DRIVER_SRC_LOCAL);
     app_driver_update_and_report_brightness(DEFAULT_BRIGHTNESS, APP_DRIVER_SRC_LOCAL);
+    app_driver_update_and_report_hue(DEFAULT_HUE, APP_DRIVER_SRC_LOCAL);
+    app_driver_update_and_report_saturation(DEFAULT_SATURATION, APP_DRIVER_SRC_LOCAL);
 
 #if CONFIG_ENABLE_CHIP_SHELL
     xTaskCreate(&ChipShellTask, "chip_shell", 2048, NULL, 5, NULL);

@@ -95,6 +95,63 @@ esp_err_t app_driver_update_and_report_brightness(uint8_t brightness, const char
     return ESP_OK;
 }
 
+esp_err_t app_driver_update_and_report_hue(uint16_t hue, const char *src)
+{
+    driver_src_t *cur_src = s_driver_src;
+    
+    /* Update */
+    led_driver_set_hue(hue);
+
+    /* Report to other sources */
+    while (cur_src) {
+        if (strncmp(cur_src->name, src, strnlen(src, SRC_MAX_NAMELEN)) != 0 &&
+                cur_src->callbacks.update_hue != NULL) {
+            cur_src->callbacks.update_hue(hue);
+        }
+        cur_src = cur_src->next;
+    }
+
+    return ESP_OK;
+}
+
+esp_err_t app_driver_update_and_report_saturation(uint8_t saturation, const char *src)
+{
+    driver_src_t *cur_src = s_driver_src;
+
+    /* Update */
+    led_driver_set_saturation(saturation);
+
+    /* Report to other sources */
+    while (cur_src) {
+        if (strncmp(cur_src->name, src, strnlen(src, SRC_MAX_NAMELEN)) != 0 &&
+                cur_src->callbacks.update_saturation != NULL) {
+            cur_src->callbacks.update_saturation(saturation);
+        }   
+        cur_src = cur_src->next;
+    }   
+
+    return ESP_OK;
+}
+
+esp_err_t app_driver_update_and_report_temperature(uint32_t temperature, const char *src)
+{
+    driver_src_t *cur_src = s_driver_src;
+
+    /* Update */
+    led_driver_set_temperature(temperature);
+
+    /* Report to other sources */
+    while (cur_src) {
+        if (strncmp(cur_src->name, src, strnlen(src, SRC_MAX_NAMELEN)) != 0 &&
+                cur_src->callbacks.update_temperature != NULL) {
+            cur_src->callbacks.update_temperature(temperature); 
+        }   
+        cur_src = cur_src->next;
+    }   
+
+    return ESP_OK;
+}
+
 bool app_driver_get_power()
 {
     return led_driver_get_power();
@@ -103,4 +160,19 @@ bool app_driver_get_power()
 uint8_t app_driver_get_brightness()
 {
     return led_driver_get_brightness();
+}
+
+uint16_t app_driver_get_hue()
+{
+    return led_driver_get_hue();
+}
+
+uint8_t app_driver_get_saturation()
+{
+    return led_driver_get_saturation();
+}
+
+uint32_t app_driver_get_temperature()
+{
+    return led_driver_get_temperature();
 }

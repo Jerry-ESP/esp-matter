@@ -63,6 +63,26 @@ static void update_rmaker_brightness(uint8_t brightness)
     esp_rmaker_param_update_and_report(param, esp_rmaker_int(brightness));
 }
 
+static void update_rmaker_hue(uint16_t hue)
+{
+    esp_rmaker_param_t *param = esp_rmaker_device_get_param_by_type(light_device, ESP_RMAKER_PARAM_HUE);
+    if (!param) {
+        ESP_LOGE(TAG, "Param type not found");
+        return;
+    }
+    esp_rmaker_param_update_and_report(param, esp_rmaker_int(hue));
+}
+
+static void update_rmaker_saturation(uint8_t saturation)
+{
+    esp_rmaker_param_t *param = esp_rmaker_device_get_param_by_type(light_device, ESP_RMAKER_PARAM_SATURATION);
+    if (!param) {
+        ESP_LOGE(TAG, "Param type not found");
+        return;
+    }
+    esp_rmaker_param_update_and_report(param, esp_rmaker_int(saturation));
+}
+
 /* Callback to handle commands received from the RainMaker cloud */
 static esp_err_t write_cb(const esp_rmaker_device_t *device, const esp_rmaker_param_t *param,
                           const esp_rmaker_param_val_t val, void *priv_data, esp_rmaker_write_ctx_t *ctx)
@@ -80,6 +100,14 @@ static esp_err_t write_cb(const esp_rmaker_device_t *device, const esp_rmaker_pa
         ESP_LOGI(TAG, "Received value = %d for %s - %s",
                  val.val.i, device_name, param_name);
         app_driver_update_and_report_brightness(val.val.i, APP_DRIVER_SRC_RAINMAKER);
+    } else if (strcmp(param_name, ESP_RMAKER_DEF_HUE_NAME) == 0) {
+        ESP_LOGI(TAG, "Received value = %d for %s - %s",
+                 val.val.i, device_name, param_name);
+        app_driver_update_and_report_hue(val.val.i, APP_DRIVER_SRC_RAINMAKER);
+    } else if (strcmp(param_name, ESP_RMAKER_DEF_SATURATION_NAME) == 0) {
+        ESP_LOGI(TAG, "Received value = %d for %s - %s",
+                 val.val.i, device_name, param_name);
+        app_driver_update_and_report_saturation(val.val.i, APP_DRIVER_SRC_RAINMAKER);
     } else {
         /* Silently ignoring invalid params */
         return ESP_OK;
@@ -93,6 +121,9 @@ void app_rmaker_init()
     app_driver_param_callback_t callbacks = {
         .update_power = update_rmaker_power,
         .update_brightness = update_rmaker_brightness,
+        .update_hue = update_rmaker_hue,
+        .update_saturation = update_rmaker_saturation,
+        .update_temperature = NULL,
     };
 
     /* Initialize the ESP RainMaker Agent.
@@ -114,7 +145,13 @@ void app_rmaker_init()
     light_device = esp_rmaker_lightbulb_device_create("Light", NULL, app_driver_get_power());
     esp_rmaker_device_add_cb(light_device, write_cb, NULL);
 
-    esp_rmaker_device_add_param(light_device, esp_rmaker_brightness_param_create(ESP_RMAKER_DEF_BRIGHTNESS_NAME, app_driver_get_brightness()));
+    esp_rmaker_device_add_param(light_device,
+                                esp_rmaker_brightness_param_create(ESP_RMAKER_DEF_BRIGHTNESS_NAME, app_driver_get_brightness()));
+
+    esp_rmaker_device_add_param(light_device, esp_rmaker_hue_param_create(ESP_RMAKER_DEF_HUE_NAME, app_driver_get_hue()));
+
+    esp_rmaker_device_add_param(light_device,
+                                esp_rmaker_saturation_param_create(ESP_RMAKER_DEF_SATURATION_NAME, app_driver_get_saturation()));
 
     esp_rmaker_node_add_device(node, light_device);
 

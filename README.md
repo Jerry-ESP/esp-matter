@@ -118,6 +118,8 @@ Use the cluster commands to control the attributes.
 chip-device-ctrl > zcl OnOff On 12344321 1 0
 chip-device-ctrl > zcl LevelControl MoveToLevel 12344321 1 0 level=10 transitionTime=0 optionMask=0 optionOverride=0
 chip-device-ctrl > zcl LevelControl MoveToLevel 12344321 1 0 level=100 transitionTime=0 optionMask=0 optionOverride=0
+chip-device-ctrl > zcl ColorControl MoveToSaturation 12344321 1 0 saturation=200 transitionTime=0 optionsMask=0 optionsOverride=0
+chip-device-ctrl > zcl ColorControl MoveToHue 12344321 1 0 hue=150 direction=0 transitionTime=0 optionsMask=0 optionsOverride=0
 chip-device-ctrl > zcl OnOff Toggle 12344321 1 0
 chip-device-ctrl > quit
 ```
