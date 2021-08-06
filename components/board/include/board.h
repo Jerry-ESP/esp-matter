@@ -12,13 +12,12 @@
 // limitations under the License
 
 #pragma once
+#include <esp_err.h>
 
 #ifdef __cplusplus
 extern "C"
 {
 #endif
-
-#include <esp_err.h>
 
 esp_err_t board_init();
 

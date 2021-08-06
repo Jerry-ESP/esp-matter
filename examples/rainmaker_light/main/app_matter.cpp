@@ -1,21 +1,16 @@
-// Copyright 2021 Espressif Systems (Shanghai) CO LTD
-//
-// Licensed under the Apache License, Version 2.0 (the "License");
-// you may not use this file except in compliance with the License.
-// You may obtain a copy of the License at
-//     http://www.apache.org/licenses/LICENSE-2.0
-//
-// Unless required by applicable law or agreed to in writing, software
-// distributed under the License is distributed on an "AS IS" BASIS,
-// WITHOUT WARRANTIES OR CONDITIONS OF ANY KIND, either express or implied.
-// See the License for the specific language governing permissions and
-// limitations under the License
+/*
+   This example code is in the Public Domain (or CC0 licensed, at your option.)
+
+   Unless required by applicable law or agreed to in writing, this
+   software is distributed on an "AS IS" BASIS, WITHOUT WARRANTIES OR
+   CONDITIONS OF ANY KIND, either express or implied.
+*/
 
 #include "app_driver.h"
 #include "app_matter.h"
+#include "app_constants.hpp"
 #include "esp_heap_caps.h"
 #include "esp_log.h"
-#include "lighting_app_constants.hpp"
 
 #include "app/common/gen/att-storage.h"
 #include "app/common/gen/attribute-id.h"
@@ -30,10 +25,6 @@
 #include "lib/shell/Engine.h"
 #include "lib/support/CHIPMem.h"
 
-#define HUE_MAX 359
-#define HUE_ATTRIBUTE_MAX 254
-#define SATURATION_MAX 100
-#define SATURATION_ATTRIBUTE_MAX 254
 #define REMAP_TO_RANGE(value, from, to)  value * to / from
 
 using chip::AttributeId;

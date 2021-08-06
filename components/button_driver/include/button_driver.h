@@ -12,15 +12,14 @@
 // limitations under the License
 
 #pragma once
+#include <esp_err.h>
 
 #ifdef __cplusplus
 extern "C"
 {
 #endif
 
-#include <esp_err.h>
-
-typedef struct button_driver_config {
+typedef struct {
     int gpio;
 } button_driver_config_t;
 

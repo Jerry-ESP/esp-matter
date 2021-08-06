@@ -1,18 +1,4 @@
-// Copyright 2021 Espressif Systems (Shanghai) CO LTD
-//
-// Licensed under the Apache License, Version 2.0 (the "License");
-// you may not use this file except in compliance with the License.
-// You may obtain a copy of the License at
-//     http://www.apache.org/licenses/LICENSE-2.0
-//
-// Unless required by applicable law or agreed to in writing, software
-// distributed under the License is distributed on an "AS IS" BASIS,
-// WITHOUT WARRANTIES OR CONDITIONS OF ANY KIND, either express or implied.
-// See the License for the specific language governing permissions and
-// limitations under the License
-
-/* LED Light Example
-
+/*
    This example code is in the Public Domain (or CC0 licensed, at your option.)
 
    Unless required by applicable law or agreed to in writing, this
@@ -36,10 +22,7 @@
 
 #include <app_rainmaker.h>
 #include <app_driver.h>
-
-#include "lighting_app_constants.hpp"
-
-static const char *TAG = "app_rainmaker";
+#include "app_constants.hpp"
 
 esp_rmaker_device_t *light_device;
 
@@ -47,7 +30,7 @@ static void update_rmaker_power(bool power)
 {
     esp_rmaker_param_t *param = esp_rmaker_device_get_param_by_type(light_device, ESP_RMAKER_PARAM_POWER);
     if (!param) {
-        ESP_LOGE(TAG, "Param type not found");
+        ESP_LOGE(APP_LOG_TAG, "Param type not found");
         return;
     }
     esp_rmaker_param_update_and_report(param, esp_rmaker_bool(power));
@@ -57,7 +40,7 @@ static void update_rmaker_brightness(uint8_t brightness)
 {
     esp_rmaker_param_t *param = esp_rmaker_device_get_param_by_type(light_device, ESP_RMAKER_PARAM_BRIGHTNESS);
     if (!param) {
-        ESP_LOGE(TAG, "Param type not found");
+        ESP_LOGE(APP_LOG_TAG, "Param type not found");
         return;
     }
     esp_rmaker_param_update_and_report(param, esp_rmaker_int(brightness));
@@ -67,7 +50,7 @@ static void update_rmaker_hue(uint16_t hue)
 {
     esp_rmaker_param_t *param = esp_rmaker_device_get_param_by_type(light_device, ESP_RMAKER_PARAM_HUE);
     if (!param) {
-        ESP_LOGE(TAG, "Param type not found");
+        ESP_LOGE(APP_LOG_TAG, "Param type not found");
         return;
     }
     esp_rmaker_param_update_and_report(param, esp_rmaker_int(hue));
@@ -77,7 +60,7 @@ static void update_rmaker_saturation(uint8_t saturation)
 {
     esp_rmaker_param_t *param = esp_rmaker_device_get_param_by_type(light_device, ESP_RMAKER_PARAM_SATURATION);
     if (!param) {
-        ESP_LOGE(TAG, "Param type not found");
+        ESP_LOGE(APP_LOG_TAG, "Param type not found");
         return;
     }
     esp_rmaker_param_update_and_report(param, esp_rmaker_int(saturation));
@@ -88,24 +71,24 @@ static esp_err_t write_cb(const esp_rmaker_device_t *device, const esp_rmaker_pa
                           const esp_rmaker_param_val_t val, void *priv_data, esp_rmaker_write_ctx_t *ctx)
 {
     if (ctx) {
-        ESP_LOGI(TAG, "Received write request via : %s", esp_rmaker_device_cb_src_to_str(ctx->src));
+        ESP_LOGI(APP_LOG_TAG, "Received write request via : %s", esp_rmaker_device_cb_src_to_str(ctx->src));
     }
     const char *device_name = esp_rmaker_device_get_name(device);
     const char *param_name = esp_rmaker_param_get_name(param);
     if (strcmp(param_name, ESP_RMAKER_DEF_POWER_NAME) == 0) {
-        ESP_LOGI(TAG, "Received value = %s for %s - %s",
+        ESP_LOGI(APP_LOG_TAG, "Received value = %s for %s - %s",
                  val.val.b ? "true" : "false", device_name, param_name);
         app_driver_update_and_report_power(val.val.b, APP_DRIVER_SRC_RAINMAKER);
     } else if (strcmp(param_name, ESP_RMAKER_DEF_BRIGHTNESS_NAME) == 0) {
-        ESP_LOGI(TAG, "Received value = %d for %s - %s",
+        ESP_LOGI(APP_LOG_TAG, "Received value = %d for %s - %s",
                  val.val.i, device_name, param_name);
         app_driver_update_and_report_brightness(val.val.i, APP_DRIVER_SRC_RAINMAKER);
     } else if (strcmp(param_name, ESP_RMAKER_DEF_HUE_NAME) == 0) {
-        ESP_LOGI(TAG, "Received value = %d for %s - %s",
+        ESP_LOGI(APP_LOG_TAG, "Received value = %d for %s - %s",
                  val.val.i, device_name, param_name);
         app_driver_update_and_report_hue(val.val.i, APP_DRIVER_SRC_RAINMAKER);
     } else if (strcmp(param_name, ESP_RMAKER_DEF_SATURATION_NAME) == 0) {
-        ESP_LOGI(TAG, "Received value = %d for %s - %s",
+        ESP_LOGI(APP_LOG_TAG, "Received value = %d for %s - %s",
                  val.val.i, device_name, param_name);
         app_driver_update_and_report_saturation(val.val.i, APP_DRIVER_SRC_RAINMAKER);
     } else {
@@ -136,7 +119,7 @@ void app_rmaker_init()
     };
     esp_rmaker_node_t *node = esp_rmaker_node_init(&rainmaker_cfg, "ESP RainMaker Device", "Lightbulb");
     if (!node) {
-        ESP_LOGE(TAG, "Could not initialise node. Aborting!!!");
+        ESP_LOGE(APP_LOG_TAG, "Could not initialise node. Aborting!!!");
         vTaskDelay(5000 / portTICK_PERIOD_MS);
         abort();
     }
