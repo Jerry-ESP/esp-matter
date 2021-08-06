@@ -85,6 +85,24 @@ esp_err_t led_driver_set_brightness(uint8_t brightness)
     return err;
 }
 
+esp_err_t led_driver_set_hue(uint16_t hue)
+{
+    ESP_LOGE(TAG, "Currently gpio led doesn't support color control");
+    return ESP_ERR_NOT_SUPPORTED;
+}
+
+esp_err_t led_driver_set_saturation(uint8_t saturation)
+{
+    ESP_LOGE(TAG, "Currently gpio led doesn't support color control");
+    return ESP_ERR_NOT_SUPPORTED;
+}
+
+esp_err_t led_driver_set_temperature(uint32_t temperature)
+{
+    ESP_LOGE(TAG, "Currently gpio led doesn't support color control");
+    return ESP_ERR_NOT_SUPPORTED;
+}
+
 bool led_driver_get_power()
 {
     return current_power;
@@ -93,4 +111,22 @@ bool led_driver_get_power()
 uint8_t led_driver_get_brightness()
 {
     return current_brightness;
+}
+
+uint16_t led_driver_get_hue()
+{
+    ESP_LOGE(TAG, "Currently gpio led doesn't support color control");
+    return 0;
+}
+
+uint8_t led_driver_get_saturation()
+{
+    ESP_LOGE(TAG, "Currently gpio led doesn't support color control");
+    return 0;
+}
+
+uint32_t led_driver_get_temperature()
+{
+    ESP_LOGE(TAG, "Currently gpio led doesn't support color control");
+    return 0;   
 }

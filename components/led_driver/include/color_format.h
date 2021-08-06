@@ -11,13 +11,27 @@
 // See the License for the specific language governing permissions and
 // limitations under the License
 
-#define APP_LOG_TAG "light"
+#pragma once
+#include <stdint.h>
+#ifdef __cplusplus
+extern "C"
+{
+#endif
 
-#define DEFAULT_POWER false
-#define DEFAULT_BRIGHTNESS 100
-#define DEFAULT_HUE 0
-#define DEFAULT_SATURATION 0
+typedef struct {
+    uint16_t hue;
+    uint8_t saturation;
+} HS_color_t;
 
-#define APP_DRIVER_SRC_LOCAL  "local"
-#define APP_DRIVER_SRC_MATTER "matter"
+typedef struct {
+    uint8_t red;
+    uint8_t green;
+    uint8_t blue;
+} RGB_color_t;
+void temp_to_hs(uint32_t temperature, HS_color_t *HS);
 
+void hsb_to_rgb(HS_color_t HS,uint8_t brightness, RGB_color_t *RGB);
+
+#ifdef __cplusplus
+}
+#endif

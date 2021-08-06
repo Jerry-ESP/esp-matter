@@ -29,8 +29,11 @@ extern "C"
  *
  */
 typedef struct app_driver_param_callback {
-    void (*update_power)(bool power);               /* Update power (On/Off) */
-    void (*update_brightness)(uint8_t brightness);  /* Update brightness (On/Off) */
+    void (*update_power)(bool power);                   /* Update power (On/Off) */
+    void (*update_brightness)(uint8_t brightness);      /* Update brightness (On/Off) */
+    void (*update_hue)(uint16_t hue);                   /* Update color hue */
+    void (*update_saturation)(uint8_t saturation);      /* Update color saturation */
+    void (*update_temperature)(uint32_t temperature);   /* Update color tempearature */
 } app_driver_param_callback_t;
 
 /**
@@ -83,6 +86,42 @@ esp_err_t app_driver_update_and_report_power(bool power, const char *src);
 esp_err_t app_driver_update_and_report_brightness(uint8_t brightness, const char *src);
 
 /**
+ * @brief Change the hue param.
+ *
+ * @param[in]  hue      The new hue value.
+ * @param[in]  src      The source that the change comes from.
+ *
+ * @return
+ *      - ESP_OK on success
+ *
+ */
+esp_err_t app_driver_update_and_report_hue(uint16_t hue, const char *src);
+
+/**
+ * @brief Change the saturation param.
+ *
+ * @param[in] saturation    The new saturation value.
+ * @param[in] src           The source that the change comes from.
+ *
+ * @return
+ *      - ESP_OK on success
+ *
+ */
+esp_err_t app_driver_update_and_report_saturation(uint8_t saturation, const char *src);
+
+/**
+ * @brief Change the color temperature param.
+ *
+ * @param[in]  temperature    The new temperature value.
+ * @param[in]  src           The source that the change comes from.
+ *
+ * return
+ *     - ESP_OK on success
+ *
+ */
+esp_err_t app_driver_update_and_report_temperature(uint32_t temperature, const char *src);
+
+/**
  * @brief Get the power (On/Off) value.
  *
  * @return The current power (On/Off) value.
@@ -97,6 +136,30 @@ bool app_driver_get_power(void);
  *
  */
 uint8_t app_driver_get_brightness(void);
+
+/**
+ * @brief Get the hue value.
+ *
+ * @return The current hue value.
+ *
+ */
+uint16_t app_driver_get_hue(void);
+
+/**
+ * @brief Get the saturation value.
+ *
+ * @return The current saturation value.
+ *
+ */
+uint8_t app_driver_get_saturation(void);
+
+/**
+ * @brief Get the temperature value.
+ *
+ * @return The current temperature value.
+ *
+ */
+uint32_t app_driver_get_temperature(void);
 
 #ifdef __cplusplus
 }

@@ -19,6 +19,7 @@
 #include <tftspi.h>
 
 #include <led_driver.h>
+#include <color_format.h>
 
 #define TFT_SPI_CLOCK_INIT_HZ 8000000
 #define LEDC_PWM_HZ 1000
@@ -27,6 +28,9 @@
 static const char *TAG = "led_driver_vled";
 static bool current_power = false;
 static uint8_t current_brightness = 0;
+static HS_color_t current_HS = {0, 0};
+static uint32_t current_temperature = 6600;
+static RGB_color_t mRGB;
 static uint16_t DisplayHeight;
 static uint16_t DisplayWidth;
 static int led_driver_channel = -1;
@@ -57,8 +61,7 @@ static void SetupBrightnessControl(led_driver_config_t *config)
 static void SetDisplayBrightness(uint8_t brightness)
 {
     if (ledc_set_duty(LEDC_HIGH_SPEED_MODE, led_driver_channel, brightness) ||
-        ledc_update_duty(LEDC_HIGH_SPEED_MODE, led_driver_channel))
-    {
+            ledc_update_duty(LEDC_HIGH_SPEED_MODE, led_driver_channel)) {
         ESP_LOGE(TAG, "Failed to set display brightness...");
     }
 }
@@ -88,17 +91,20 @@ static esp_err_t InitDisplay()
     TFT_PinsInit();
     // Initialize SPI bus and add a device for the display.
     err = spi_lobo_bus_add_device(TFT_HSPI_HOST, &buscfg, &devcfg, &spi);
-    if (err != ESP_OK)
+    if (err != ESP_OK) {
         return err;
+    }
 
-    // Configure the display to use the new SPI device. 
+    // Configure the display to use the new SPI device.
     tft_disp_spi = spi;
     err = spi_lobo_device_select(spi, 1);
-    if (err != ESP_OK)
+    if (err != ESP_OK) {
         return err;
+    }
     err = spi_lobo_device_deselect(spi);
-    if (err != ESP_OK)
+    if (err != ESP_OK) {
         return err;
+    }
     // Initialize the display driver.
     TFT_display_init();
     // Detect maximum read speed and set it.
@@ -136,7 +142,13 @@ esp_err_t led_driver_set_power(bool power)
     current_power = power;
     return ESP_OK;
 }
-
+esp_err_t led_driver_set_RGB()
+{
+    TFT_fillWindow(TFT_BLACK);
+    TFT_fillCircle(DisplayWidth / 2, DisplayHeight / 2, DisplayWidth / 4, (color_t) {mRGB.red, mRGB.green, mRGB.blue});
+    TFT_drawCircle(DisplayWidth / 2, DisplayHeight / 2, DisplayWidth / 4, (color_t) {255, 255, 255});
+    return ESP_OK;
+}
 esp_err_t led_driver_set_brightness(uint8_t brightness)
 {
     if (brightness != 0) {
@@ -145,11 +157,33 @@ esp_err_t led_driver_set_brightness(uint8_t brightness)
     if (!current_power) {
         brightness = 0;
     }
+    hsb_to_rgb(current_HS, brightness, &mRGB);
+    return led_driver_set_RGB();
+}
 
-    TFT_fillWindow(TFT_BLACK); 
-    TFT_fillCircle(DisplayWidth/2, DisplayHeight/2, DisplayWidth/4,(color_t){ brightness, 0, 0 });
-    TFT_drawCircle(DisplayWidth/2, DisplayHeight/2, DisplayWidth/4,(color_t){ 255, 255, 255});
-    return ESP_OK;
+esp_err_t led_driver_set_hue(uint16_t hue)
+{
+    uint8_t brightness = current_power ? current_brightness : 0;
+    current_HS.hue = hue;
+    hsb_to_rgb(current_HS, brightness, &mRGB);
+    return led_driver_set_RGB();
+}
+
+esp_err_t led_driver_set_saturation(uint8_t saturation)
+{
+    uint8_t brightness = current_power ? current_brightness : 0;
+    current_HS.saturation = saturation;
+    hsb_to_rgb(current_HS, brightness, &mRGB);
+    return led_driver_set_RGB();
+}
+
+esp_err_t led_driver_set_temperature(uint32_t temperature)
+{
+    uint8_t brightness = current_power ? current_brightness : 0;
+    current_temperature = temperature;
+    temp_to_hs(current_temperature,&current_HS);
+    hsb_to_rgb(current_HS, brightness, &mRGB);
+    return led_driver_set_RGB();
 }
 
 bool led_driver_get_power()
@@ -160,4 +194,19 @@ bool led_driver_get_power()
 uint8_t led_driver_get_brightness()
 {
     return current_brightness;
+}
+
+uint16_t led_driver_get_hue()
+{
+    return current_HS.hue;
+}
+
+uint8_t led_driver_get_saturation()
+{
+    return current_HS.saturation;
+}
+
+uint32_t led_driver_get_temperature()
+{
+    return current_temperature;
 }

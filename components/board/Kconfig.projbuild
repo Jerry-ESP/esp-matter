@@ -23,6 +23,12 @@ menu "ESP Matter Board Selection"
             bool "Hollow"
     endchoice
 
+    config TFT_PREDEFINED_DISPLAY_TYPE
+        int
+        range 0 5
+        default 0 if BOARD_NAME_ESP32_DEVKIT_C || BOARD_NAME_ESP32C3_DEVKIT_M || BOARD_NAME_HOLLOW
+        default 3 if BOARD_NAME_M5STACK
+
     config BOARD_NAME
         string
         default "esp32_devkit_c" if BOARD_NAME_ESP32_DEVKIT_C
@@ -35,7 +41,7 @@ menu "ESP Matter Board Selection"
         default "gpio" if BOARD_NAME_ESP32_DEVKIT_C
         default "rmt" if BOARD_NAME_ESP32C3_DEVKIT_M
         default "vled" if BOARD_NAME_M5STACK
-        default "hollow" if LED_DRIVER_HOLLOW
+        default "hollow" if BOARD_NAME_HOLLOW
 
     config BUTTON_DRIVER
         string

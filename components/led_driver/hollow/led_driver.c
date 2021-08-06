@@ -13,10 +13,13 @@
 
 #include <esp_log.h>
 #include <led_driver.h>
+#include <color_format.h>
 
 static const char *TAG = "led_driver_hollow";
 static bool current_power = false;
 static uint8_t current_brightness = 0;
+static HS_color_t current_HS = {0, 0};
+static uint32_t current_temperature = 6600;
 
 esp_err_t led_driver_init(led_driver_config_t *config)
 {
@@ -42,6 +45,30 @@ esp_err_t led_driver_set_brightness(uint8_t brightness)
     return ESP_OK;
 }
 
+esp_err_t led_driver_set_hue(uint16_t hue)
+{
+    ESP_LOGI(TAG, "Setting hue to: %d", hue);
+    /* Set the color hue here */
+
+    return ESP_OK;
+}
+
+esp_err_t led_driver_set_saturation(uint8_t saturation)
+{
+    ESP_LOGI(TAG, "Setting saturation to: %d", saturation);
+    /* Set the color saturation here */
+
+    return ESP_OK;
+}
+
+esp_err_t led_driver_set_temperature(uint32_t temperature)
+{
+    ESP_LOGI(TAG, "Setting temperature to: %d", temperature);
+    /* Set the color temp here*/
+
+    return ESP_OK;
+}
+
 bool led_driver_get_power()
 {
     return current_power;
@@ -50,4 +77,19 @@ bool led_driver_get_power()
 uint8_t led_driver_get_brightness()
 {
     return current_brightness;
+}
+
+uint16_t led_driver_get_hue()
+{
+    return current_HS.hue;
+}
+
+uint8_t led_driver_get_saturation()
+{
+    return current_HS.saturation;
+}
+
+uint32_t led_driver_get_temperature()
+{
+    return current_temperature;
 }
