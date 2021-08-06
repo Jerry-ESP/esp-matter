@@ -38,7 +38,6 @@ using chip::DeviceLayer::PlatformMgr;
 static void on_on_off_attribute_changed(chip::EndpointId endpoint, chip::AttributeId attribute, uint8_t *value, size_t size)
 {
     if (attribute == ZCL_ON_OFF_ATTRIBUTE_ID) {
-        ESP_LOGI(APP_LOG_TAG, "On/Off set to: %d", *value);
         app_driver_update_and_report_power(*value, APP_DRIVER_SRC_MATTER);
     } else {
         ESP_LOGW(APP_LOG_TAG, "Unknown attribute in On/Off cluster: %d", attribute);
@@ -49,7 +48,6 @@ static void on_level_control_atrribute_changed(chip::EndpointId endpoint, chip::
         size_t size)
 {
     if (attribute == ZCL_CURRENT_LEVEL_ATTRIBUTE_ID) {
-        ESP_LOGI(APP_LOG_TAG, "Brightness set to: %d", *value);
         app_driver_update_and_report_brightness(*value, APP_DRIVER_SRC_MATTER);
     } else {
         ESP_LOGW(APP_LOG_TAG, "Unknown attribute in level control cluster: %d", attribute);
@@ -62,13 +60,13 @@ static void on_color_control_attribute_changed(chip::EndpointId endpoint, chip::
     if (attribute == ZCL_COLOR_CONTROL_CURRENT_HUE_ATTRIBUTE_ID) {
         // remap hue to [0, 359]
         uint16_t hue = REMAP_TO_RANGE(static_cast<uint16_t>(*value), HUE_ATTRIBUTE_MAX, HUE_MAX);
-        ESP_LOGI(APP_LOG_TAG, "Hue set to: %d", hue);
         app_driver_update_and_report_hue(hue, APP_DRIVER_SRC_MATTER);
     } else if (attribute == ZCL_COLOR_CONTROL_CURRENT_SATURATION_ATTRIBUTE_ID) {
         // remap saturation to [0, 100]
         uint8_t saturation = REMAP_TO_RANGE(static_cast<uint16_t>(*value), SATURATION_ATTRIBUTE_MAX, SATURATION_MAX);
-        ESP_LOGI(APP_LOG_TAG, "Saturation set to: %d", saturation);
         app_driver_update_and_report_saturation(saturation, APP_DRIVER_SRC_MATTER);
+    } else {
+        ESP_LOGW(APP_LOG_TAG, "Unknown attribute in level control cluster: %d", attribute);
     }
 }
 

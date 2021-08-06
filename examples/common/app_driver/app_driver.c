@@ -54,12 +54,17 @@ esp_err_t app_driver_register_src(const char *name, app_driver_param_callback_t 
 
 esp_err_t app_driver_update_and_report_power(bool power, const char *src)
 {
+    esp_err_t ret;
     driver_src_t *cur_src = s_driver_src;
 
     /* Update */
-    led_driver_set_power(power);
+    ret = led_driver_set_power(power);
+    if (ret != ESP_OK) {
+        return ret;
+    }
 
     /* Report to other sources */
+    ESP_LOGI(TAG, "OnOff set to: %d", power);
     while (cur_src) {
         if (strncmp(cur_src->name, src, strnlen(src, SRC_MAX_NAMELEN)) != 0 &&
                 cur_src->callbacks.update_power != NULL) {
@@ -67,18 +72,22 @@ esp_err_t app_driver_update_and_report_power(bool power, const char *src)
         }
         cur_src = cur_src->next;
     }
-
-    return ESP_OK;
+    return ret;
 }
 
 esp_err_t app_driver_update_and_report_brightness(uint8_t brightness, const char *src)
 {
+    esp_err_t ret;
     driver_src_t *cur_src = s_driver_src;
 
     /* Update */
-    led_driver_set_brightness(brightness);
+    ret = led_driver_set_brightness(brightness);
+    if (ret != ESP_OK) {
+        return ret;
+    }
 
     /* Report to other sources */
+    ESP_LOGI(TAG, "Brightness set to: %d", brightness);
     while (cur_src) {
         if (strncmp(cur_src->name, src, strnlen(src, SRC_MAX_NAMELEN)) != 0 &&
                 cur_src->callbacks.update_brightness != NULL) {
@@ -86,18 +95,22 @@ esp_err_t app_driver_update_and_report_brightness(uint8_t brightness, const char
         }
         cur_src = cur_src->next;
     }
-
-    return ESP_OK;
+    return ret;
 }
 
 esp_err_t app_driver_update_and_report_hue(uint16_t hue, const char *src)
 {
+    esp_err_t ret;
     driver_src_t *cur_src = s_driver_src;
     
     /* Update */
-    led_driver_set_hue(hue);
+    ret = led_driver_set_hue(hue);
+    if (ret != ESP_OK) {
+        return ret;
+    }
 
     /* Report to other sources */
+    ESP_LOGI(TAG, "Hue set to: %d", hue);
     while (cur_src) {
         if (strncmp(cur_src->name, src, strnlen(src, SRC_MAX_NAMELEN)) != 0 &&
                 cur_src->callbacks.update_hue != NULL) {
@@ -105,46 +118,53 @@ esp_err_t app_driver_update_and_report_hue(uint16_t hue, const char *src)
         }
         cur_src = cur_src->next;
     }
-
-    return ESP_OK;
+    return ret;
 }
 
 esp_err_t app_driver_update_and_report_saturation(uint8_t saturation, const char *src)
 {
+    esp_err_t ret;
     driver_src_t *cur_src = s_driver_src;
 
     /* Update */
-    led_driver_set_saturation(saturation);
+    ret = led_driver_set_saturation(saturation);
+    if (ret != ESP_OK) {
+        return ret;
+    }
 
     /* Report to other sources */
+    ESP_LOGI(TAG, "Saturation set to: %d", saturation);
     while (cur_src) {
         if (strncmp(cur_src->name, src, strnlen(src, SRC_MAX_NAMELEN)) != 0 &&
                 cur_src->callbacks.update_saturation != NULL) {
             cur_src->callbacks.update_saturation(saturation);
-        }   
+        }
         cur_src = cur_src->next;
-    }   
-
-    return ESP_OK;
+    }
+    return ret;
 }
 
 esp_err_t app_driver_update_and_report_temperature(uint32_t temperature, const char *src)
 {
+    esp_err_t ret;
     driver_src_t *cur_src = s_driver_src;
 
     /* Update */
-    led_driver_set_temperature(temperature);
+    ret = led_driver_set_temperature(temperature);
+    if (ret != ESP_OK) {
+        return ret;
+    }
 
     /* Report to other sources */
+    ESP_LOGI(TAG, "Color Temperature set to: %d", temperature);
     while (cur_src) {
         if (strncmp(cur_src->name, src, strnlen(src, SRC_MAX_NAMELEN)) != 0 &&
                 cur_src->callbacks.update_temperature != NULL) {
-            cur_src->callbacks.update_temperature(temperature); 
-        }   
+            cur_src->callbacks.update_temperature(temperature);
+        }
         cur_src = cur_src->next;
     }   
-
-    return ESP_OK;
+    return ret;
 }
 
 bool app_driver_get_power()
