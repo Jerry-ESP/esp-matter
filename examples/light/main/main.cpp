@@ -11,53 +11,16 @@
 // See the License for the specific language governing permissions and
 // limitations under the License
 
-#include "device_callbacks.hpp"
 #include "app_driver.h"
+#include "app_matter.h"
 
 #include "esp_err.h"
 #include "esp_log.h"
 #include "lighting_app_constants.hpp"
 #include "nvs_flash.h"
-#include "app/util/af-enums.h"
 #include "freertos/FreeRTOS.h"
 #include "freertos/task.h"
-
-// Matter includes
-#include "app/common/gen/att-storage.h"
-#include "app/common/gen/attribute-id.h"
-#include "app/common/gen/attribute-type.h"
-#include "app/common/gen/cluster-id.h"
-#include "app/server/Server.h"
-#include "app/util/af-types.h"
-#include "app/util/af.h"
-#include "core/CHIPError.h"
 #include "lib/shell/Engine.h"
-#include "lib/support/CHIPMem.h"
-#include "platform/CHIPDeviceLayer.h"
-
-using chip::DeviceLayer::ConnectivityMgr;
-using chip::DeviceLayer::PlatformMgr;
-
-static esp_err_t init_chip_stack()
-{
-    if (PlatformMgr().InitChipStack() != CHIP_NO_ERROR) {
-        ESP_LOGE(APP_LOG_TAG, "Failed to initialize CHIP stack");
-        return ESP_FAIL;
-    }
-    ConnectivityMgr().SetBLEAdvertisingEnabled(true);
-    if (chip::Platform::MemoryInit() != CHIP_NO_ERROR) {
-        ESP_LOGE(APP_LOG_TAG, "Failed to initialize CHIP memory pool");
-        return ESP_ERR_NO_MEM;
-    }
-    if (PlatformMgr().StartEventLoopTask() != CHIP_NO_ERROR) {
-        chip::Platform::MemoryShutdown();
-        ESP_LOGE(APP_LOG_TAG, "Failed to launch Matter main task");
-        return ESP_FAIL;
-    }
-    PlatformMgr().AddEventHandler(on_device_event, static_cast<intptr_t>(NULL));
-
-    return ESP_OK;
-}
 
 #if CONFIG_ENABLE_CHIP_SHELL
 void ChipShellTask(void *args)
@@ -73,18 +36,16 @@ extern "C" void app_main()
 
     /* Initialize and set the default params */
     app_driver_init();
-    app_driver_update_and_report_power(DEFAULT_POWER, SRC_LOCAL);
-    app_driver_update_and_report_brightness(DEFAULT_BRIGHTNESS, SRC_LOCAL);
 
     ESP_LOGI(APP_LOG_TAG, "==================================================");
     ESP_LOGI(APP_LOG_TAG, "chip-esp32-lighting-example starting");
     ESP_LOGI(APP_LOG_TAG, "==================================================");
 
     /* Initialize chip */
-    ESP_ERROR_CHECK(init_chip_stack());
+    ESP_ERROR_CHECK(app_matter_init());
 
-    InitServer();
-    device_callbacks_init();
+    app_driver_update_and_report_power(DEFAULT_POWER, APP_DRIVER_SRC_LOCAL);
+    app_driver_update_and_report_brightness(DEFAULT_BRIGHTNESS, APP_DRIVER_SRC_LOCAL);
 
 #if CONFIG_ENABLE_CHIP_SHELL
     xTaskCreate(&ChipShellTask, "chip_shell", 2048, NULL, 5, NULL);
