@@ -25,7 +25,9 @@ set(SRC_DIRS_LIST          "${CMAKE_CURRENT_LIST_DIR}"
                            "${ESP_MATTER_PATH}/connectedhomeip/src/app/clusters/network-commissioning"
                            "${ESP_MATTER_PATH}/connectedhomeip/src/app/clusters/on-off-server"
                            "${ESP_MATTER_PATH}/connectedhomeip/src/app/clusters/operational-credentials-server"
-                           "${ESP_MATTER_PATH}/connectedhomeip/src/app/clusters/level-control")
+                           "${ESP_MATTER_PATH}/connectedhomeip/src/app/clusters/level-control"
+                           "${ESP_MATTER_PATH}/connectedhomeip/src/app/clusters/color-control-server"
+                           "${ESP_MATTER_PATH}/connectedhomeip/src/app/clusters/diagnostic-logs-server")
 
 set(PRIV_REQUIRES_LIST chip bt esp32_mbedtls app_driver)
 

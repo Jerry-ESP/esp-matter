@@ -35,7 +35,7 @@ menu "ESP Matter Board Selection"
         default "gpio" if BOARD_NAME_ESP32_DEVKIT_C
         default "rmt" if BOARD_NAME_ESP32C3_DEVKIT_M
         default "vled" if BOARD_NAME_M5STACK
-        default "hollow" if LED_DRIVER_HOLLOW
+        default "hollow" if BOARD_NAME_HOLLOW
 
     config BUTTON_DRIVER
         string
