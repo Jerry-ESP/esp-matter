@@ -5,8 +5,13 @@
    software is distributed on an "AS IS" BASIS, WITHOUT WARRANTIES OR
    CONDITIONS OF ANY KIND, either express or implied.
 */
+#pragma once
 
-#define APP_LOG_TAG "rainmaker_light"
+#ifdef __cplusplus
+extern "C" {
+#endif
+
+#define APP_LOG_TAG "light"
 
 #define DEFAULT_POWER false
 #define DEFAULT_BRIGHTNESS 100
@@ -18,6 +23,9 @@
 #define SATURATION_MAX 100
 #define SATURATION_ATTRIBUTE_MAX 254
 
-#define APP_DRIVER_SRC_LOCAL     "local"
-#define APP_DRIVER_SRC_MATTER    "matter"
-#define APP_DRIVER_SRC_RAINMAKER "rainmaker"
+#define APP_DRIVER_SRC_LOCAL  "local"
+#define APP_DRIVER_SRC_MATTER "matter"
+
+#ifdef __cplusplus
+}
+#endif

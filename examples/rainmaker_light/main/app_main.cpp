@@ -8,12 +8,12 @@
 
 #include "app_driver.h"
 #include "app_matter.h"
+#include "app_constants.h"
 #include "app_rainmaker.h"
 
 #include "esp_console.h"
 #include "esp_err.h"
 #include "esp_log.h"
-#include "app_constants.hpp"
 #include "nvs_flash.h"
 #include "freertos/FreeRTOS.h"
 #include "freertos/task.h"
@@ -48,7 +48,9 @@ static esp_console_cmd_t driver_cmds[] = {
     {
         .command = "driver",
         .help = "This can be used to simulate on-device control. Usage: driver <param_type> <value>",
+        .hint = NULL,
         .func = cli_handler,
+        .argtable = NULL
     },
 };
 

@@ -6,7 +6,13 @@
    CONDITIONS OF ANY KIND, either express or implied.
 */
 
-#define APP_LOG_TAG "light"
+#pragma once
+
+#ifdef __cplusplus
+extern "C" {
+#endif
+
+#define APP_LOG_TAG "rainmaker_light"
 
 #define DEFAULT_POWER false
 #define DEFAULT_BRIGHTNESS 100
@@ -18,6 +24,10 @@
 #define SATURATION_MAX 100
 #define SATURATION_ATTRIBUTE_MAX 254
 
-#define APP_DRIVER_SRC_LOCAL  "local"
-#define APP_DRIVER_SRC_MATTER "matter"
+#define APP_DRIVER_SRC_LOCAL     "local"
+#define APP_DRIVER_SRC_MATTER    "matter"
+#define APP_DRIVER_SRC_RAINMAKER "rainmaker"
 
+#ifdef __cplusplus
+}
+#endif

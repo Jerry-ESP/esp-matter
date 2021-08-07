@@ -22,7 +22,7 @@
 
 #include <app_rainmaker.h>
 #include <app_driver.h>
-#include "app_constants.hpp"
+#include "app_constants.h"
 
 esp_rmaker_device_t *light_device;
 

@@ -8,7 +8,7 @@
 
 #include "app_driver.h"
 #include "app_matter.h"
-#include "app_constants.hpp"
+#include "app_constants.h"
 #include "esp_heap_caps.h"
 #include "esp_log.h"
 
