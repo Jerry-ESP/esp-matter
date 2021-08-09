@@ -13,6 +13,7 @@
 
 #pragma once
 #include <stdint.h>
+
 #ifdef __cplusplus
 extern "C"
 {
@@ -28,6 +29,7 @@ typedef struct {
     uint8_t green;
     uint8_t blue;
 } RGB_color_t;
+
 void temp_to_hs(uint32_t temperature, HS_color_t *HS);
 
 void hsb_to_rgb(HS_color_t HS,uint8_t brightness, RGB_color_t *RGB);

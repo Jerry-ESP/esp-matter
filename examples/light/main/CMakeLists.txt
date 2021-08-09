@@ -1,19 +1,3 @@
-#    Copyright 2021 Espressif Systems (Shanghai) CO LTD
-#
-#    Licensed under the Apache License, Version 2.0 (the "License");
-#    you may not use this file except in compliance with the License.
-#    You may obtain a copy of the License at
-#        http://www.apache.org/licenses/LICENSE-2.0
-#
-#    Unless required by applicable law or agreed to in writing, software
-#    distributed under the License is distributed on an "AS IS" BASIS,
-#    WITHOUT WARRANTIES OR CONDITIONS OF ANY KIND, either express or implied.
-#    See the License for the specific language governing permissions and
-#    limitations under the License
-set(PRIV_INCLUDE_DIRS_LIST "${CMAKE_CURRENT_LIST_DIR}"
-                           "${ESP_MATTER_PATH}/connectedhomeip/src"
-                           "${CMAKE_CURRENT_LIST_DIR}/include")
-
 set(SRC_DIRS_LIST          "${CMAKE_CURRENT_LIST_DIR}"
                            "${CMAKE_CURRENT_LIST_DIR}/gen"
                            "${ESP_MATTER_PATH}/connectedhomeip/src/app/server"
@@ -27,11 +11,13 @@ set(SRC_DIRS_LIST          "${CMAKE_CURRENT_LIST_DIR}"
                            "${ESP_MATTER_PATH}/connectedhomeip/src/app/clusters/level-control"
                            "${ESP_MATTER_PATH}/connectedhomeip/src/app/clusters/color-control-server")
 
+set(INCLUDE_DIRS_LIST   "${CMAKE_CURRENT_LIST_DIR}"
+                           "${ESP_MATTER_PATH}/connectedhomeip/src")
+
 set(PRIV_REQUIRES_LIST chip bt esp32_mbedtls app_driver)
 
-idf_component_register(PRIV_INCLUDE_DIRS ${PRIV_INCLUDE_DIRS_LIST}
-                      SRC_DIRS           ${SRC_DIRS_LIST}
-                      EXCLUDE_SRCS       ${EXCLUDE_SRCS_LIST}
+idf_component_register(SRC_DIRS          ${SRC_DIRS_LIST}
+                      INCLUDE_DIRS       ${INCLUDE_DIRS_LIST}
                       PRIV_REQUIRES      ${PRIV_REQUIRES_LIST})
 
 set_property(TARGET ${COMPONENT_LIB} PROPERTY CXX_STANDARD 14) 

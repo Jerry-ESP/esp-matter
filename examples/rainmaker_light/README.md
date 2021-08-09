@@ -2,12 +2,19 @@
 
 ## Building and Flashing the Firmware
 
-See the [README.md](../../README.md) file for more information about building and flashing the firmware
+See the [README.md](../../README.md) file for more information about building and flashing the firmware.
 
 ## What to expect in this example?
-- :Fill this in:
 
-You can use this rainmaker_light example for RainMaker + Matter. Make sure to follow these additional steps along with the steps in the top level readme.
+This example showcases integration of ESP RainMaker with Matter light device.
+
+Supported features:
+ - Matter Commissioning
+ - RainMaker Claiming and User-Node Association
+ - On/Off, Brightness and Color (on ESP32-C3 for now) control over RainMaker app as well as Matter Controller
+ - Updates through RainMaker reflected over Matter and vice versa
+
+Make sure to follow these additional steps along with the steps in the top level README.
 
 ### Getting the Repositories
 
@@ -36,7 +43,7 @@ $ cd $ESP_RMAKER_PATH/cli
 $ rainmaker.py claim --platform esp32 --mac <12-digit-mac-all-caps> --addr 0x3E0000 $ESPPORT
 ```
 
-### RainMaker User Node Association
+### RainMaker User-Node Association
 
 This need to be done after commissioning.
 

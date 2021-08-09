@@ -2,17 +2,16 @@
 
 ## Building and Flashing the Firmware
 
-See the [README.md](../../README.md) file for more information about building and flashing the firmware
+See the [README.md](../../README.md) file for more information about building and flashing the firmware.
 
 
 ## What to expect in this example?
 
-The examples provides a minimal implementation to build a Matter light device on an ESP32 series chip.
+The example provides a minimal implementation to build a Matter light device on ESP32 series SoCs.
 
 Supported features:
- - Matter pairing and Wi-Fi network configuration
- - On/Off control
- - Brightness control
+ - Matter Commissioning
+ - On/Off, Brightness and Color (on ESP32-C3 for now) control
  - (Optional) Interactive shell
 
 ### Useful shell commands
