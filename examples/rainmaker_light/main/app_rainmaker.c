@@ -38,12 +38,13 @@ static void update_rmaker_power(bool power)
 
 static void update_rmaker_brightness(uint8_t brightness)
 {
+    uint8_t brightness_rainmaker = REMAP_TO_RANGE(brightness, BRIGHTNESS_ATTRIBUTE_MAX, BRIGHTNESS_MAX);
     esp_rmaker_param_t *param = esp_rmaker_device_get_param_by_type(light_device, ESP_RMAKER_PARAM_BRIGHTNESS);
     if (!param) {
         ESP_LOGE(APP_LOG_TAG, "Param type not found");
         return;
     }
-    esp_rmaker_param_update_and_report(param, esp_rmaker_int(brightness));
+    esp_rmaker_param_update_and_report(param, esp_rmaker_int(brightness_rainmaker));
 }
 
 static void update_rmaker_hue(uint16_t hue)
@@ -82,7 +83,8 @@ static esp_err_t write_cb(const esp_rmaker_device_t *device, const esp_rmaker_pa
     } else if (strcmp(param_name, ESP_RMAKER_DEF_BRIGHTNESS_NAME) == 0) {
         ESP_LOGI(APP_LOG_TAG, "Received value = %d for %s - %s",
                  val.val.i, device_name, param_name);
-        app_driver_update_and_report_brightness(val.val.i, APP_DRIVER_SRC_RAINMAKER);
+        uint8_t brightness = REMAP_TO_RANGE(val.val.i, BRIGHTNESS_MAX, BRIGHTNESS_ATTRIBUTE_MAX);
+        app_driver_update_and_report_brightness(brightness, APP_DRIVER_SRC_RAINMAKER);
     } else if (strcmp(param_name, ESP_RMAKER_DEF_HUE_NAME) == 0) {
         ESP_LOGI(APP_LOG_TAG, "Received value = %d for %s - %s",
                  val.val.i, device_name, param_name);
