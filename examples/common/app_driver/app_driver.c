@@ -64,7 +64,7 @@ esp_err_t app_driver_update_and_report_power(bool power, const char *src)
     }
 
     /* Report to other sources */
-    ESP_LOGI(TAG, "OnOff set to: %d", power);
+    ESP_LOGI(TAG, "Power (OnOff) set to: %d", power);
     while (cur_src) {
         if (strncmp(cur_src->name, src, strnlen(src, SRC_MAX_NAMELEN)) != 0 &&
                 cur_src->callbacks.update_power != NULL) {
