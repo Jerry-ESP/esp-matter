@@ -26,6 +26,8 @@ extern "C" {
 #define APP_DRIVER_SRC_LOCAL  "local"
 #define APP_DRIVER_SRC_MATTER "matter"
 
+#define REMAP_TO_RANGE(value, from, to)  value * to / from
+
 #ifdef __cplusplus
 }
 #endif

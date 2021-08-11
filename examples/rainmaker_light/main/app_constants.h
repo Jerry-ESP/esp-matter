@@ -23,10 +23,14 @@ extern "C" {
 #define HUE_ATTRIBUTE_MAX 254
 #define SATURATION_MAX 100
 #define SATURATION_ATTRIBUTE_MAX 254
+#define BRIGHTNESS_MAX 100
+#define BRIGHTNESS_ATTRIBUTE_MAX 254
 
 #define APP_DRIVER_SRC_LOCAL     "local"
 #define APP_DRIVER_SRC_MATTER    "matter"
 #define APP_DRIVER_SRC_RAINMAKER "rainmaker"
+
+#define REMAP_TO_RANGE(value, from, to)  value * to / from
 
 #ifdef __cplusplus
 }

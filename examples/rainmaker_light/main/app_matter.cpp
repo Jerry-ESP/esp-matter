@@ -25,8 +25,6 @@
 #include "lib/shell/Engine.h"
 #include "lib/support/CHIPMem.h"
 
-#define REMAP_TO_RANGE(value, from, to)  value * to / from
-
 using chip::AttributeId;
 using chip::ClusterId;
 using chip::EndpointId;
