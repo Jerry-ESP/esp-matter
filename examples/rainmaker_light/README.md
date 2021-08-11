@@ -40,7 +40,7 @@ This need to be done before flashing the firmware. Note the mac address of the d
 RainMaker CLI:
 ```
 $ cd $ESP_RMAKER_PATH/cli
-$ rainmaker.py claim --platform esp32 --mac <12-digit-mac-all-caps> --addr 0x3E0000 $ESPPORT
+$ rainmaker.py claim --addr 0x3E0000 $ESPPORT
 ```
 
 ### RainMaker User-Node Association
