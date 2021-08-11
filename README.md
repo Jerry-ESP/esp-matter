@@ -24,8 +24,8 @@ $ ./install.sh
 $ cd ..
 
 $ git clone --recursive https://github.com/espressif/esp-matter.git
-$ cd esp-matter
-$ source connectedhomeip/scripts/bootstrap.sh
+$ cd esp-matter/connectedhomeip/connectedhomeip
+$ source scripts/bootstrap.sh
 ```
 
 ### Configuring the environment
@@ -76,9 +76,9 @@ $ idf.py flash monitor
 ### Environment setup
 
 ```
-$ cd esp-matter
-$ ./connectedhomeip/scripts/build_python.sh -m platform
-$ source connectedhomeip/out/python_env/bin/activate
+$ cd esp-matter/connectedhomeip/connectedhomeip
+$ ./scripts/build_python.sh -m platform
+$ source out/python_env/bin/activate
 
 ```
 
