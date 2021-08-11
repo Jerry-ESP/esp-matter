@@ -6,7 +6,7 @@ See the [README.md](../../README.md) file for more information about building an
 
 ## What to expect in this example?
 
-This example showcases integration of ESP RainMaker with Matter light device.
+This example showcases integration of ESP RainMaker with a Matter light device. ESP RainMaker is an end-to-end solution offered by Espressif to enable remote control and monitoring for ESP32 based products without any configuration required in the Cloud. Please refer the ESP RainMaker documentation [here](https://rainmaker.espressif.com/docs/get-started.html) for more details.
 
 Supported features:
  - Matter Commissioning

@@ -11,13 +11,13 @@ set(SRC_DIRS_LIST          "${CMAKE_CURRENT_LIST_DIR}"
                            "${MATTER_SDK_PATH}/src/app/clusters/level-control"
                            "${MATTER_SDK_PATH}/src/app/clusters/color-control-server")
 
-set(INCLUDE_DIRS_LIST   "${CMAKE_CURRENT_LIST_DIR}"
+set(PRIV_INCLUDE_DIRS_LIST   "${CMAKE_CURRENT_LIST_DIR}"
                         "${MATTER_SDK_PATH}/src")
 
 set(PRIV_REQUIRES_LIST chip bt esp32_mbedtls app_driver)
 
 idf_component_register(SRC_DIRS          ${SRC_DIRS_LIST}
-                      INCLUDE_DIRS       ${INCLUDE_DIRS_LIST}
+                      PRIV_INCLUDE_DIRS       ${PRIV_INCLUDE_DIRS_LIST}
                       PRIV_REQUIRES      ${PRIV_REQUIRES_LIST})
 
 set_property(TARGET ${COMPONENT_LIB} PROPERTY CXX_STANDARD 14)
