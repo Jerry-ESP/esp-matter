@@ -6,19 +6,20 @@ if(NOT DEFINED ENV{ESP_MATTER_PATH})
     message(FATAL_ERROR "Please set ESP_MATTER_PATH to the path of esp-matter repo")
 endif(NOT DEFINED ENV{ESP_MATTER_PATH})
 set(ESP_MATTER_PATH $ENV{ESP_MATTER_PATH})
+set(MATTER_SDK_PATH ${ESP_MATTER_PATH}/connectedhomeip/connectedhomeip)
 
 # This should be done before using the IDF_TARGET variable.
 include($ENV{IDF_PATH}/tools/cmake/project.cmake)
 
 set(EXTRA_COMPONENT_DIRS
     "../common"
-    "${ESP_MATTER_PATH}/connectedhomeip/config/esp32/components"
+    "${MATTER_SDK_PATH}/config/esp32/components"
     "${ESP_MATTER_PATH}/components")
 
 if(${IDF_TARGET} STREQUAL "esp32")
     list(APPEND EXTRA_COMPONENT_DIRS
-        "${ESP_MATTER_PATH}/connectedhomeip/examples/common/m5stack-tft/repo/components/tft"
-        "${ESP_MATTER_PATH}/connectedhomeip/examples/common/m5stack-tft/repo/components/spidriver"
+        "${MATTER_SDK_PATH}/examples/common/m5stack-tft/repo/components/tft"
+        "${MATTER_SDK_PATH}/examples/common/m5stack-tft/repo/components/spidriver"
     )
 elseif(${IDF_TARGET} STREQUAL "esp32c3")
     list(APPEND EXTRA_COMPONENT_DIRS
