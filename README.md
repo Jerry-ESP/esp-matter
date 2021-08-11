@@ -23,7 +23,7 @@ $ git submodule update --init --recursive
 $ ./install.sh
 $ cd ..
 
-$ git clone --recursive https://github.com/espressif/esp-matter.git
+$ git clone --recursive https://glab.espressif.cn/esp-matter-preview/esp-matter.git
 $ cd esp-matter/connectedhomeip/connectedhomeip
 $ source scripts/bootstrap.sh
 ```
