@@ -81,7 +81,7 @@ extern "C" void app_main()
     app_driver_init();
 
     ESP_LOGI(APP_LOG_TAG, "==================================================");
-    ESP_LOGI(APP_LOG_TAG, "chip-esp32-lighting-example starting");
+    ESP_LOGI(APP_LOG_TAG, "esp-matter-rainmaker-light example starting");
     ESP_LOGI(APP_LOG_TAG, "==================================================");
 
     /* Initialize chip */

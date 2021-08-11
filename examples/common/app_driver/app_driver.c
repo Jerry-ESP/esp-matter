@@ -87,7 +87,7 @@ esp_err_t app_driver_update_and_report_brightness(uint8_t brightness, const char
     }
 
     /* Report to other sources */
-    ESP_LOGI(TAG, "Brightness set to: %d", brightness);
+    ESP_LOGI(TAG, "Brightness set to: %d percent", brightness * 100 / 254);
     while (cur_src) {
         if (strncmp(cur_src->name, src, strnlen(src, SRC_MAX_NAMELEN)) != 0 &&
                 cur_src->callbacks.update_brightness != NULL) {
@@ -110,7 +110,7 @@ esp_err_t app_driver_update_and_report_hue(uint16_t hue, const char *src)
     }
 
     /* Report to other sources */
-    ESP_LOGI(TAG, "Hue set to: %d", hue);
+    ESP_LOGI(TAG, "Hue set to: %d degree", hue);
     while (cur_src) {
         if (strncmp(cur_src->name, src, strnlen(src, SRC_MAX_NAMELEN)) != 0 &&
                 cur_src->callbacks.update_hue != NULL) {
@@ -133,7 +133,7 @@ esp_err_t app_driver_update_and_report_saturation(uint8_t saturation, const char
     }
 
     /* Report to other sources */
-    ESP_LOGI(TAG, "Saturation set to: %d", saturation);
+    ESP_LOGI(TAG, "Saturation set to: %d percent", saturation);
     while (cur_src) {
         if (strncmp(cur_src->name, src, strnlen(src, SRC_MAX_NAMELEN)) != 0 &&
                 cur_src->callbacks.update_saturation != NULL) {
@@ -156,7 +156,7 @@ esp_err_t app_driver_update_and_report_temperature(uint32_t temperature, const c
     }
 
     /* Report to other sources */
-    ESP_LOGI(TAG, "Color Temperature set to: %d", temperature);
+    ESP_LOGI(TAG, "Color Temperature set to: %d kelvin", temperature);
     while (cur_src) {
         if (strncmp(cur_src->name, src, strnlen(src, SRC_MAX_NAMELEN)) != 0 &&
                 cur_src->callbacks.update_temperature != NULL) {
