@@ -23,6 +23,10 @@ void zigbee_bridge_match_bridged_onoff_light(zb_bufid_t bufid);
 
 void zigbee_bridge_match_bridged_onoff_light_timeout(zb_bufid_t bufid);
 
+void send_on_off_command_to_bound_matter_device(uint8_t on_off);
+
+esp_err_t zigbee_bridge_add_door_sensor_endpoint(zb_uint16_t shortaddr, zb_uint8_t ep);
+
 esp_err_t zigbee_bridge_attribute_update(uint16_t endpoint_id, uint32_t cluster_id, uint32_t attribute_id,
                                          esp_matter_attr_val_t *val);
 
