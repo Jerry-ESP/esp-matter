@@ -67,6 +67,8 @@ void zcl_process_attribute_reporting(zb_uint8_t param)
                 rep_attr_req->attr_id == ZB_ZCL_ATTR_ON_OFF_ON_OFF_ID)
             {
                 ESP_LOGI(TAG, "receive report command, send command to the matter device");
+                zb_uint8_t on_off_val = rep_attr_req->attr_value[0];
+                send_on_off_command_to_bound_matter_device(on_off_val);
                 // send command to matter device.
             }
         }

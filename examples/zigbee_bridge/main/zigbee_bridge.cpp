@@ -17,8 +17,15 @@
 #include <esp_matter_core.h>
 #include <zboss_api_buf.h>
 #include <zigbee_bridge.h>
+#include "core/DataModelTypes.h"
+
+using chip::kInvalidClusterId;
+static constexpr chip::CommandId kInvalidCommandId = 0xFFFF'FFFF;
 
 static const char *TAG = "zigbee_bridge";
+static uint16_t g_switch_endpoint = 0xFFFF;
+static uint32_t g_cluster_id = kInvalidClusterId;
+static uint32_t g_command_id = kInvalidCommandId;
 
 using namespace esp_matter;
 using namespace esp_matter::cluster;
@@ -38,6 +45,52 @@ static esp_err_t init_bridged_onoff_light(esp_matter_bridge_device_t *dev)
         return ESP_FAIL;
     }
     return ESP_OK;
+}
+
+static esp_err_t init_bridged_door_sensor(esp_matter_bridge_device_t *dev)
+{
+    if (!dev) {
+        ESP_LOGE(TAG, "Invalid bridge device to be initialized");
+        return ESP_ERR_INVALID_ARG;
+    }
+    binding::config_t binding_config;
+    binding::create(dev->endpoint, &binding_config, CLUSTER_FLAG_SERVER);
+
+    on_off::config_t on_off_config;
+    on_off::create(dev->endpoint, &on_off_config, CLUSTER_FLAG_CLIENT, ESP_MATTER_NONE_FEATURE_ID);
+
+    endpoint::set_device_type_id(dev->endpoint, endpoint::on_off_switch::get_device_type_id());
+    if (endpoint::enable(dev->endpoint) != ESP_OK) {
+        ESP_LOGE(TAG, "ESP Matter enable dynamic endpoint failed");
+        endpoint::destroy(dev->node, dev->endpoint);
+        return ESP_FAIL;
+    }
+    return ESP_OK;
+}
+
+void app_bridge_client_command_callback(client::peer_device_t *peer_device, uint16_t remote_endpoint_id,
+                                        void *priv_data)
+{
+    if (g_cluster_id == OnOff::Id) {
+        if (g_command_id == OnOff::Commands::Off::Id) {
+            on_off::command::send_off(peer_device, remote_endpoint_id);
+        } else if (g_command_id == OnOff::Commands::On::Id) {
+            on_off::command::send_on(peer_device, remote_endpoint_id);
+        } else if (g_command_id == OnOff::Commands::Toggle::Id) {
+            on_off::command::send_toggle(peer_device, remote_endpoint_id);
+        }
+    }
+}
+
+void send_on_off_command_to_bound_matter_device(uint8_t on_off)
+{
+    uint16_t endpoint_id = g_switch_endpoint;
+    uint32_t cluster_id = OnOff::Id;
+    uint32_t command_id = on_off ? OnOff::Commands::On::Id : OnOff::Commands::Off::Id;
+    
+    g_cluster_id = cluster_id;
+    g_command_id = command_id;
+    client::cluster_update(endpoint_id, cluster_id);
 }
 
 void zigbee_bridge_match_bridged_onoff_light_cb(zb_bufid_t bufid)
@@ -99,6 +152,25 @@ void zigbee_bridge_match_bridged_onoff_light(zb_bufid_t bufid)
 void zigbee_bridge_match_bridged_onoff_light_timeout(zb_bufid_t bufid)
 {
     ESP_LOGE(TAG, "The device is not an onoff light");
+    esp_err_t ret = ESP_OK;
+    zb_zdo_app_signal_hdr_t *p_sg_p = NULL;
+    zb_get_app_signal(bufid, &p_sg_p);
+    zb_zdo_signal_device_annce_params_t *dev_annce_params =
+        ZB_ZDO_SIGNAL_GET_PARAMS(p_sg_p, zb_zdo_signal_device_annce_params_t);
+    uint16_t shortaddr = dev_annce_params->device_short_addr;
+    node_t *node = node::get();
+    ESP_GOTO_ON_FALSE(node, ESP_ERR_INVALID_STATE, exit, TAG, "Could not find esp_matter node");
+
+    if (!app_bridge_get_zigbee_device_by_zigbee_shortaddr(shortaddr)) {
+        app_zigbee_bridge_device_t *dev = app_bridge_create_zigbee_device(node, 1, shortaddr);
+        ESP_GOTO_ON_FALSE(dev, ESP_FAIL, exit, TAG, "Failed to create zigbee bridged device (on off switch)");
+        ESP_GOTO_ON_ERROR(init_bridged_door_sensor(dev->dev), exit, TAG, "Failed to initialize the bridged node");
+        g_switch_endpoint = app_bridge_get_matter_endpointid_by_zigbee_shortaddr(shortaddr);
+        ESP_LOGI(TAG, "Create/Update bridged node for 0x%04x zigbee device on endpoint %d", shortaddr,
+                 g_switch_endpoint);
+    }
+    client::set_command_callback(app_bridge_client_command_callback, NULL);
+exit:
     if (bufid) {
         zb_buf_free(bufid);
     }
