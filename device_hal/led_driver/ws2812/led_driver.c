@@ -23,20 +23,29 @@ static uint8_t current_brightness = 0;
 static uint32_t current_temp = 6600;
 static HS_color_t current_HS = {0, 0};
 static RGB_color_t mRGB;
-static led_strip_handle_t *strip = NULL;
+static led_strip_t *strip = NULL;
 
 esp_err_t led_driver_init(led_driver_config_t *config)
 {
     ESP_LOGI(TAG, "Initializing light driver");
     esp_err_t err = ESP_OK;
 
-    led_strip_config_t strip_config = {
-        .strip_gpio_num = config->gpio,
-        .max_leds = 1,
-    };
-    err = led_strip_new_rmt_device(&strip_config, &strip);
+    rmt_config_t rmt_cfg = RMT_DEFAULT_CONFIG_TX(config->gpio, config->channel);
+    rmt_cfg.clk_div = 2;
+    err = rmt_config(&rmt_cfg);
     if (err != ESP_OK) {
+        ESP_LOGE(TAG, "rmt_cfg failed");
+    }
+    err = rmt_driver_install(rmt_cfg.channel, 0, 0);
+    if (err != ESP_OK) {
+        ESP_LOGE(TAG, "rmt_driver_install failed");
+    }
+
+    led_strip_config_t strip_config = LED_STRIP_DEFAULT_CONFIG(1, (led_strip_dev_t)rmt_cfg.channel);
+    strip = led_strip_new_rmt_ws2812(&strip_config);
+    if (!strip) {
         ESP_LOGE(TAG, "W2812 driver install failed");
+        err = ESP_FAIL;
     }
     return err;
 }
@@ -54,13 +63,13 @@ esp_err_t led_driver_set_RGB()
         ESP_LOGE(TAG, "can't find w2812 led_strip handle");
         err = ESP_FAIL;
     } else {
-        err = led_strip_set_pixel(strip, 0, mRGB.red, mRGB.green, mRGB.blue);
+        err = strip->set_pixel(strip, 0, mRGB.red, mRGB.green, mRGB.blue);
         if (err != ESP_OK) {
             ESP_LOGE(TAG, "strip_set_pixel failed");
             return err;
         }
         ESP_LOGI(TAG, "led set r:%d, g:%d, b:%d", mRGB.red, mRGB.green, mRGB.blue);
-        err = led_strip_refresh(strip);
+        err = strip->refresh(strip, 100);
         if (err != ESP_OK) {
             ESP_LOGE(TAG, "strip_refresh failed");
         }

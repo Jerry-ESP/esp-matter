@@ -15,7 +15,7 @@ extern "C" {
 #include <zigbee_bridge.h>
 
 /*Zigbee Configuration*/
-#define IEEE_CHANNEL_MASK (1l << 15) /**< Zigbee default channel */
+#define IEEE_CHANNEL_MASK (1l << 22) /**< Zigbee default channel */
 #define ERASE_PERSISTENT_CONFIG ZB_TRUE /**< Full device erase for all network devices before running example. */
 #define MAX_CHILDREN 10 /**< The maximum amount of connected devices */
 
@@ -27,7 +27,7 @@ extern "C" {
     {                                                      \
         .radio_mode = RADIO_MODE_UART_RCP,                 \
         .radio_uart_config = {                             \
-            .port = 0,                                     \
+            .port = 1,                                     \
             .uart_config =                                 \
                 {                                          \
                     .baud_rate = 115200,                   \
@@ -38,8 +38,8 @@ extern "C" {
                     .rx_flow_ctrl_thresh = 0,              \
                     .source_clk = UART_SCLK_APB,           \
                 },                                         \
-            .rx_pin = 17,                                   \
-            .tx_pin = 18,                                   \
+            .rx_pin = 4,                                   \
+            .tx_pin = 5,                                   \
         },                                                 \
     }
 
