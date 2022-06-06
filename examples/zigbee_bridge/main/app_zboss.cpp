@@ -175,6 +175,7 @@ void zboss_task(void *pvParameters)
 {
     ZB_INIT("zigbee bridge");
     zb_set_network_coordinator_role(IEEE_CHANNEL_MASK);
+    zb_bdb_set_legacy_device_support(ZB_TRUE); // disable TC Link exchange
     zb_set_nvram_erase_at_start(ERASE_PERSISTENT_CONFIG);
     zb_set_max_children(MAX_CHILDREN);
 
