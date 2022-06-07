@@ -16,7 +16,7 @@ extern "C" {
 
 /*Zigbee Configuration*/
 #define IEEE_CHANNEL_MASK (1l << 22) /**< Zigbee default channel */
-#define ERASE_PERSISTENT_CONFIG ZB_TRUE /**< Full device erase for all network devices before running example. */
+#define ERASE_PERSISTENT_CONFIG ZB_FALSE /**< Full device erase for all network devices before running example. */
 #define MAX_CHILDREN 10 /**< The maximum amount of connected devices */
 
 #define MATCH_DESC_REQ_ROLE ZB_NWK_BROADCAST_RX_ON_WHEN_IDLE

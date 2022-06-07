@@ -147,6 +147,7 @@ void zboss_signal_handler(zb_bufid_t bufid)
     case ZB_ZDO_SIGNAL_DEVICE_ANNCE:
         device_annce_params = ZB_ZDO_SIGNAL_GET_PARAMS(p_sg_p, zb_zdo_signal_device_annce_params_t);
         ESP_LOGI(TAG, "New device commissioned or rejoined (short: 0x%04hx)", device_annce_params->device_short_addr);
+        /*
         status =
             ZB_SCHEDULE_APP_ALARM(zigbee_bridge_match_bridged_onoff_light, bufid, MATCH_BRIDGED_DEVICE_START_DELAY);
         if (status != RET_OK) {
@@ -159,6 +160,7 @@ void zboss_signal_handler(zb_bufid_t bufid)
         }
         // this buf will be free in zboss_match_bridged_device_callback/zboss_match_bridged_device_timeout later
         bufid = 0;
+        */
         break;
 
     default:
@@ -183,6 +185,7 @@ void zboss_task(void *pvParameters)
     ZB_AF_SET_ENDPOINT_HANDLER(ZB_DEVICE_ENDPOINT, zcl_custom_cmd_handler);
     /* initiate Zigbee Stack start without zb_send_no_autostart_signal auto-start */
     ESP_ERROR_CHECK(zboss_start_no_autostart());
+    zigbee_bridge_add_door_sensor_endpoint(0x1234, 1);
     while (1) {
         zboss_main_loop_iteration();
     }

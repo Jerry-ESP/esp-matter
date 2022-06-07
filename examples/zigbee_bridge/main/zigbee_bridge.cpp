@@ -152,17 +152,19 @@ void zigbee_bridge_match_bridged_onoff_light(zb_bufid_t bufid)
 void zigbee_bridge_match_bridged_onoff_light_timeout(zb_bufid_t bufid)
 {
     ESP_LOGE(TAG, "The device is not an onoff light");
+    if (bufid) {
+        zb_buf_free(bufid);
+    }
+}
+
+esp_err_t zigbee_bridge_add_door_sensor_endpoint(zb_uint16_t shortaddr, zb_uint8_t ep)
+{
     esp_err_t ret = ESP_OK;
-    zb_zdo_app_signal_hdr_t *p_sg_p = NULL;
-    zb_get_app_signal(bufid, &p_sg_p);
-    zb_zdo_signal_device_annce_params_t *dev_annce_params =
-        ZB_ZDO_SIGNAL_GET_PARAMS(p_sg_p, zb_zdo_signal_device_annce_params_t);
-    uint16_t shortaddr = dev_annce_params->device_short_addr;
     node_t *node = node::get();
     ESP_GOTO_ON_FALSE(node, ESP_ERR_INVALID_STATE, exit, TAG, "Could not find esp_matter node");
 
     if (!app_bridge_get_zigbee_device_by_zigbee_shortaddr(shortaddr)) {
-        app_zigbee_bridge_device_t *dev = app_bridge_create_zigbee_device(node, 1, shortaddr);
+        app_zigbee_bridge_device_t *dev = app_bridge_create_zigbee_device(node, ep, shortaddr);
         ESP_GOTO_ON_FALSE(dev, ESP_FAIL, exit, TAG, "Failed to create zigbee bridged device (on off switch)");
         ESP_GOTO_ON_ERROR(init_bridged_door_sensor(dev->dev), exit, TAG, "Failed to initialize the bridged node");
         g_switch_endpoint = app_bridge_get_matter_endpointid_by_zigbee_shortaddr(shortaddr);
@@ -171,9 +173,7 @@ void zigbee_bridge_match_bridged_onoff_light_timeout(zb_bufid_t bufid)
     }
     client::set_command_callback(app_bridge_client_command_callback, NULL);
 exit:
-    if (bufid) {
-        zb_buf_free(bufid);
-    }
+    return ret;
 }
 
 void zigbee_bridge_send_on(zb_uint8_t buf, zb_uint16_t zigbee_shortaddr)
