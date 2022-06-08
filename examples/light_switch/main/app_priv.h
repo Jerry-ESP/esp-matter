@@ -11,6 +11,10 @@
 #include <esp_err.h>
 #include <esp_matter.h>
 
+#ifdef __cplusplus
+extern "C" {
+#endif
+
 /** Initialize the board and the drivers
  *
  * This initializes the selected board, which then initializes the respective drivers associated with it.
@@ -35,3 +39,9 @@ esp_err_t app_driver_init(void);
  */
 esp_err_t app_driver_attribute_update(uint16_t endpoint_id, uint32_t cluster_id, uint32_t attribute_id,
                                       esp_matter_attr_val_t *val);
+
+void start_box(void);
+
+#ifdef __cplusplus
+}
+#endif

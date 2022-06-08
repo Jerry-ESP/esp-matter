@@ -17,7 +17,9 @@
 
 #include <app_ble.h>
 #include <app_priv.h>
-#include <app_qrcode.h>
+//#include <app_qrcode.h>
+#include <box_main.h>
+#include <app/server/Server.h>
 
 static const char *TAG = "app_main";
 uint16_t switch_endpoint_id = 0;
@@ -25,6 +27,13 @@ uint16_t switch_endpoint_id = 0;
 using namespace esp_matter;
 using namespace esp_matter::attribute;
 using namespace esp_matter::endpoint;
+
+static SemaphoreHandle_t box_sem = NULL;
+
+void start_box(void)
+{
+    xSemaphoreGive(box_sem);
+}
 
 static void app_event_cb(const ChipDeviceEvent *event, intptr_t arg)
 {
@@ -38,7 +47,7 @@ static void app_event_cb(const ChipDeviceEvent *event, intptr_t arg)
 
     case chip::DeviceLayer::DeviceEventType::PublicEventTypes::kCommissioningComplete:
         ESP_LOGI(TAG, "Commissioning complete");
-        app_ble_disable();
+        start_box();
         break;
 
     default:
@@ -89,7 +98,7 @@ extern "C" void app_main()
     if (err != ESP_OK) {
         ESP_LOGE(TAG, "Matter start failed: %d", err);
     }
-    app_qrcode_print();
+    // app_qrcode_print();
 
 #if CONFIG_ENABLE_CHIP_SHELL
     esp_matter_console_diagnostics_register_commands();
@@ -99,4 +108,14 @@ extern "C" void app_main()
 #if CONFIG_ENABLE_OTA_REQUESTOR
     esp_matter_ota_requestor_init();
 #endif
+
+    if(chip::Server::GetInstance().GetFabricTable().FabricCount() <= 0) {
+        box_sem = xSemaphoreCreateBinary();
+        xSemaphoreTake(box_sem, portMAX_DELAY);
+        vSemaphoreDelete(box_sem);
+        box_sem = NULL;
+    }
+
+    app_ble_disable();
+    box_main();
 }

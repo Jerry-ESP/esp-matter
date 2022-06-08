@@ -51,6 +51,18 @@ static esp_err_t app_driver_bound_console_handler(int argc, char **argv)
     return ESP_OK;
 }
 
+extern "C"
+{
+
+void app_driver_bound_on_off(bool on)
+{
+    g_cluster_id = OnOff::Id;
+    g_command_id = on ? OnOff::Commands::On::Id : OnOff::Commands::Off::Id;
+    client::cluster_update(switch_endpoint_id, g_cluster_id);
+}
+
+}
+
 static esp_err_t app_driver_client_console_handler(int argc, char **argv)
 {
     if (argc == 1 && strncmp(argv[0], "help", sizeof("help")) == 0) {
@@ -114,17 +126,17 @@ void app_driver_client_command_callback(client::peer_device_t *peer_device, uint
     }
 }
 
-static void app_driver_button_toggle_cb(void *arg)
-{
-    ESP_LOGI(TAG, "Toggle button pressed");
-    uint16_t endpoint_id = switch_endpoint_id;
-    uint32_t cluster_id = OnOff::Id;
-    uint32_t command_id = OnOff::Commands::Toggle::Id;
-
-    g_cluster_id = cluster_id;
-    g_command_id = command_id;
-    client::cluster_update(endpoint_id, cluster_id);
-}
+// static void app_driver_button_toggle_cb(void *arg)
+// {
+//     ESP_LOGI(TAG, "Toggle button pressed");
+//     uint16_t endpoint_id = switch_endpoint_id;
+//     uint32_t cluster_id = OnOff::Id;
+//     uint32_t command_id = OnOff::Commands::Toggle::Id;
+// 
+//     g_cluster_id = cluster_id;
+//     g_command_id = command_id;
+//     client::cluster_update(endpoint_id, cluster_id);
+// }
 
 esp_err_t app_driver_attribute_update(uint16_t endpoint_id, uint32_t cluster_id, uint32_t attribute_id,
                                       esp_matter_attr_val_t *val)
@@ -164,10 +176,10 @@ esp_err_t app_driver_init()
     ESP_LOGI(TAG, "Initialising driver");
 
     /* Initialize button */
-    button_config_t button_config = button_driver_get_config();
-    button_handle_t handle = iot_button_create(&button_config);
-    iot_button_register_cb(handle, BUTTON_PRESS_DOWN, app_driver_button_toggle_cb);
-    app_reset_button_register(handle);
+//    button_config_t button_config = button_driver_get_config();
+//    button_handle_t handle = iot_button_create(&button_config);
+//    iot_button_register_cb(handle, BUTTON_PRESS_DOWN, app_driver_button_toggle_cb);
+//    app_reset_button_register(handle);
 
     app_driver_attribute_set_defaults();
     app_driver_register_commands();
