@@ -1,4 +1,4 @@
-set(PRIV_REQUIRES_LIST device esp_matter esp_matter_console route_hook app_ble app_reset esp_matter_ota spiffs esp_lcd lvgl esp-sr led_strip qrcode libhelix-mp3 wifi_provisioning)
+set(PRIV_REQUIRES_LIST device esp_matter esp_matter_console route_hook app_ble app_reset esp_matter_ota spiffs esp_lcd lvgl esp-sr led_strip qrcode libhelix-mp3 wifi_provisioning app_qrcode)
 
 idf_component_register(SRC_DIRS          "." "./box" "./box/app" "./box/gui" "./box/gui/font" "./box/gui/image"
                       PRIV_INCLUDE_DIRS  "." "./box" "./box/app" "./box/gui"

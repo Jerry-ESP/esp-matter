@@ -17,7 +17,7 @@
 
 #include <app_ble.h>
 #include <app_priv.h>
-//#include <app_qrcode.h>
+#include <app_qrcode.h>
 #include <box_main.h>
 #include <app/server/Server.h>
 
@@ -98,7 +98,7 @@ extern "C" void app_main()
     if (err != ESP_OK) {
         ESP_LOGE(TAG, "Matter start failed: %d", err);
     }
-    // app_qrcode_print();
+    app_qrcode_print();
 
 #if CONFIG_ENABLE_CHIP_SHELL
     esp_matter_console_diagnostics_register_commands();
