@@ -162,9 +162,11 @@ void zboss_signal_handler(zb_bufid_t bufid)
         bufid = 0;
         */
         break;
-
+    case ZB_BDB_SIGNAL_DEVICE_REBOOT:
+        bdb_start_top_level_commissioning(ZB_BDB_NETWORK_STEERING);
+        break;
     default:
-        ESP_LOGI(TAG, "status: %d", status);
+        ESP_LOGI(TAG, "status: %d sig: %d", status, sig);
         break;
     }
     /* All callbacks should either reuse or free passed buffers. If bufid == 0, the buffer is invalid (not passed) */
