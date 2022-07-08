@@ -117,7 +117,7 @@ void app_driver_client_command_callback(client::peer_device_t *peer_device, uint
 
 static void app_driver_button_toggle_cb(void *arg)
 {
-    ESP_LOGI(TAG, "Toggle button pressed");
+    ESP_LOGI(TAG, "Toggle button0 pressed");
     uint16_t endpoint_id = switch_endpoint_id;
     uint32_t cluster_id = OnOff::Id;
     uint32_t command_id = OnOff::Commands::Toggle::Id;
@@ -128,6 +128,51 @@ static void app_driver_button_toggle_cb(void *arg)
     client::cluster_update(endpoint_id, cluster_id);
     lock::chip_stack_unlock();
 }
+
+static void app_driver_button1_toggle_cb(void *arg)
+{
+    ESP_LOGI(TAG, "Toggle button1 pressed");
+    uint16_t endpoint_id = switch_endpoint_id;
+    uint32_t cluster_id = OnOff::Id;
+    uint32_t command_id = OnOff::Commands::Toggle::Id;
+
+    g_cluster_id = cluster_id;
+    g_command_id = command_id;
+    lock::chip_stack_lock(portMAX_DELAY);
+    client::cluster_update(endpoint_id, cluster_id);
+    lock::chip_stack_unlock();
+}
+
+
+static void app_driver_button2_toggle_cb(void *arg)
+{
+    ESP_LOGI(TAG, "Toggle button2 pressed");
+    uint16_t endpoint_id = switch_endpoint_id;
+    uint32_t cluster_id = OnOff::Id;
+    uint32_t command_id = OnOff::Commands::Toggle::Id;
+
+    g_cluster_id = cluster_id;
+    g_command_id = command_id;
+    lock::chip_stack_lock(portMAX_DELAY);
+    client::cluster_update(endpoint_id, cluster_id);
+    lock::chip_stack_unlock();
+}
+
+
+static void app_driver_button3_toggle_cb(void *arg)
+{
+    ESP_LOGI(TAG, "Toggle button3 pressed");
+    uint16_t endpoint_id = switch_endpoint_id;
+    uint32_t cluster_id = OnOff::Id;
+    uint32_t command_id = OnOff::Commands::Toggle::Id;
+
+    g_cluster_id = cluster_id;
+    g_command_id = command_id;
+    lock::chip_stack_lock(portMAX_DELAY);
+    client::cluster_update(endpoint_id, cluster_id);
+    lock::chip_stack_unlock();
+}
+
 
 esp_err_t app_driver_attribute_update(uint16_t endpoint_id, uint32_t cluster_id, uint32_t attribute_id,
                                       esp_matter_attr_val_t *val)
@@ -167,10 +212,51 @@ esp_err_t app_driver_init()
     ESP_LOGI(TAG, "Initialising driver");
 
     /* Initialize button */
-    button_config_t button_config = button_driver_get_config();
-    button_handle_t handle = iot_button_create(&button_config);
-    iot_button_register_cb(handle, BUTTON_PRESS_DOWN, app_driver_button_toggle_cb);
-    app_reset_button_register(handle);
+    button_config_t button_config0 = {
+        .type = BUTTON_TYPE_GPIO,
+        .gpio_button_config = {
+            .gpio_num = GPIO_NUM_34,
+            .active_level = 0,
+        }
+    };
+    button_config_t button_config1 = {
+        .type = BUTTON_TYPE_GPIO,
+        .gpio_button_config = {
+            .gpio_num = GPIO_NUM_39,
+            .active_level = 0,
+        }
+    };
+    button_config_t button_config2 = {
+        .type = BUTTON_TYPE_GPIO,
+        .gpio_button_config = {
+            .gpio_num = GPIO_NUM_32,
+            .active_level = 0,
+        }
+    };
+    button_config_t button_config3 = {
+        .type = BUTTON_TYPE_GPIO,
+        .gpio_button_config = {
+            .gpio_num = GPIO_NUM_35,
+            .active_level = 0,
+        }
+    };
+
+    button_handle_t handle0 = iot_button_create(&button_config0);
+    button_handle_t handle1 = iot_button_create(&button_config1);
+    button_handle_t handle2 = iot_button_create(&button_config2);
+    //button_handle_t handle3 = iot_button_create(&button_config3);
+
+    iot_button_register_cb(handle0, BUTTON_PRESS_UP, app_driver_button_toggle_cb);
+    //app_reset_button_register(handle0);
+
+    iot_button_register_cb(handle1, BUTTON_PRESS_UP, app_driver_button1_toggle_cb);
+    //app_reset_button_register(handle1);
+
+    iot_button_register_cb(handle2, BUTTON_PRESS_UP, app_driver_button2_toggle_cb);
+    //app_reset_button_register(handle2);
+
+    //iot_button_register_cb(handle3, BUTTON_PRESS_DOWN, app_driver_button3_toggle_cb);
+    //app_reset_button_register(handle3);
 
     app_driver_attribute_set_defaults();
     app_driver_register_commands();
