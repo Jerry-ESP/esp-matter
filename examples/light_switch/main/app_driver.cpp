@@ -230,7 +230,7 @@ esp_err_t app_driver_init()
         .type = BUTTON_TYPE_GPIO,
         .gpio_button_config = {
             .gpio_num = GPIO_NUM_32,
-            .active_level = 0,
+            .active_level = 1,
         }
     };
     button_config_t button_config3 = {
@@ -244,18 +244,18 @@ esp_err_t app_driver_init()
     button_handle_t handle0 = iot_button_create(&button_config0);
     button_handle_t handle1 = iot_button_create(&button_config1);
     button_handle_t handle2 = iot_button_create(&button_config2);
-    //button_handle_t handle3 = iot_button_create(&button_config3);
+    button_handle_t handle3 = iot_button_create(&button_config3);
 
     iot_button_register_cb(handle0, BUTTON_PRESS_UP, app_driver_button_toggle_cb);
-    //app_reset_button_register(handle0);
+   // app_reset_button_register(handle0);
 
     iot_button_register_cb(handle1, BUTTON_PRESS_UP, app_driver_button1_toggle_cb);
     //app_reset_button_register(handle1);
 
-    iot_button_register_cb(handle2, BUTTON_PRESS_UP, app_driver_button2_toggle_cb);
+    iot_button_register_cb(handle2, BUTTON_PRESS_DOWN, app_driver_button2_toggle_cb);
     //app_reset_button_register(handle2);
 
-    //iot_button_register_cb(handle3, BUTTON_PRESS_DOWN, app_driver_button3_toggle_cb);
+    iot_button_register_cb(handle3, BUTTON_PRESS_UP, app_driver_button3_toggle_cb);
     //app_reset_button_register(handle3);
 
     app_driver_attribute_set_defaults();
