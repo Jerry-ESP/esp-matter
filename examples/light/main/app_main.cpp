@@ -5,6 +5,7 @@
    software is distributed on an "AS IS" BASIS, WITHOUT WARRANTIES OR
    CONDITIONS OF ANY KIND, either express or implied.
 */
+#include "driver/gpio.h"
 
 #include <esp_err.h>
 #include <esp_log.h>
@@ -18,6 +19,8 @@
 
 #include <app_priv.h>
 #include <app_qrcode.h>
+
+#include "app_lcd.hpp"
 
 static const char *TAG = "app_main";
 uint16_t light_endpoint_id = 0;
@@ -68,9 +71,12 @@ static esp_err_t app_attribute_update_cb(callback_type_t type, uint16_t endpoint
 extern "C" void app_main()
 {
     esp_err_t err = ESP_OK;
+    QueueHandle_t xQueueFrame = xQueueCreate(2, sizeof(camera_fb_t *));
 
     /* Initialize the ESP NVS layer */
     nvs_flash_init();
+
+    AppLCD *lcd = new AppLCD(xQueueFrame);
 
     /* Create a Matter node */
     node::config_t node_config;
