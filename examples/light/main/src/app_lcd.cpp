@@ -1,5 +1,5 @@
 #include "app_lcd.hpp"
-#include "TFT_eSPI.h"
+//#include "TFT_eSPI.h"
 
 #include <string.h>
 
@@ -11,6 +11,9 @@
 #include "driver/gpio.h"
 
 #include "logo_en_240x240_lcd.h"
+#include "demo_image_show.h"
+
+extern SemaphoreHandle_t xSemaphore;
 
 static const char TAG[] = "App/LCD";
 
@@ -76,7 +79,7 @@ AppLCD::AppLCD(
 
 void AppLCD::draw_wallpaper()
 {
-    uint16_t *pixels = (uint16_t *)heap_caps_malloc((logo_en_240x240_lcd_width * logo_en_240x240_lcd_height) * sizeof(uint16_t), MALLOC_CAP_8BIT);
+    uint16_t *pixels = (uint16_t *)heap_caps_malloc((logo_en_240x240_lcd_width * logo_en_240x240_lcd_height) * sizeof(uint16_t), MALLOC_CAP_8BIT | MALLOC_CAP_SPIRAM);
     if (NULL == pixels)
     {
         ESP_LOGE(TAG, "Memory for bitmap is not enough");
@@ -114,9 +117,36 @@ void AppLCD::draw_color(int color)
     }
 }
 
-void AppLCD::draw_number(uint16_t number)
+void AppLCD::draw_demo_image()
 {
+    uint16_t *pixels = (uint16_t *)heap_caps_malloc((test_240x240_lcd_width * test_240x240_lcd_height) * sizeof(uint16_t), MALLOC_CAP_8BIT | MALLOC_CAP_SPIRAM);
+    if (NULL == pixels)
+    {
+        ESP_LOGE(TAG, "Memory for bitmap is not enough");
+        return;
+    }
+    // memcpy(pixels, first_240x240_lcd, (test_240x240_lcd_width * test_240x240_lcd_height) * sizeof(uint16_t));
+    // this->driver.draw_bitmap(0, 0, test_240x240_lcd_width, test_240x240_lcd_height, (uint16_t *)pixels);
+    // vTaskDelay(500 / portTICK_PERIOD_MS);
+    // memcpy(pixels, second_240x240_lcd, (test_240x240_lcd_width * test_240x240_lcd_height) * sizeof(uint16_t));
+    // this->driver.draw_bitmap(0, 0, test_240x240_lcd_width, test_240x240_lcd_height, (uint16_t *)pixels);
+    // vTaskDelay(500 / portTICK_PERIOD_MS);
+    // memcpy(pixels, third_240x240_lcd, (test_240x240_lcd_width * test_240x240_lcd_height) * sizeof(uint16_t));
+    // this->driver.draw_bitmap(0, 0, test_240x240_lcd_width, test_240x240_lcd_height, (uint16_t *)pixels);
+    // vTaskDelay(500 / portTICK_PERIOD_MS);
+    // memcpy(pixels, fourth_240x240_lcd, (test_240x240_lcd_width * test_240x240_lcd_height) * sizeof(uint16_t));
+    // this->driver.draw_bitmap(0, 0, test_240x240_lcd_width, test_240x240_lcd_height, (uint16_t *)pixels);
+    // // vTaskDelay(300 / portTICK_PERIOD_MS);
+    memcpy(pixels, fifth_240x240_lcd, (test_240x240_lcd_width * test_240x240_lcd_height) * sizeof(uint16_t));
+    this->driver.draw_bitmap(0, 0, test_240x240_lcd_width, test_240x240_lcd_height, (uint16_t *)pixels);
+    // vTaskDelay(500 / portTICK_PERIOD_MS);
+    // memcpy(pixels, sixth_240x240_lcd, (test_240x240_lcd_width * test_240x240_lcd_height) * sizeof(uint16_t));
+    // this->driver.draw_bitmap(0, 0, test_240x240_lcd_width, test_240x240_lcd_height, (uint16_t *)pixels);
+    vTaskDelay(2000 / portTICK_PERIOD_MS);
 
+    heap_caps_free(pixels);
+
+    this->paper_drawn = true;
 }
 
 static void task(AppLCD *self)
@@ -126,10 +156,11 @@ static void task(AppLCD *self)
     
     while (true)
     {
-        self->draw_color(color);
         self->draw_wallpaper();
-        color+=10;
-        vTaskDelay(500 / portTICK_PERIOD_MS);
+
+        xSemaphoreTake(xSemaphore, portMAX_DELAY);
+        self->draw_demo_image();
+        xSemaphoreTake(xSemaphore, 10 / portTICK_PERIOD_MS);
     }
     ESP_LOGI(TAG, "Stop");
     self->draw_wallpaper();

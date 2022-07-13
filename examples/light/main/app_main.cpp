@@ -24,6 +24,7 @@
 
 static const char *TAG = "app_main";
 uint16_t light_endpoint_id = 0;
+SemaphoreHandle_t xSemaphore = NULL;
 
 using namespace esp_matter;
 using namespace esp_matter::attribute;
@@ -62,7 +63,14 @@ static esp_err_t app_attribute_update_cb(callback_type_t type, uint16_t endpoint
 
     if (type == PRE_UPDATE) {
         /* Driver update */
-        err = app_driver_attribute_update(endpoint_id, cluster_id, attribute_id, val);
+        //err = app_driver_attribute_update(endpoint_id, cluster_id, attribute_id, val);
+        if (endpoint_id == light_endpoint_id) {
+            if (cluster_id == OnOff::Id) {
+                if (attribute_id == OnOff::Attributes::OnOff::Id) {
+                    xSemaphoreGive(xSemaphore);
+                }
+            }
+        }
     }
 
     return err;
@@ -72,6 +80,7 @@ extern "C" void app_main()
 {
     esp_err_t err = ESP_OK;
     QueueHandle_t xQueueFrame = xQueueCreate(2, sizeof(camera_fb_t *));
+    xSemaphore = xSemaphoreCreateBinary();
 
     /* Initialize the ESP NVS layer */
     nvs_flash_init();
@@ -115,6 +124,7 @@ extern "C" void app_main()
     app_qrcode_print(); 
 
     AppLCD *lcd = new AppLCD(xQueueFrame);
+    xSemaphoreTake(xSemaphore, portMAX_DELAY);
     lcd->run();
 
 #if CONFIG_ENABLE_CHIP_SHELL

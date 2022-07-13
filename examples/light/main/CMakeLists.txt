@@ -1,4 +1,4 @@
-set(PRIV_REQUIRES_LIST device esp_matter esp_matter_console route_hook app_qrcode app_reset esp_matter_ota esp_matter_identify lcd bus screen console esp_adc_cal esp_lcd TFT_eSPI)
+set(PRIV_REQUIRES_LIST device esp_matter esp_matter_console route_hook app_qrcode app_reset esp_matter_ota esp_matter_identify lcd bus screen console esp_adc_cal esp_lcd)
 
 set(src_dirs        .
                     src)

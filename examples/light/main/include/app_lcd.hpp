@@ -40,7 +40,7 @@ public:
 
     void draw_wallpaper();
     void draw_color(int color);
-    void draw_number(uint16_t number);
+    void draw_demo_image();
 
     void run();
 };
