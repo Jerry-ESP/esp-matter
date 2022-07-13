@@ -18,6 +18,15 @@
 #define BOARD_LCD_PARAM_BITS 8
 #define LCD_HOST SPI2_HOST
 
+typedef struct {
+    uint8_t * buf;              /*!< Pointer to the pixel data */
+    size_t len;                 /*!< Length of the buffer in bytes */
+    size_t width;               /*!< Width of the buffer in pixels */
+    size_t height;              /*!< Height of the buffer in pixels */
+    size_t format;              /*!< Format of the pixel data */
+    struct timeval timestamp;   /*!< Timestamp since boot of the first DMA buffer of the frame */
+} camera_fb_t;
+
 class AppLCD
 {
 public:
@@ -31,8 +40,7 @@ public:
 
     void draw_wallpaper();
     void draw_color(int color);
-
-    void update();
+    void draw_number(uint16_t number);
 
     void run();
 };

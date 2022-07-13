@@ -76,8 +76,6 @@ extern "C" void app_main()
     /* Initialize the ESP NVS layer */
     nvs_flash_init();
 
-    AppLCD *lcd = new AppLCD(xQueueFrame);
-
     /* Create a Matter node */
     node::config_t node_config;
     node_t *node = node::create(&node_config, app_attribute_update_cb, NULL);
@@ -114,7 +112,10 @@ extern "C" void app_main()
     if (err != ESP_OK) {
         ESP_LOGE(TAG, "Matter start failed: %d", err);
     }
-    app_qrcode_print();
+    app_qrcode_print(); 
+
+    AppLCD *lcd = new AppLCD(xQueueFrame);
+    lcd->run();
 
 #if CONFIG_ENABLE_CHIP_SHELL
     esp_matter_console_diagnostics_register_commands();

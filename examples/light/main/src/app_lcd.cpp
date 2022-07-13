@@ -1,4 +1,5 @@
 #include "app_lcd.hpp"
+#include "TFT_eSPI.h"
 
 #include <string.h>
 
@@ -75,7 +76,7 @@ AppLCD::AppLCD(
 
 void AppLCD::draw_wallpaper()
 {
-    uint16_t *pixels = (uint16_t *)heap_caps_malloc((logo_en_240x240_lcd_width * logo_en_240x240_lcd_height) * sizeof(uint16_t), MALLOC_CAP_8BIT | MALLOC_CAP_SPIRAM);
+    uint16_t *pixels = (uint16_t *)heap_caps_malloc((logo_en_240x240_lcd_width * logo_en_240x240_lcd_height) * sizeof(uint16_t), MALLOC_CAP_8BIT);
     if (NULL == pixels)
     {
         ESP_LOGE(TAG, "Memory for bitmap is not enough");
@@ -113,56 +114,24 @@ void AppLCD::draw_color(int color)
     }
 }
 
-void AppLCD::update()
+void AppLCD::draw_number(uint16_t number)
 {
-    if (this->key->pressed > BUTTON_IDLE)
-    {
-        if (this->key->pressed == BUTTON_MENU)
-        {
-            this->switch_on = (this->key->menu == MENU_STOP_WORKING) ? false : true;
-            ESP_LOGD(TAG, "%s", this->switch_on ? "ON" : "OFF");
-        }
-    }
 
-    if (this->speech->command > COMMAND_NOT_DETECTED)
-    {
-        if (this->speech->command >= MENU_STOP_WORKING && this->speech->command <= MENU_MOTION_DETECTION)
-        {
-            this->switch_on = (this->speech->command == MENU_STOP_WORKING) ? false : true;
-            ESP_LOGD(TAG, "%s", this->switch_on ? "ON" : "OFF");
-        }
-    }
-
-    if (this->switch_on == false)
-    {
-        this->paper_drawn = false;
-    }
 }
 
 static void task(AppLCD *self)
 {
-    ESP_LOGD(TAG, "Start");
-
-    camera_fb_t *frame = nullptr;
+    ESP_LOGI(TAG, "Start");
+    uint16_t color = 0;
+    
     while (true)
     {
-        if (self->queue_i == nullptr)
-            break;
-
-        if (xQueueReceive(self->queue_i, &frame, portMAX_DELAY))
-        {
-            if (self->switch_on)
-                self->driver.draw_bitmap(0, 0, frame->width, frame->height, (uint16_t *)frame->buf);
-            else if (self->paper_drawn == false)
-                self->draw_wallpaper();
-
-            if (self->queue_o)
-                xQueueSend(self->queue_o, &frame, portMAX_DELAY);
-            else
-                self->callback(frame);
-        }
+        self->draw_color(color);
+        self->draw_wallpaper();
+        color+=10;
+        vTaskDelay(500 / portTICK_PERIOD_MS);
     }
-    ESP_LOGD(TAG, "Stop");
+    ESP_LOGI(TAG, "Stop");
     self->draw_wallpaper();
     vTaskDelete(NULL);
 }
