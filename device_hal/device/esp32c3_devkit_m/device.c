@@ -15,7 +15,7 @@
 #include <iot_button.h>
 #include <led_driver.h>
 
-#define LED_GPIO_PIN GPIO_NUM_8
+#define LED_GPIO_PIN GPIO_NUM_10//GPIO_NUM_8
 #define LED_CHANNEL 0 /* RMT_CHANNEL_0 */
 #define BUTTON_GPIO_PIN GPIO_NUM_9
 

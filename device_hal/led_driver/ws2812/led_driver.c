@@ -11,7 +11,7 @@
 // See the License for the specific language governing permissions and
 // limitations under the License
 
-#include <color_format.h>
+#include "color_format.h"
 #include <driver/rmt.h>
 #include <esp_log.h>
 #include <led_strip.h>
@@ -41,7 +41,7 @@ esp_err_t led_driver_init(led_driver_config_t *config)
         ESP_LOGE(TAG, "rmt_driver_install failed");
     }
 
-    led_strip_config_t strip_config = LED_STRIP_DEFAULT_CONFIG(1, (led_strip_dev_t)rmt_cfg.channel);
+    led_strip_config_t strip_config = LED_STRIP_DEFAULT_CONFIG(40, (led_strip_dev_t)rmt_cfg.channel);
     strip = led_strip_new_rmt_ws2812(&strip_config);
     if (!strip) {
         ESP_LOGE(TAG, "W2812 driver install failed");
@@ -63,7 +63,10 @@ esp_err_t led_driver_set_RGB()
         ESP_LOGE(TAG, "can't find w2812 led_strip handle");
         err = ESP_FAIL;
     } else {
-        err = strip->set_pixel(strip, 0, mRGB.red, mRGB.green, mRGB.blue);
+        for (uint8_t i = 0; i < 35; i++) {
+            err = strip->set_pixel(strip, i, mRGB.red, mRGB.green, mRGB.blue);
+        }
+
         if (err != ESP_OK) {
             ESP_LOGE(TAG, "strip_set_pixel failed");
             return err;

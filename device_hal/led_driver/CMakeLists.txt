@@ -7,6 +7,6 @@ elseif ("${led_type}" STREQUAL "vled")
     list(APPEND led_requires tft spidriver)
 endif()
 
-idf_component_register(SRC_DIRS ${led_type} utils
+idf_component_register(SRC_DIRS ${led_type} ws2812 utils
                     INCLUDE_DIRS include
                     PRIV_REQUIRES ${led_requires})
