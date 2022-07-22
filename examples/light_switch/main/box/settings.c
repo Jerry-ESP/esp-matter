@@ -23,7 +23,7 @@ static sys_param_t g_sys_param = {0};
 
 static const sys_param_t g_default_sys_param = {
     .need_hint = 1,
-    .sr_lang = SR_LANG_EN,
+    .sr_lang = SR_LANG_CN,
     .volume = 70, // default volume is 70% 
 };
 
@@ -58,6 +58,7 @@ esp_err_t settings_read_parameter_from_nvs(void)
     nvs_close(my_handle);
 
     settings_check(&g_sys_param);
+    memcpy(&g_sys_param, &g_default_sys_param, sizeof(sys_param_t));
     return ret;
 err:
     if (my_handle) {
