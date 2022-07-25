@@ -129,8 +129,8 @@ static void app_driver_button_toggle_cb(void *arg)
 {
     ESP_LOGI(TAG, "Toggle button0 pressed");
     uint16_t endpoint_id = switch_endpoint_id;
-    uint32_t cluster_id = ColorControl::Id;
-    uint32_t command_id = ColorControl::Commands::MoveSaturation::Id;
+    uint32_t cluster_id = OnOff::Id;
+    uint32_t command_id = OnOff::Commands::Toggle::Id;
 
     g_cluster_id = cluster_id;
     g_command_id = command_id;
