@@ -37,7 +37,7 @@ static void button_factory_reset_released_cb(void *arg)
 esp_err_t app_reset_button_register(button_handle_t handle)
 {
     esp_err_t err = ESP_OK;
-    err |= iot_button_register_cb(handle, BUTTON_LONG_PRESS_HOLD, button_factory_reset_pressed_cb);
-    err |= iot_button_register_cb(handle, BUTTON_PRESS_UP, button_factory_reset_released_cb);
+    err |= iot_button_register_cb(handle, BUTTON_LONG_PRESS_HOLD, button_factory_reset_pressed_cb, NULL);
+    err |= iot_button_register_cb(handle, BUTTON_PRESS_UP, button_factory_reset_released_cb, NULL);
     return err;
 }
