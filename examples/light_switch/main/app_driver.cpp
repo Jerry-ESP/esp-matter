@@ -112,6 +112,16 @@ void app_driver_client_command_callback(client::peer_device_t *peer_device, uint
         } else if (g_command_id == OnOff::Commands::Toggle::Id) {
             on_off::command::send_toggle(peer_device, remote_endpoint_id);
         }
+    } else if (g_cluster_id == ColorControl::Id) {
+        if (g_command_id == ColorControl::Commands::MoveHue::Id) {
+            color_control::command::send_move_to_hue(peer_device, remote_endpoint_id, 0, 0, 1, 0, 0);
+        } else if (g_command_id == ColorControl::Commands::MoveToHue::Id) {
+            color_control::command::send_move_to_hue(peer_device, remote_endpoint_id, 80, 0, 1, 0, 0);
+        } else if (g_command_id == ColorControl::Commands::StepHue::Id) {
+            color_control::command::send_move_to_hue(peer_device, remote_endpoint_id, 160, 0, 1, 0, 0);
+        } else if (g_command_id == ColorControl::Commands::MoveSaturation::Id) {
+            color_control::command::send_move_to_hue(peer_device, remote_endpoint_id, 254, 0, 1, 0, 0);
+        }
     }
 }
 
@@ -119,8 +129,8 @@ static void app_driver_button_toggle_cb(void *arg)
 {
     ESP_LOGI(TAG, "Toggle button0 pressed");
     uint16_t endpoint_id = switch_endpoint_id;
-    uint32_t cluster_id = OnOff::Id;
-    uint32_t command_id = OnOff::Commands::Toggle::Id;
+    uint32_t cluster_id = ColorControl::Id;
+    uint32_t command_id = ColorControl::Commands::MoveSaturation::Id;
 
     g_cluster_id = cluster_id;
     g_command_id = command_id;
@@ -133,8 +143,8 @@ static void app_driver_button1_toggle_cb(void *arg)
 {
     ESP_LOGI(TAG, "Toggle button1 pressed");
     uint16_t endpoint_id = switch_endpoint_id;
-    uint32_t cluster_id = OnOff::Id;
-    uint32_t command_id = OnOff::Commands::Toggle::Id;
+    uint32_t cluster_id = ColorControl::Id;
+    uint32_t command_id = ColorControl::Commands::MoveHue::Id;
 
     g_cluster_id = cluster_id;
     g_command_id = command_id;
@@ -148,8 +158,8 @@ static void app_driver_button2_toggle_cb(void *arg)
 {
     ESP_LOGI(TAG, "Toggle button2 pressed");
     uint16_t endpoint_id = switch_endpoint_id;
-    uint32_t cluster_id = OnOff::Id;
-    uint32_t command_id = OnOff::Commands::Toggle::Id;
+    uint32_t cluster_id = ColorControl::Id;
+    uint32_t command_id = ColorControl::Commands::MoveToHue::Id;
 
     g_cluster_id = cluster_id;
     g_command_id = command_id;
@@ -163,8 +173,8 @@ static void app_driver_button3_toggle_cb(void *arg)
 {
     ESP_LOGI(TAG, "Toggle button3 pressed");
     uint16_t endpoint_id = switch_endpoint_id;
-    uint32_t cluster_id = OnOff::Id;
-    uint32_t command_id = OnOff::Commands::Toggle::Id;
+    uint32_t cluster_id = ColorControl::Id;
+    uint32_t command_id = ColorControl::Commands::StepHue::Id;
 
     g_cluster_id = cluster_id;
     g_command_id = command_id;
