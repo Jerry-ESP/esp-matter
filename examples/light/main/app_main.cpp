@@ -79,6 +79,7 @@ extern "C" void app_main()
     color_temperature_light::config_t light_config;
     light_config.on_off.on_off = DEFAULT_POWER;
     light_config.level_control.current_level = DEFAULT_BRIGHTNESS;
+    light_config.level_control.on_level = DEFAULT_BRIGHTNESS;
     endpoint_t *endpoint = color_temperature_light::create(node, &light_config, ENDPOINT_FLAG_NONE);
 
     /* These node and endpoint handles can be used to create/add other endpoints and clusters. */
@@ -95,6 +96,10 @@ extern "C" void app_main()
     hue_saturation_config.current_hue = DEFAULT_HUE;
     hue_saturation_config.current_saturation = DEFAULT_SATURATION;
     cluster::color_control::feature::hue_saturation::add(cluster, &hue_saturation_config);
+
+    cluster_t *cluster_level = cluster::get(endpoint, LevelControl::Id);
+    uint16_t on_off_transition_time = DEFAULT_ON_OFF_TRANSITION_TIME;
+    cluster::level_control::attribute::create_on_off_transition_time(cluster_level, on_off_transition_time);
 
     /* Initialize identify */
     esp_matter_init_identify(light_endpoint_id, NULL, NULL, EMBER_ZCL_IDENTIFY_IDENTIFY_TYPE_VISIBLE_LED,

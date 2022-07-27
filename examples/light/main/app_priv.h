@@ -28,6 +28,7 @@
 #define DEFAULT_BRIGHTNESS 64
 #define DEFAULT_HUE 128
 #define DEFAULT_SATURATION 255
+#define DEFAULT_ON_OFF_TRANSITION_TIME 0
 
 /** Initialize the board and the drivers
  *
