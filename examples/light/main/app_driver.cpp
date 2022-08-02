@@ -21,9 +21,6 @@ using namespace chip::app::Clusters;
 using namespace esp_matter;
 
 static const char *TAG = "app_driver";
-static uint8_t current_level_val = 0;
-static bool current_onoff_val = false;
-static bool start_up_flag = true;
 extern uint16_t light_endpoint_id;
 
 /* Do any conversions/remapping for the actual value here */
@@ -77,24 +74,15 @@ static void app_driver_button_toggle_cb(void *arg)
 esp_err_t app_driver_attribute_update(uint16_t endpoint_id, uint32_t cluster_id, uint32_t attribute_id,
                                       esp_matter_attr_val_t *val)
 {
+    ESP_LOGW(TAG, "Attribute Changed: Cluster:0x%x---Attribute:0x%x---current value:%d", cluster_id, attribute_id, val->val.i);
     esp_err_t err = ESP_OK;
     if (endpoint_id == light_endpoint_id) {
         if (cluster_id == OnOff::Id) {
             if (attribute_id == OnOff::Attributes::OnOff::Id) {
-                current_onoff_val = val->val.b;
-                if ((true == current_onoff_val) && (true == start_up_flag)) {
-                    start_up_flag = false;
-                    err = app_driver_light_set_power(val);
-                } else {
-                    return ESP_OK;
-                }
+                err = app_driver_light_set_power(val);
             }
         } else if (cluster_id == LevelControl::Id) {
             if (attribute_id == LevelControl::Attributes::CurrentLevel::Id) {
-                if ((false == current_onoff_val) && (val->val.u8 > current_level_val)) {
-                    return ESP_OK;
-                }
-                current_level_val = val->val.u8;
                 err = app_driver_light_set_brightness(val);
             }
         } else if (cluster_id == ColorControl::Id) {
