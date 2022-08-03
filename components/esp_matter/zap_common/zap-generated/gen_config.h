@@ -190,3 +190,5 @@
 
 #define MATTER_SCENES_TABLE_SIZE 3                                  // used in scenes       // TODO: check this again
 
+#define EMBER_AF_DOOR_LOCK_CLUSTER_SERVER_ENDPOINT_COUNT (1)
+

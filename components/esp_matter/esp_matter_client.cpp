@@ -25,6 +25,7 @@ using chip::FabricInfo;
 using chip::kInvalidEndpointId;
 using chip::OperationalDeviceProxy;
 using chip::PeerId;
+using chip::ScopedNodeId;
 using chip::Callback::Callback;
 
 static const char *TAG = "esp_matter_client";
@@ -53,7 +54,7 @@ void esp_matter_new_connection_success_callback(void *context, OperationalDevice
     }
 }
 
-void esp_matter_new_connection_failure_callback(void *context, PeerId peerId, CHIP_ERROR error)
+void esp_matter_new_connection_failure_callback(void *context, const ScopedNodeId & peerId, CHIP_ERROR error)
 {
     ESP_LOGI(TAG, "New connection failure");
 }
@@ -66,7 +67,7 @@ esp_err_t connect(uint8_t fabric_index, uint64_t node_id, uint16_t remote_endpoi
         ESP_LOGE(TAG, "Couldn't find fabric info");
         return ESP_FAIL;
     }
-    PeerId peer_id = fabric_info->GetPeerIdForNode(node_id);
+    const ScopedNodeId & peer_id = fabric_info->GetScopedNodeIdForNode(node_id);
 
     /* Find existing */
     DeviceProxy *peer_device = chip::Server::GetInstance().GetCASESessionManager()->FindExistingSession(peer_id);
@@ -183,8 +184,8 @@ esp_err_t send_move(peer_device_t *remote_device, uint16_t remote_endpoint_id, u
     LevelControl::Commands::Move::Type command_data;
     command_data.moveMode = (LevelControl::MoveMode)move_mode;
     command_data.rate = rate;
-    command_data.optionMask = option_mask;
-    command_data.optionOverride = option_override;
+    command_data.optionsMask = option_mask;
+    command_data.optionsOverride = option_override;
 
     chip::Controller::LevelControlCluster cluster(*remote_device->GetExchangeManager(), remote_device->GetSecureSession().Value(), remote_endpoint_id);
     cluster.InvokeCommand(command_data, NULL, send_command_success_callback, send_command_failure_callback);
@@ -197,8 +198,8 @@ esp_err_t send_move_to_level(peer_device_t *remote_device, uint16_t remote_endpo
     LevelControl::Commands::MoveToLevel::Type command_data;
     command_data.level = level;
     command_data.transitionTime = transition_time;
-    command_data.optionMask = option_mask;
-    command_data.optionOverride = option_override;
+    command_data.optionsMask = option_mask;
+    command_data.optionsOverride = option_override;
 
     chip::Controller::LevelControlCluster cluster(*remote_device->GetExchangeManager(), remote_device->GetSecureSession().Value(), remote_endpoint_id);
     cluster.InvokeCommand(command_data, NULL, send_command_success_callback, send_command_failure_callback);
@@ -236,8 +237,8 @@ esp_err_t send_step(peer_device_t *remote_device, uint16_t remote_endpoint_id, u
     command_data.stepMode = (LevelControl::StepMode)step_mode;
     command_data.stepSize = step_size;
     command_data.transitionTime = transition_time;
-    command_data.optionMask = option_mask;
-    command_data.optionOverride = option_override;
+    command_data.optionsMask = option_mask;
+    command_data.optionsOverride = option_override;
 
     chip::Controller::LevelControlCluster cluster(*remote_device->GetExchangeManager(), remote_device->GetSecureSession().Value(), remote_endpoint_id);
     cluster.InvokeCommand(command_data, NULL, send_command_success_callback, send_command_failure_callback);
@@ -261,8 +262,8 @@ esp_err_t send_stop(peer_device_t *remote_device, uint16_t remote_endpoint_id, u
                     uint8_t option_override)
 {
     LevelControl::Commands::Stop::Type command_data;
-    command_data.optionMask = option_mask;
-    command_data.optionOverride = option_override;
+    command_data.optionsMask = option_mask;
+    command_data.optionsOverride = option_override;
 
     chip::Controller::LevelControlCluster cluster(*remote_device->GetExchangeManager(), remote_device->GetSecureSession().Value(), remote_endpoint_id);
     cluster.InvokeCommand(command_data, NULL, send_command_success_callback, send_command_failure_callback);
