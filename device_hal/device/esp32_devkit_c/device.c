@@ -15,7 +15,10 @@
 #include <iot_button.h>
 #include <led_driver.h>
 
-#define LED_GPIO_PIN GPIO_NUM_12
+#define LED_R_GPIO_PIN GPIO_NUM_16
+#define LED_G_GPIO_PIN GPIO_NUM_4
+#define LED_B_GPIO_PIN GPIO_NUM_17
+
 #define LED_CHANNEL 0 /* LEDC_CHANNEL_0 */
 #define BUTTON_GPIO_PIN GPIO_NUM_0
 
@@ -24,8 +27,12 @@ static const char *TAG = "device";
 led_driver_config_t led_driver_get_config()
 {
     led_driver_config_t config = {
-        .gpio = LED_GPIO_PIN,
-        .channel = LED_CHANNEL,
+        .gpio_r = LED_R_GPIO_PIN,
+        .gpio_g = LED_G_GPIO_PIN,
+        .gpio_b = LED_B_GPIO_PIN,
+        .channel_r = 0,
+        .channel_g = 1,
+        .channel_b = 2,
     };
     return config;
 }

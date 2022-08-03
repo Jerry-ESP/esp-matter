@@ -21,8 +21,12 @@ extern "C" {
 #endif
 
 typedef struct {
-    int gpio;
-    int channel;
+    int gpio_r;
+    int gpio_g;
+    int gpio_b;
+    int channel_r;
+    int channel_g;
+    int channel_b;
 } led_driver_config_t;
 
 esp_err_t led_driver_init(led_driver_config_t *config);
