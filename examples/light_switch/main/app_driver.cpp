@@ -221,12 +221,28 @@ esp_err_t app_driver_init()
 {
     ESP_LOGI(TAG, "Initialising driver");
 
+    gpio_config_t gpio_conf;
+    gpio_conf.intr_type = GPIO_INTR_DISABLE;
+    gpio_conf.mode = GPIO_MODE_OUTPUT;
+
+    gpio_conf.pin_bit_mask = (1ULL << GPIO_NUM_14);
+    gpio_config(&gpio_conf);
+    gpio_set_level(GPIO_NUM_14, 1); //blue
+
+    gpio_conf.pin_bit_mask = (1ULL << GPIO_NUM_26);
+    gpio_config(&gpio_conf);
+    gpio_set_level(GPIO_NUM_26, 1); //green
+
+    gpio_conf.pin_bit_mask = (1ULL << GPIO_NUM_27);
+    gpio_config(&gpio_conf);
+    gpio_set_level(GPIO_NUM_27, 1); //red
+
     /* Initialize button */
     button_config_t button_config0 = {
         .type = BUTTON_TYPE_GPIO,
         .gpio_button_config = {
             .gpio_num = GPIO_NUM_34,
-            .active_level = 0,
+            .active_level = 1,
         }
     };
     button_config_t button_config1 = {
@@ -240,7 +256,7 @@ esp_err_t app_driver_init()
         .type = BUTTON_TYPE_GPIO,
         .gpio_button_config = {
             .gpio_num = GPIO_NUM_32,
-            .active_level = 1,
+            .active_level = 0,
         }
     };
     button_config_t button_config3 = {
@@ -256,13 +272,13 @@ esp_err_t app_driver_init()
     button_handle_t handle2 = iot_button_create(&button_config2);
     button_handle_t handle3 = iot_button_create(&button_config3);
 
-    iot_button_register_cb(handle0, BUTTON_PRESS_UP, app_driver_button_toggle_cb);
-   // app_reset_button_register(handle0);
+    iot_button_register_cb(handle0, BUTTON_PRESS_DOWN, app_driver_button_toggle_cb);
+    app_reset_button_register(handle0);
 
     iot_button_register_cb(handle1, BUTTON_PRESS_UP, app_driver_button1_toggle_cb);
     //app_reset_button_register(handle1);
 
-    iot_button_register_cb(handle2, BUTTON_PRESS_DOWN, app_driver_button2_toggle_cb);
+    iot_button_register_cb(handle2, BUTTON_PRESS_UP, app_driver_button2_toggle_cb);
     //app_reset_button_register(handle2);
 
     iot_button_register_cb(handle3, BUTTON_PRESS_UP, app_driver_button3_toggle_cb);
@@ -271,5 +287,8 @@ esp_err_t app_driver_init()
     app_driver_attribute_set_defaults();
     app_driver_register_commands();
     client::set_command_callback(app_driver_client_command_callback, NULL);
+
+    gpio_set_level(GPIO_NUM_26, 0); //green
+    gpio_set_level(GPIO_NUM_27, 0); //red
     return ESP_OK;
 }
