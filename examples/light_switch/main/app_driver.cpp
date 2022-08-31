@@ -233,9 +233,14 @@ esp_err_t app_driver_init()
     gpio_config(&gpio_conf);
     gpio_set_level(GPIO_NUM_26, 1); //green
 
-    gpio_conf.pin_bit_mask = (1ULL << GPIO_NUM_27);
-    gpio_config(&gpio_conf);
-    gpio_set_level(GPIO_NUM_27, 1); //red
+    // gpio_conf.pin_bit_mask = (1ULL << GPIO_NUM_27);
+    // gpio_config(&gpio_conf);
+    // gpio_set_level(GPIO_NUM_27, 1); //red
+    /* Initialize led */
+    led_driver_config_t led_config = led_driver_get_config();
+    led_driver_init(&led_config);
+
+    led_driver_set_brightness(255);
 
     /* Initialize button */
     button_config_t button_config0 = {
@@ -256,7 +261,7 @@ esp_err_t app_driver_init()
         .type = BUTTON_TYPE_GPIO,
         .gpio_button_config = {
             .gpio_num = GPIO_NUM_32,
-            .active_level = 0,
+            .active_level = 1,
         }
     };
     button_config_t button_config3 = {
@@ -278,7 +283,7 @@ esp_err_t app_driver_init()
     iot_button_register_cb(handle1, BUTTON_PRESS_UP, app_driver_button1_toggle_cb);
     //app_reset_button_register(handle1);
 
-    iot_button_register_cb(handle2, BUTTON_PRESS_UP, app_driver_button2_toggle_cb);
+    iot_button_register_cb(handle2, BUTTON_PRESS_DOWN, app_driver_button2_toggle_cb);
     //app_reset_button_register(handle2);
 
     iot_button_register_cb(handle3, BUTTON_PRESS_UP, app_driver_button3_toggle_cb);
@@ -288,7 +293,8 @@ esp_err_t app_driver_init()
     app_driver_register_commands();
     client::set_command_callback(app_driver_client_command_callback, NULL);
 
-    gpio_set_level(GPIO_NUM_26, 0); //green
-    gpio_set_level(GPIO_NUM_27, 0); //red
+    //gpio_set_level(GPIO_NUM_26, 0); //green
+    //gpio_set_level(GPIO_NUM_27, 0); //red
+    led_driver_set_brightness(50);//red
     return ESP_OK;
 }

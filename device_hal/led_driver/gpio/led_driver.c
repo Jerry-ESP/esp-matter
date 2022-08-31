@@ -66,12 +66,12 @@ esp_err_t led_driver_set_brightness(uint8_t brightness)
 {
     esp_err_t err;
 
-    if (brightness != 0) {
-        current_brightness = brightness;
-    }
-    if (!current_power) {
-        brightness = 0;
-    }
+    // if (brightness != 0) {
+    //     current_brightness = brightness;
+    // }
+    // if (!current_power) {
+    //     brightness = 0;
+    // }
 
     err = ledc_set_duty(LEDC_LOW_SPEED_MODE, LEDC_CHANNEL_0, brightness);
     if (err != ESP_OK) {
