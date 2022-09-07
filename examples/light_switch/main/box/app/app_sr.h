@@ -50,6 +50,8 @@ typedef enum {
     SR_CMD_NEXT,
     SR_CMD_PLAY,
     SR_CMD_PAUSE,
+    SR_CMD_FAN_ON,
+    SR_CMD_FAN_OFF,
     SR_CMD_MAX,
 } sr_user_cmd_t;
 

@@ -74,6 +74,8 @@ static const sr_cmd_t g_default_cmd_info[] = {
     {SR_CMD_PLAY, SR_LANG_EN, 0, "Play Music", "PLd MYoZgK", {NULL}},
     {SR_CMD_NEXT, SR_LANG_EN, 0, "Next Song", "NfKST Sel", {NULL}},
     {SR_CMD_PAUSE, SR_LANG_EN, 0, "Pause Playing", "PeZ PLdgl", {NULL}},
+    {SR_CMD_FAN_ON, SR_LANG_EN, 0, "Turn On the Fan", "TkN nN jc FaN", {NULL}},
+    {SR_CMD_FAN_OFF, SR_LANG_EN, 0, "Turn Off the Fan", "TkN eF jc FaN", {NULL}},
 
     // Chinese
 #if SR_RUN_TEST

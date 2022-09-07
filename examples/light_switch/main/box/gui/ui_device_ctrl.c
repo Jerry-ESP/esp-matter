@@ -12,6 +12,7 @@
 #include "app_switch.h"
 #include "ui_main.h"
 #include "ui_device_ctrl.h"
+#include "app_driver.h"
 
 static const char *TAG = "ui_dev_ctrl";
 
@@ -75,6 +76,7 @@ static void ui_dev_ctrl_page_func_click_cb(lv_event_t *e)
     } else if (UI_DEV_FAN == g_active_dev_type) {
         bool state = app_fan_get_state();
         app_fan_set_power(!state);
+        app_driver_bound_on_off(!state);
     } else {
         // Other device Not be supported, just update the UI
         ui_dev_ctrl_set_state(g_active_dev_type, !lv_obj_has_state(g_func_btn[g_active_dev_type], LV_STATE_CHECKED));

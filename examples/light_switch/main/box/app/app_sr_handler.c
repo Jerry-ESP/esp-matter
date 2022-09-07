@@ -10,6 +10,7 @@
 #include "esp_log.h"
 #include "esp_check.h"
 #include "app_led.h"
+#include "app_fan.h"
 #include "app_sr.h"
 #include "file_manager.h"
 #include "app_player.h"
@@ -178,11 +179,11 @@ void sr_handler_task(void *pvParam)
                 break;
             case SR_CMD_LIGHT_ON:
                 app_pwm_led_set_power(1);
-                app_driver_bound_on_off(true);
+                //app_driver_bound_on_off(true);
                 break;
             case SR_CMD_LIGHT_OFF:
                 app_pwm_led_set_power(0);
-                app_driver_bound_on_off(false);
+                //app_driver_bound_on_off(false);
                 break;
             case SR_CMD_CUSTOMIZE_COLOR: {
                 uint16_t h;
@@ -200,6 +201,14 @@ void sr_handler_task(void *pvParam)
             case SR_CMD_PAUSE:
                 app_player_pause();
                 last_player_state = PLAYER_STATE_PAUSE;
+                break;
+            case SR_CMD_FAN_ON:
+                app_fan_set_power(1);
+                app_driver_bound_on_off(true);
+                break;
+            case SR_CMD_FAN_OFF:
+                app_fan_set_power(0);
+                app_driver_bound_on_off(false);
                 break;
             default:
                 ESP_LOGE(TAG, "Unknow cmd");
