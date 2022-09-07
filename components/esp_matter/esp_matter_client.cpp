@@ -171,6 +171,15 @@ esp_err_t send_on(peer_device_t *remote_device, uint16_t remote_endpoint_id)
     return ESP_OK;
 }
 
+esp_err_t group_send_on(uint8_t fabric_index, uint16_t group_id)
+{
+    OnOff::Commands::On::Type command_data;
+    chip::Messaging::ExchangeManager & exchange_mgr = chip::Server::GetInstance().GetExchangeManager();
+
+    chip::Controller::InvokeGroupCommandRequest(&exchange_mgr, fabric_index, group_id, command_data);
+    return ESP_OK;
+}
+
 esp_err_t send_off(peer_device_t *remote_device, uint16_t remote_endpoint_id)
 {
     OnOff::Commands::Off::Type command_data;
@@ -180,12 +189,30 @@ esp_err_t send_off(peer_device_t *remote_device, uint16_t remote_endpoint_id)
     return ESP_OK;
 }
 
+esp_err_t group_send_off(uint8_t fabric_index, uint16_t group_id)
+{
+    OnOff::Commands::Off::Type command_data;
+    chip::Messaging::ExchangeManager & exchange_mgr = chip::Server::GetInstance().GetExchangeManager();
+
+    chip::Controller::InvokeGroupCommandRequest(&exchange_mgr, fabric_index, group_id, command_data);
+    return ESP_OK;
+}
+
 esp_err_t send_toggle(peer_device_t *remote_device, uint16_t remote_endpoint_id)
 {
     OnOff::Commands::Toggle::Type command_data;
 
     chip::Controller::OnOffCluster cluster(*remote_device->GetExchangeManager(), remote_device->GetSecureSession().Value(), remote_endpoint_id);
     cluster.InvokeCommand(command_data, NULL, send_command_success_callback, send_command_failure_callback);
+    return ESP_OK;
+}
+
+esp_err_t group_send_toggle(uint8_t fabric_index, uint16_t group_id)
+{
+    OnOff::Commands::Toggle::Type command_data;
+    chip::Messaging::ExchangeManager & exchange_mgr = chip::Server::GetInstance().GetExchangeManager();
+
+    chip::Controller::InvokeGroupCommandRequest(&exchange_mgr, fabric_index, group_id, command_data);
     return ESP_OK;
 }
 

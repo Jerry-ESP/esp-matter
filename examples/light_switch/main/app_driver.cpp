@@ -34,7 +34,9 @@ static esp_err_t app_driver_bound_console_handler(int argc, char **argv)
         printf("Bound commands:\n"
                "\thelp: Print help\n"
                "\tinvoke: <local_endpoint_id> <cluster_id> <command_id>. "
-               "Example: matter esp bound invoke 0x0001 0x0006 0x0002.\n");
+               "Example: matter esp bound invoke 0x0001 0x0006 0x0002.\n"
+               "\tinvoke-group: <local_endpoint_id> <cluster_id> <command_id>. "
+               "Example: matter esp bound invoke-group 0x0001 0x0006 0x0002.\n");
     } else if (argc == 4 && strncmp(argv[0], "invoke", sizeof("invoke")) == 0) {
         client::command_handle_t *cmd_handle = (client::command_handle_t *)calloc(1, sizeof(client::command_handle_t));
         uint16_t local_endpoint_id = strtol((const char *)&argv[1][2], NULL, 16);
@@ -43,7 +45,16 @@ static esp_err_t app_driver_bound_console_handler(int argc, char **argv)
         cmd_handle->is_group = false;
 
         client::cluster_update(local_endpoint_id, cmd_handle);
-    } else {
+    } else if (argc == 4 && strncmp(argv[0], "invoke-group", sizeof("invoke-group")) == 0) {
+        client::command_handle_t *cmd_handle = (client::command_handle_t *)calloc(1, sizeof(client::command_handle_t));
+        uint16_t local_endpoint_id = strtol((const char *)&argv[1][2], NULL, 16);
+        cmd_handle->cluster_id = strtol((const char *)&argv[2][2], NULL, 16);
+        cmd_handle->command_id = strtol((const char *)&argv[3][2], NULL, 16);
+        cmd_handle->is_group = true;
+
+        client::cluster_update(local_endpoint_id, cmd_handle);
+    }
+    else {
         ESP_LOGE(TAG, "Incorrect arguments. Check help for more details.");
         return ESP_ERR_INVALID_ARG;
     }
@@ -110,6 +121,20 @@ void app_driver_client_command_callback(client::peer_device_t *peer_device, uint
     }
 }
 
+void app_driver_client_group_command_callback(uint8_t fabric_index, uint16_t group_id,
+                                              client::command_handle_t *cmd_handle, void *priv_data)
+{
+    if (cmd_handle->cluster_id == OnOff::Id) {
+        if (cmd_handle->command_id == OnOff::Commands::Off::Id) {
+            on_off::command::group_send_off(fabric_index, group_id);
+        } else if (cmd_handle->command_id == OnOff::Commands::On::Id) {
+            on_off::command::group_send_on(fabric_index, group_id);
+        } else if (cmd_handle->command_id == OnOff::Commands::Toggle::Id) {
+            on_off::command::group_send_toggle(fabric_index, group_id);
+        }
+    }
+}
+
 static void app_driver_button_toggle_cb(void *arg)
 {
     ESP_LOGI(TAG, "Toggle button pressed");
@@ -139,7 +164,7 @@ app_driver_handle_t app_driver_switch_init()
 
     /* Other initializations */
     app_driver_register_commands();
-    client::set_command_callback(app_driver_client_command_callback, NULL, NULL);
+    client::set_command_callback(app_driver_client_command_callback, app_driver_client_group_command_callback, NULL);
 
     return (app_driver_handle_t)handle;
 }
