@@ -701,6 +701,10 @@ typedef struct command_handle {
     uint32_t command_id;
     void *command_data { NULL };
     bool is_group;
+    command_handle() : endpoint_id(chip::kInvalidEndpointId), cluster_id(chip::kInvalidClusterId),
+                  command_id(chip::kInvalidCommandId), command_data(NULL), is_group(false) {}
+    command_handle(struct command_handle* cmd) : endpoint_id(cmd->endpoint_id), cluster_id(cmd->cluster_id),
+                  command_id(cmd->command_id), command_data(cmd->command_data), is_group(cmd->is_group) {}
 } command_handle_t;
 
 /** Peer device handle */
