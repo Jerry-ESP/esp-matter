@@ -31,6 +31,10 @@ static esp_err_t app_driver_light_set_power(led_driver_handle_t handle, esp_matt
 static esp_err_t app_driver_light_set_brightness(led_driver_handle_t handle, esp_matter_attr_val_t *val)
 {
     int value = REMAP_TO_RANGE(val->val.u8, MATTER_BRIGHTNESS, STANDARD_BRIGHTNESS);
+    if (value < 5) {
+        value = 5;
+    }
+    
     return led_driver_set_brightness(handle, value);
 }
 
