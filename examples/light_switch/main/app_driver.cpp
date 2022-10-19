@@ -120,6 +120,26 @@ void app_driver_client_command_callback(client::peer_device_t *peer_device, uint
         } else if (cmd_handle->command_id == OnOff::Commands::Toggle::Id) {
             on_off::command::send_toggle(peer_device, remote_endpoint_id);
         }
+    } else if (cmd_handle->cluster_id == ColorControl::Id) {
+        if (cmd_handle->command_id == ColorControl::Commands::StepHue::Id) {
+            if (color_loop >= 5) {
+                color_loop = 0;
+            }
+            ESP_LOGW(TAG, "color_loop:%d", color_loop);
+            color_control::command::send_move_to_hue(peer_device, remote_endpoint_id, (50 * color_loop), 0, 0, 0, 0);
+
+            if (color_loop >= 4) {
+                color_loop = 0;
+            } else {
+                color_loop++;
+            }
+        }
+    } else if (cmd_handle->cluster_id == LevelControl::Id) {
+        if (cmd_handle->command_id == LevelControl::Commands::Step::Id) {
+            level_control::command::send_step(peer_device, remote_endpoint_id, 0, 40, 0, 0, 0);
+        } else if (cmd_handle->command_id == LevelControl::Commands::MoveToLevel::Id) {
+            level_control::command::send_step(peer_device, remote_endpoint_id, 1, 40, 0, 0, 0);
+        }
     }
 }
 
@@ -163,7 +183,7 @@ static void app_driver_button_toggle_cb(void *arg)
     client::command_handle_t cmd_handle;
     cmd_handle.cluster_id = OnOff::Id;
     cmd_handle.command_id = OnOff::Commands::Toggle::Id;
-    cmd_handle.is_group = true;
+    cmd_handle.is_group = false;
 
     lock::chip_stack_lock(portMAX_DELAY);
     client::cluster_update(switch_endpoint_id, &cmd_handle);
@@ -176,7 +196,7 @@ static void app_driver_button1_toggle_cb(void *arg)
     client::command_handle_t cmd_handle;
     cmd_handle.cluster_id = ColorControl::Id;
     cmd_handle.command_id = ColorControl::Commands::StepHue::Id;
-    cmd_handle.is_group = true;
+    cmd_handle.is_group = false;
 
     lock::chip_stack_lock(portMAX_DELAY);
     client::cluster_update(switch_endpoint_id, &cmd_handle);
@@ -190,7 +210,7 @@ static void app_driver_button2_toggle_cb(void *arg)
     client::command_handle_t cmd_handle;
     cmd_handle.cluster_id = LevelControl::Id;
     cmd_handle.command_id = LevelControl::Commands::Step::Id;
-    cmd_handle.is_group = true;
+    cmd_handle.is_group = false;
 
     lock::chip_stack_lock(portMAX_DELAY);
     client::cluster_update(switch_endpoint_id, &cmd_handle);
@@ -204,7 +224,7 @@ static void app_driver_button3_toggle_cb(void *arg)
     client::command_handle_t cmd_handle;
     cmd_handle.cluster_id = LevelControl::Id;
     cmd_handle.command_id = LevelControl::Commands::MoveToLevel::Id;
-    cmd_handle.is_group = true;
+    cmd_handle.is_group = false;
 
     lock::chip_stack_lock(portMAX_DELAY);
     client::cluster_update(switch_endpoint_id, &cmd_handle);
