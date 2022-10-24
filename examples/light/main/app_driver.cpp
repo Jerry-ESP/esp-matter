@@ -139,7 +139,9 @@ esp_err_t app_driver_light_set_defaults(uint16_t endpoint_id)
     /* Setting power */
     cluster = cluster::get(endpoint, OnOff::Id);
     attribute = attribute::get(cluster, OnOff::Attributes::OnOff::Id);
-    attribute::get_val(attribute, &val);
+    //attribute::get_val(attribute, &val);
+    val.val.b = true;
+    attribute::set_val(attribute, &val);
     err |= app_driver_light_set_power(handle, &val);
 
     return err;
