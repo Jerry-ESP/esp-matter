@@ -1,7 +1,10 @@
 set(PRIV_REQUIRES_LIST device esp_matter esp_matter_console route_hook app_reset)
 
+set(ldfragments linker.lf)
+
 idf_component_register(SRC_DIRS          "."
                       PRIV_INCLUDE_DIRS  "."
+                      LDFRAGMENTS        "${ldfragments}"
                       PRIV_REQUIRES      ${PRIV_REQUIRES_LIST})
 
 set_property(TARGET ${COMPONENT_LIB} PROPERTY CXX_STANDARD 14)

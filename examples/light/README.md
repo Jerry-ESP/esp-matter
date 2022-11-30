@@ -38,3 +38,9 @@ This should give you a good idea about the amount of free memory that is
 available for you to run your application's code.
 
 Applications that do not require BLE post commissioning, can disable it using app_ble_disable() once commissioning is complete. It is not done explicitly because of a known issue with esp32c3 and will be fixed with the next IDF release (v4.4.2).
+
+How to set the menuconfig
+1. ![step1](./image/1.png)
+2. ![step2](./image/2.png)
+3. ![step3-1](./image/3.png)  ![step3-2](./image/4.png)
+4. ![step4](./image/5.png)

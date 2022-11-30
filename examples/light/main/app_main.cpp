@@ -135,4 +135,6 @@ extern "C" void app_main()
     esp_matter::console::diagnostics_register_commands();
     esp_matter::console::init();
 #endif
+
+    printf(">>>>>>>>>>>>>>>>>>>>free size:%d>>>>>>>>>>>>>>>>>>>>>> \n", heap_caps_get_free_size(MALLOC_CAP_8BIT));
 }
