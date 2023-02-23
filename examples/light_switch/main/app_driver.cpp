@@ -27,6 +27,7 @@ using namespace esp_matter::cluster;
 
 static const char *TAG = "app_driver";
 extern uint16_t switch_endpoint_id;
+static int color_loop = 0;
 
 #if CONFIG_ENABLE_CHIP_SHELL
 static char console_buffer[101] = {0};
@@ -249,6 +250,27 @@ void app_driver_client_group_command_callback(uint8_t fabric_index, client::comm
         } else {
             ESP_LOGE(TAG, "Unsupported command");
         }
+    } else if (cmd_handle->cluster_id == ColorControl::Id) {
+        if (cmd_handle->command_id == ColorControl::Commands::StepHue::Id) {
+            if (color_loop >= 5) {
+                color_loop = 0;
+            }
+            ESP_LOGW(TAG, "color_loop:%d", color_loop);
+            color_control::command::group_send_move_to_hue(fabric_index, cmd_handle->group_id, (50 * color_loop), 0, 0, 0, 0);
+
+            if (color_loop >= 4) {
+                color_loop = 0;
+            } else {
+                color_loop++;
+            }
+        }
+    } else if (cmd_handle->cluster_id == LevelControl::Id) {
+        if (cmd_handle->command_id == LevelControl::Commands::Step::Id) {
+            level_control::command::group_send_step(fabric_index, cmd_handle->group_id, 0, 40, 0, 0, 0);
+        } else if (cmd_handle->command_id == LevelControl::Commands::MoveToLevel::Id) {
+            level_control::command::group_send_step(fabric_index, cmd_handle->group_id, 1, 40, 0, 0, 0);
+        }
+
     } else {
         ESP_LOGE(TAG, "Unsupported cluster");
     }
@@ -256,11 +278,50 @@ void app_driver_client_group_command_callback(uint8_t fabric_index, client::comm
 
 static void app_driver_button_toggle_cb(void *arg, void *data)
 {
-    ESP_LOGI(TAG, "Toggle button pressed");
+    ESP_LOGI(TAG, "Toggle button 0 pressed");
     client::command_handle_t cmd_handle;
     cmd_handle.cluster_id = OnOff::Id;
     cmd_handle.command_id = OnOff::Commands::Toggle::Id;
-    cmd_handle.is_group = false;
+    cmd_handle.is_group = true;
+
+    lock::chip_stack_lock(portMAX_DELAY);
+    client::cluster_update(switch_endpoint_id, &cmd_handle);
+    lock::chip_stack_unlock();
+}
+
+static void app_driver_button1_toggle_cb(void *arg, void *data)
+{
+    ESP_LOGI(TAG, "Toggle button1 pressed");
+    client::command_handle_t cmd_handle;
+    cmd_handle.cluster_id = ColorControl::Id;
+    cmd_handle.command_id = ColorControl::Commands::StepHue::Id;
+    cmd_handle.is_group = true;
+
+    lock::chip_stack_lock(portMAX_DELAY);
+    client::cluster_update(switch_endpoint_id, &cmd_handle);
+    lock::chip_stack_unlock();
+}
+
+static void app_driver_button2_toggle_cb(void *arg, void *data)
+{
+    ESP_LOGI(TAG, "Toggle button2 pressed");
+    client::command_handle_t cmd_handle;
+    cmd_handle.cluster_id = LevelControl::Id;
+    cmd_handle.command_id = LevelControl::Commands::Step::Id;
+    cmd_handle.is_group = true;
+
+    lock::chip_stack_lock(portMAX_DELAY);
+    client::cluster_update(switch_endpoint_id, &cmd_handle);
+    lock::chip_stack_unlock();
+}
+
+static void app_driver_button3_toggle_cb(void *arg, void *data)
+{
+    ESP_LOGI(TAG, "Toggle button3 pressed");
+    client::command_handle_t cmd_handle;
+    cmd_handle.cluster_id = LevelControl::Id;
+    cmd_handle.command_id = LevelControl::Commands::MoveToLevel::Id;
+    cmd_handle.is_group = true;
 
     lock::chip_stack_lock(portMAX_DELAY);
     client::cluster_update(switch_endpoint_id, &cmd_handle);
@@ -269,10 +330,65 @@ static void app_driver_button_toggle_cb(void *arg, void *data)
 
 app_driver_handle_t app_driver_switch_init()
 {
+    ESP_LOGI(TAG, "Initialising driver");
+
+    gpio_config_t gpio_conf;
+    gpio_conf.intr_type = GPIO_INTR_DISABLE;
+    gpio_conf.mode = GPIO_MODE_OUTPUT;
+
+    gpio_conf.pin_bit_mask = (1ULL << GPIO_NUM_14);
+    gpio_config(&gpio_conf);
+    gpio_set_level(GPIO_NUM_14, 1); //blue
+
+    gpio_conf.pin_bit_mask = (1ULL << GPIO_NUM_26);
+    gpio_config(&gpio_conf);
+    gpio_set_level(GPIO_NUM_26, 1); //green
+
+    led_driver_config_t led_config = led_driver_get_config();
+    led_driver_init(&led_config);
+
+    led_driver_handle_t handle = NULL;
+    led_driver_set_brightness(handle, 255);
+
     /* Initialize button */
-    button_config_t config = button_driver_get_config();
-    button_handle_t handle = iot_button_create(&config);
-    iot_button_register_cb(handle, BUTTON_PRESS_DOWN, app_driver_button_toggle_cb, NULL);
+    button_config_t button_config0 = {
+        .type = BUTTON_TYPE_GPIO,
+        .gpio_button_config = {
+            .gpio_num = GPIO_NUM_34,
+            .active_level = 1,
+        }
+    };
+    button_config_t button_config1 = {
+        .type = BUTTON_TYPE_GPIO,
+        .gpio_button_config = {
+            .gpio_num = GPIO_NUM_39,
+            .active_level = 1,
+        }
+    };
+    button_config_t button_config2 = {
+        .type = BUTTON_TYPE_GPIO,
+        .gpio_button_config = {
+            .gpio_num = GPIO_NUM_32,
+            .active_level = 1,
+        }
+    };
+    button_config_t button_config3 = {
+        .type = BUTTON_TYPE_GPIO,
+        .gpio_button_config = {
+            .gpio_num = GPIO_NUM_35,
+            .active_level = 1,
+        }
+    };
+
+    button_handle_t handle0 = iot_button_create(&button_config0);
+    button_handle_t handle1 = iot_button_create(&button_config1);
+    button_handle_t handle2 = iot_button_create(&button_config2);
+    button_handle_t handle3 = iot_button_create(&button_config3);
+
+    iot_button_register_cb(handle0, BUTTON_PRESS_DOWN, app_driver_button_toggle_cb, NULL);
+    iot_button_register_cb(handle1, BUTTON_PRESS_DOWN, app_driver_button1_toggle_cb, NULL);
+    iot_button_register_cb(handle2, BUTTON_PRESS_DOWN, app_driver_button2_toggle_cb, NULL);
+    iot_button_register_cb(handle3, BUTTON_PRESS_DOWN, app_driver_button3_toggle_cb, NULL);
 
     /* Other initializations */
 #if CONFIG_ENABLE_CHIP_SHELL
@@ -280,5 +396,5 @@ app_driver_handle_t app_driver_switch_init()
 #endif // CONFIG_ENABLE_CHIP_SHELL
     client::set_command_callback(app_driver_client_command_callback, app_driver_client_group_command_callback, NULL);
 
-    return (app_driver_handle_t)handle;
+    return (app_driver_handle_t)handle0;
 }
