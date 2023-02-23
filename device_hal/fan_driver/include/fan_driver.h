@@ -12,18 +12,23 @@
 // limitations under the License
 
 #pragma once
-
-#include <iot_button.h>
-#include <led_driver.h>
-#include <fan_driver.h>
+#include <esp_err.h>
+#include <stdbool.h>
+#include <stdint.h>
 
 #ifdef __cplusplus
 extern "C" {
 #endif
 
-led_driver_config_t led_driver_get_config();
-fan_driver_config_t fan_driver_get_config();
-button_config_t button_driver_get_config();
+typedef struct {
+    int gpio;
+    int channel;
+} fan_driver_config_t;
+
+typedef void *fan_driver_handle_t;
+
+fan_driver_handle_t fan_driver_init(fan_driver_config_t *config);
+esp_err_t fan_driver_set_power(fan_driver_handle_t handle, bool power);
 
 #ifdef __cplusplus
 }
