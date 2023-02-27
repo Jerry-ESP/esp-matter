@@ -255,6 +255,40 @@ esp_err_t group_send_toggle(uint8_t fabric_index, uint16_t group_id)
 }
 
 } // namespace command
+
+namespace attribute {
+
+static on_change_cb_t g_cb = NULL;
+
+static void report_success_cb(void * context, chip::app::Clusters::OnOff::Attributes::OnOff::TypeInfo::DecodableArgType responseData)
+{
+    ESP_LOGI(TAG, "Report success Occupancy:%u", responseData);
+    if (g_cb) {
+        g_cb(responseData);
+    }
+}
+
+static void report_failure_cb(void * context, CHIP_ERROR err)
+{
+    ESP_LOGI(TAG, "Report failure, err:%s", err.Format());
+}
+
+static void subscribe_success_cb(void * context)
+{
+    ESP_LOGI(TAG, "Subscribe success");
+}
+
+esp_err_t subscribe_on_off(peer_device_t *remote_device, uint16_t remote_endpoint_id, on_change_cb_t cb)
+{
+    g_cb = cb;
+    chip::Controller::OnOffCluster cluster(*remote_device->GetExchangeManager(),
+                                           remote_device->GetSecureSession().Value(), remote_endpoint_id);
+    cluster.SubscribeAttribute<chip::app::Clusters::OnOff::Attributes::OnOff::TypeInfo>(NULL, report_success_cb, report_failure_cb, 1, 10);//, subscribe_success_cb);
+    return ESP_OK;
+}
+
+} // namespace attribute
+
 } // namespace on_off
 
 namespace level_control {

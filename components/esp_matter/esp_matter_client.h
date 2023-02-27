@@ -35,6 +35,12 @@ esp_err_t group_send_off(uint8_t fabric_index, uint16_t group_id);
 esp_err_t group_send_on(uint8_t fabric_index, uint16_t group_id);
 esp_err_t group_send_toggle(uint8_t fabric_index, uint16_t group_id);
 } // namespace command
+
+namespace attribute {
+typedef void (*on_change_cb_t)(bool on_off);
+esp_err_t subscribe_on_off(peer_device_t *remote_device, uint16_t remote_endpoint_id, on_change_cb_t cb);
+} // namespace attribute
+
 } // namespace on_off
 
 namespace level_control {
