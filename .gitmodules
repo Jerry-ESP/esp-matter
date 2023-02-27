@@ -1,3 +1,6 @@
 [submodule "connectedhomeip/connectedhomeip"]
 	path = connectedhomeip/connectedhomeip
 	url = https://github.com/espressif/connectedhomeip.git
+[submodule "examples/s3_box_switch/esp-box"]
+	path = examples/s3_box_switch/esp-box
+	url = https://github.com/espressif/esp-box.git
