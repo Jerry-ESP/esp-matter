@@ -12,24 +12,23 @@
 // limitations under the License
 
 #pragma once
-
-#include <iot_button.h>
-#include <led_driver.h>
-#if (CONFIG_IDF_TARGET_ESP32C3 || CONFIG_IDF_TARGET_ESP32)
-#include <fan_driver.h>
-#include <buzzer_driver.h>
-#endif
+#include <esp_err.h>
+#include <stdbool.h>
+#include <stdint.h>
 
 #ifdef __cplusplus
 extern "C" {
 #endif
 
-led_driver_config_t led_driver_get_config();
-#if (CONFIG_IDF_TARGET_ESP32C3 || CONFIG_IDF_TARGET_ESP32)
-fan_driver_config_t fan_driver_get_config();
-buzzer_driver_config_t buzzer_driver_get_config();
-#endif
-button_config_t button_driver_get_config();
+typedef struct {
+    int gpio;
+    int channel;
+} buzzer_driver_config_t;
+
+typedef void *buzzer_driver_handle_t;
+
+buzzer_driver_handle_t buzzer_driver_init(buzzer_driver_config_t *config);
+esp_err_t buzzer_driver_set_power(buzzer_driver_handle_t handle, bool power);
 
 #ifdef __cplusplus
 }

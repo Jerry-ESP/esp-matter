@@ -15,9 +15,11 @@
 #include <iot_button.h>
 #include <led_driver.h>
 #include <fan_driver.h>
+#include <buzzer_driver.h>
 
 #define LED_GPIO_PIN GPIO_NUM_8
 #define FAN_GPIO_PIN GPIO_NUM_7
+#define BUZZER_GPIO_PIN GPIO_NUM_7
 #define LED_CHANNEL 0 /* RMT_CHANNEL_0 */
 #define BUTTON_GPIO_PIN GPIO_NUM_9
 
@@ -34,6 +36,15 @@ fan_driver_config_t fan_driver_get_config()
 {
     fan_driver_config_t config = {
         .gpio = FAN_GPIO_PIN,
+        .channel = LED_CHANNEL,
+    };
+    return config;
+}
+
+buzzer_driver_config_t buzzer_driver_get_config()
+{
+    buzzer_driver_config_t config = {
+        .gpio = BUZZER_GPIO_PIN,
         .channel = LED_CHANNEL,
     };
     return config;

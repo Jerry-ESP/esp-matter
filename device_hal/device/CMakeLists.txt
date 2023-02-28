@@ -3,8 +3,8 @@ include($ENV{ESP_MATTER_DEVICE_PATH}/esp_matter_device.cmake)
 set(requires led_driver)
 
 # fan_driver is only added for C3 and ESP32
-if (CONFIG_IDF_TARGET_ESP32C3 OR CONFIG_IDF_TARGET_ESP32)
-    list(APPEND requires fan_driver)
+if ("${IDF_TARGET}" STREQUAL "esp32c3" OR "${IDF_TARGET}" STREQUAL "esp32" OR "${IDF_TARGET}" STREQUAL "")
+    list(APPEND requires fan_driver buzzer_driver)
 endif()
 
 if ("${button_type}" STREQUAL "iot")
