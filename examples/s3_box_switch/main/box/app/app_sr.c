@@ -327,7 +327,7 @@ printf("In app_sr_start\n");
     ret_val = xTaskCreatePinnedToCore(audio_detect_task, "Detect Task", 6 * 1024, g_sr_data->afe_data, 5, &g_sr_data->detect_task, 1);
     ESP_GOTO_ON_FALSE(pdPASS == ret_val, ESP_FAIL, err, TAG,  "Failed create audio detect task");
 
-    ret_val = xTaskCreatePinnedToCore(sr_handler_task, "SR Handler Task", 4 * 1024, NULL, configMAX_PRIORITIES - 3, &g_sr_data->handle_task, 0);
+    ret_val = xTaskCreatePinnedToCore(sr_handler_task, "SR Handler Task", 6 * 1024, NULL, configMAX_PRIORITIES - 3, &g_sr_data->handle_task, 0);
     ESP_GOTO_ON_FALSE(pdPASS == ret_val, ESP_FAIL, err, TAG,  "Failed create audio handler task");
     esp_task_wdt_reset();
 printf("returning ok\n");
