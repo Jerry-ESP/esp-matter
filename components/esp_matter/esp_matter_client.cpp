@@ -1070,5 +1070,48 @@ esp_err_t send_remove_group(peer_device_t *remote_device, uint16_t remote_endpoi
 } // namespace command
 } // namespace groups
 
+namespace occupancy_sensing {
+namespace attribute {
+
+//     CHIP_ERROR SubscribeAttribute(void * context, ClusterId clusterId, AttributeId attributeId,
+//                                   ReadResponseSuccessCallback<DecodableArgType> reportCb, ReadResponseFailureCallback failureCb,
+//                                   uint16_t minIntervalFloorSeconds, uint16_t maxIntervalCeilingSeconds,
+//                                   SubscriptionEstablishedCallback subscriptionEstablishedCb = nullptr,
+//                                   bool aIsFabricFiltered = true, bool aKeepPreviousSubscriptions = false,
+//                                   const Optional<DataVersion> & aDataVersion = NullOptional)
+
+static on_change_cb_t g_cb = NULL;
+
+static void report_success_cb(void * context, uint8_t responseData)
+{
+    ESP_LOGI(TAG, "Report success Occupancy:%d", responseData);
+    if (g_cb) {
+        g_cb(responseData);
+    }
+}
+
+static void report_failure_cb(void * context, CHIP_ERROR err)
+{
+    ESP_LOGI(TAG, "Report failure");// ;, err:%s", err.Format());
+}
+
+static void subscribe_success_cb(void * context)
+{
+    ESP_LOGI(TAG, "Subscribe success");
+}
+
+esp_err_t subscribe_occupancy(peer_device_t *remote_device, uint16_t remote_endpoint_id, on_change_cb_t cb)
+{
+    g_cb = cb;
+    chip::Controller::OccupancySensingCluster cluster(*remote_device->GetExchangeManager(),
+                                           remote_device->GetSecureSession().Value(), remote_endpoint_id);
+    cluster.SubscribeAttribute<chip::app::Clusters::OccupancySensing::Attributes::Occupancy::TypeInfo>(NULL, report_success_cb, report_failure_cb, 1, 10);
+    return ESP_OK;
+}
+
+} // namespace attribute
+} // namespace occupancy_sensing
+
+
 } // namespace cluster
 } // namespace esp_matter

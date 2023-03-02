@@ -882,6 +882,7 @@ static void device_callback_internal(const ChipDeviceEvent * event, intptr_t arg
         err = esp_nimble_hci_and_controller_deinit();
 #endif
 #endif /* CONFIG_BT_NIMBLE_ENABLED */
+        vTaskDelay(100 / portTICK_PERIOD_MS);
         err |= esp_bt_mem_release(ESP_BT_MODE_BTDM);
         if (err != ESP_OK) {
             ESP_LOGE(TAG, "BLE deinit failed");

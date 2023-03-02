@@ -26,6 +26,16 @@ using client::peer_device_t;
  * If some standard command is not present here, it can be added.
  */
 
+namespace occupancy_sensing {
+namespace attribute {
+
+typedef void (*on_change_cb_t)(bool power);
+
+esp_err_t subscribe_occupancy(peer_device_t *remote_device, uint16_t remote_endpoint_id, on_change_cb_t cb);
+
+} // namespace attribute
+} // namespace occupancy_sensing
+
 namespace on_off {
 namespace command {
 esp_err_t send_off(peer_device_t *remote_device, uint16_t remote_endpoint_id);
