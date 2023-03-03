@@ -15,8 +15,12 @@
 
 #include <iot_button.h>
 #include <led_driver.h>
-#if (CONFIG_IDF_TARGET_ESP32C3 || CONFIG_IDF_TARGET_ESP32)
+
+#if CONFIG_IDF_TARGET_ESP32
 #include <fan_driver.h>
+#endif
+
+#if CONFIG_IDF_TARGET_ESP32C3
 #include <buzzer_driver.h>
 #endif
 
@@ -25,8 +29,12 @@ extern "C" {
 #endif
 
 led_driver_config_t led_driver_get_config();
-#if (CONFIG_IDF_TARGET_ESP32C3 || CONFIG_IDF_TARGET_ESP32)
+
+#if CONFIG_IDF_TARGET_ESP32
 fan_driver_config_t fan_driver_get_config();
+#endif
+
+#if CONFIG_IDF_TARGET_ESP32C3
 buzzer_driver_config_t buzzer_driver_get_config();
 #endif
 button_config_t button_driver_get_config();
