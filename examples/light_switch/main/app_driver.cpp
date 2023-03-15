@@ -344,11 +344,9 @@ app_driver_handle_t app_driver_switch_init()
     gpio_config(&gpio_conf);
     gpio_set_level(GPIO_NUM_26, 1); //green
 
-    led_driver_config_t led_config = led_driver_get_config();
-    led_driver_init(&led_config);
-
-    led_driver_handle_t handle = NULL;
-    led_driver_set_brightness(handle, 255);
+    gpio_conf.pin_bit_mask = (1ULL << GPIO_NUM_27);
+    gpio_config(&gpio_conf);
+    gpio_set_level(GPIO_NUM_27, 1); //red
 
     /* Initialize button */
     button_config_t button_config0 = {
