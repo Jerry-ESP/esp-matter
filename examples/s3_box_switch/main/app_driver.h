@@ -4,7 +4,7 @@
 extern "C" {
 #endif
 
-void app_driver_bound_on_off(bool on);
+void app_driver_bound_on_off(uint16_t endpoint, bool on);
 
 #ifdef __cplusplus
 }

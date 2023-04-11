@@ -183,9 +183,9 @@ static void app_driver_register_commands()
 
 extern "C" {
 
-void app_driver_bound_on_off(bool on)
+void app_driver_bound_on_off(uint16_t endpoint, bool on)
 {
-    uint16_t local_endpoint_id = 1;
+    //uint16_t local_endpoint_id = 1;
     client::command_handle_t cmd_handle;
     cmd_handle.cluster_id = OnOff::Id;
     cmd_handle.command_id = on ? OnOff::Commands::On::Id : OnOff::Commands::Off::Id;
@@ -193,7 +193,7 @@ void app_driver_bound_on_off(bool on)
     app_fan_set_power(on);
 
     lock::chip_stack_lock(portMAX_DELAY);
-    client::cluster_update(local_endpoint_id, &cmd_handle);
+    client::cluster_update(endpoint, &cmd_handle);
     lock::chip_stack_unlock();
 }
 
@@ -207,7 +207,7 @@ static void fan_control_cb(bool power)
 void app_driver_client_command_callback(client::peer_device_t *peer_device, client::command_handle_t *cmd_handle,
                                          void *priv_data)
 {
-    on_off::attribute::subscribe_on_off(peer_device,/*remote_endpoint_id*/ 1, fan_control_cb);
+    //on_off::attribute::subscribe_on_off(peer_device,/*remote_endpoint_id*/ 1, fan_control_cb);
     if (cmd_handle->cluster_id == OnOff::Id) {
         switch(cmd_handle->command_id) {
             case OnOff::Commands::Off::Id:
@@ -593,7 +593,7 @@ void app_driver_client_group_command_callback(uint8_t fabric_index, client::comm
 //     uint16_t endpoint_id = switch_endpoint_id;
 //     uint32_t cluster_id = OnOff::Id;
 //     uint32_t command_id = OnOff::Commands::Toggle::Id;
-// 
+//
 //     g_cluster_id = cluster_id;
 //     g_command_id = command_id;
 //     client::cluster_update(endpoint_id, cluster_id);

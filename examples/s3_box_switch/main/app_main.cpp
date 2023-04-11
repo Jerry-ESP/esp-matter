@@ -121,6 +121,19 @@ extern "C" void app_main()
     switch_endpoint_id = endpoint::get_id(endpoint);
     ESP_LOGI(TAG, "Switch created with endpoint_id %d", switch_endpoint_id);
 
+    endpoint_t *endpoint2 = on_off_switch::create(node, &switch_config, ENDPOINT_FLAG_NONE, switch_handle);
+
+    if (!endpoint2) {
+        ESP_LOGE(TAG, "Matter node creation failed");
+    }
+
+    /* Add group cluster to the switch endpoint */
+    cluster::groups::config_t groups_config2;
+    cluster::groups::create(endpoint2, &groups_config2, CLUSTER_FLAG_SERVER | CLUSTER_FLAG_CLIENT);
+
+    switch_endpoint_id = endpoint::get_id(endpoint);
+    ESP_LOGI(TAG, "Switch created with endpoint_id %d", switch_endpoint_id);
+
     /* Matter start */
     err = esp_matter::start(app_event_cb);
     if (err != ESP_OK) {

@@ -181,18 +181,18 @@ void sr_handler_task(void *pvParam)
                 app_pwm_led_set_all(0, 0, 128);
                 break;
             case SR_CMD_LIGHT_ON:
-                app_driver_bound_on_off(true);
+                app_driver_bound_on_off(1, true);
                 break;
             case SR_CMD_LIGHT_OFF:
-                app_driver_bound_on_off(false);
+                app_driver_bound_on_off(1, false);
                 break;
             case SR_CMD_FAN_ON:
                 app_fan_set_power(1);
-                app_driver_bound_on_off(true);
+                app_driver_bound_on_off(2, true);
                 break;
             case SR_CMD_FAN_OFF:
                 app_fan_set_power(0);
-                app_driver_bound_on_off(false);
+                app_driver_bound_on_off(2, false);
                 break;
             case SR_CMD_CUSTOMIZE_COLOR: {
                 uint16_t h;
