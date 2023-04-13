@@ -18,6 +18,7 @@
 #include <app_reset.h>
 #include <app_priv.h>
 #include "app_fan.h"
+#include "app_led.h"
 
 using chip::kInvalidClusterId;
 static constexpr chip::CommandId kInvalidCommandId = 0xFFFF'FFFF;
@@ -190,7 +191,12 @@ void app_driver_bound_on_off(uint16_t endpoint, bool on)
     cmd_handle.cluster_id = OnOff::Id;
     cmd_handle.command_id = on ? OnOff::Commands::On::Id : OnOff::Commands::Off::Id;
     cmd_handle.is_group = false;
-    app_fan_set_power(on);
+
+    // if (endpoint == 1) {
+    //     app_pwm_led_set_power(on);
+    // } else if (endpoint == 2) {
+    //     app_fan_set_power(on);
+    // }
 
     lock::chip_stack_lock(portMAX_DELAY);
     client::cluster_update(endpoint, &cmd_handle);
