@@ -192,11 +192,11 @@ void app_driver_bound_on_off(uint16_t endpoint, bool on)
     cmd_handle.command_id = on ? OnOff::Commands::On::Id : OnOff::Commands::Off::Id;
     cmd_handle.is_group = false;
 
-    // if (endpoint == 1) {
-    //     app_pwm_led_set_power(on);
-    // } else if (endpoint == 2) {
-    //     app_fan_set_power(on);
-    // }
+    if (endpoint == 1) {
+        app_pwm_led_set_power(on);
+    } else if (endpoint == 2) {
+        app_fan_set_power(on);
+    }
 
     lock::chip_stack_lock(portMAX_DELAY);
     client::cluster_update(endpoint, &cmd_handle);
@@ -210,10 +210,17 @@ static void fan_control_cb(bool power)
     app_fan_set_power(power);
 }
 
+static void light_control_cb(bool power)
+{
+    app_pwm_led_set_power(power);
+}
+
 void app_driver_client_command_callback(client::peer_device_t *peer_device, client::command_handle_t *cmd_handle,
                                          void *priv_data)
 {
-    //on_off::attribute::subscribe_on_off(peer_device,/*remote_endpoint_id*/ 1, fan_control_cb);
+    //  on_off::attribute::subscribe_on_off(peer_device,/*remote_endpoint_id*/ 1, fan_control_cb);
+    on_off::attribute::subscribe_on_off(peer_device,/*remote_endpoint_id*/ 1, light_control_cb);
+    on_off::attribute::subscribe_on_off(peer_device,/*remote_endpoint_id*/ 2, fan_control_cb);
     if (cmd_handle->cluster_id == OnOff::Id) {
         switch(cmd_handle->command_id) {
             case OnOff::Commands::Off::Id:
