@@ -19,6 +19,7 @@
 #include <app_priv.h>
 #include "app_fan.h"
 #include "app_led.h"
+#include <esp_matter_controller_subscribe_command.h>
 
 using chip::kInvalidClusterId;
 static constexpr chip::CommandId kInvalidCommandId = 0xFFFF'FFFF;
@@ -182,7 +183,28 @@ static void app_driver_register_commands()
 }
 #endif // CONFIG_ENABLE_CHIP_SHELL
 
+// esp_err_t app_driver_attribute_update(app_driver_handle_t driver_handle, uint16_t endpoint_id, uint32_t cluster_id,
+//                                       uint32_t attribute_id, esp_matter_attr_val_t *val)
+// {
+//     esp_err_t err = ESP_OK;
+//     if (endpoint_id == 1) {
+//         if (cluster_id == OnOff::Id) {
+//             if (attribute_id == OnOff::Attributes::OnOff::Id) {
+//                 err = app_pwm_led_set_power(val);
+//             }
+//         }
+//     } else if (endpoint_id == 2) {
+//         if (cluster_id == OnOff::Id) {
+//             if (attribute_id == OnOff::Attributes::OnOff::Id) {
+//                 err = app_fan_set_power(val);
+//             }
+//         }
+//     } 
+//     return err;
+// }
+
 extern "C" {
+
 
 void app_driver_bound_on_off(uint16_t endpoint, bool on)
 {
@@ -194,8 +216,10 @@ void app_driver_bound_on_off(uint16_t endpoint, bool on)
 
     if (endpoint == 1) {
         app_pwm_led_set_power(on);
+        printf("from box light control\n");
     } else if (endpoint == 2) {
         app_fan_set_power(on);
+        printf("from box fan control\n");
     }
 
     lock::chip_stack_lock(portMAX_DELAY);
@@ -207,20 +231,37 @@ void app_driver_bound_on_off(uint16_t endpoint, bool on)
 
 static void fan_control_cb(bool power)
 {
+    printf("fan_control_cb executed\n");
     app_fan_set_power(power);
 }
 
 static void light_control_cb(bool power)
 {
+    printf("light_control_cb executed\n");
     app_pwm_led_set_power(power);
 }
 
 void app_driver_client_command_callback(client::peer_device_t *peer_device, client::command_handle_t *cmd_handle,
                                          void *priv_data)
 {
-    //  on_off::attribute::subscribe_on_off(peer_device,/*remote_endpoint_id*/ 1, fan_control_cb);
-    on_off::attribute::subscribe_on_off(peer_device,/*remote_endpoint_id*/ 1, light_control_cb);
-    on_off::attribute::subscribe_on_off(peer_device,/*remote_endpoint_id*/ 2, fan_control_cb);
+    static bool subed[2] = {false};
+
+    printf("Peer device address: %p\n", (void*)peer_device);
+    printf("endpointId: %lu\n", cmd_handle->endpoint_id);
+    if (cmd_handle->endpoint_id==2 && !subed[1])
+    {
+        printf("inside id 2\n");
+        on_off::attribute::subscribe_on_off(peer_device,/*remote_endpoint_id*/ 2, fan_control_cb);
+        subed[1] = true;
+    }else if (cmd_handle->endpoint_id==1 && !subed[0]){
+        printf("inside id 1\n");
+        on_off::attribute::subscribe_on_off(peer_device,/*remote_endpoint_id*/ 1, light_control_cb);
+        subed[0] = true;
+    }
+
+// esp_matter::controller::send_subscribe_attr_command(0,1,6,0, 50, 100);
+// esp_matter::controller::send_subscribe_attr_command(0,2,6,0, 50, 100);
+
     if (cmd_handle->cluster_id == OnOff::Id) {
         switch(cmd_handle->command_id) {
             case OnOff::Commands::Off::Id:

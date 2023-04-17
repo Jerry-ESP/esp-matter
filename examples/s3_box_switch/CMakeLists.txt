@@ -1,6 +1,7 @@
 # The following lines of boilerplate have to be in your project's
 # CMakeLists in this exact order for cmake to work correctly
 cmake_minimum_required(VERSION 3.5)
+add_compile_options(-fdiagnostics-color=always -Wno-format -Wno-missing-field-initializers -Wno-overflow)
 
 if(NOT DEFINED ENV{ESP_MATTER_PATH})
     message(FATAL_ERROR "Please set ESP_MATTER_PATH to the path of esp-matter repo")
@@ -44,6 +45,12 @@ project(s3_box_switch)
 
 idf_build_set_property(CXX_COMPILE_OPTIONS "-std=gnu++14;-Os;-DCHIP_HAVE_CONFIG_H" APPEND)
 idf_build_set_property(C_COMPILE_OPTIONS "-Os" APPEND)
+
+if (CONFIG_ESP_MATTER_COMMISSIONER_ENABLE)
+    idf_build_set_property(CXX_COMPILE_OPTIONS "-DCHIP_DEVICE_CONFIG_ENABLE_COMMISSIONER_DISCOVERY=1;-DCHIP_CONFIG_CONTROLLER_MAX_ACTIVE_DEVICES=${CONFIG_ESP_MATTER_COMMISSIONER_MAX_ACTIVE_DEVICES}" APPEND)
+    idf_build_set_property(C_COMPILE_OPTIONS "-DCHIP_DEVICE_CONFIG_ENABLE_COMMISSIONER_DISCOVERY=1;-DCHIP_CONFIG_CONTROLLER_MAX_ACTIVE_DEVICES=${CONFIG_ESP_MATTER_COMMISSIONER_MAX_ACTIVE_DEVICES}" APPEND)
+endif()
+
 # For RISCV chips, project_include.cmake sets -Wno-format, but does not clear various
 # flags that depend on -Wformat
 idf_build_set_property(COMPILE_OPTIONS "-Wno-format-nonliteral;-Wno-format-security;;-Wformat=0" APPEND)
