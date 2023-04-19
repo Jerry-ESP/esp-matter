@@ -244,6 +244,7 @@ static void light_control_cb(bool power)
 void app_driver_client_command_callback(client::peer_device_t *peer_device, client::command_handle_t *cmd_handle,
                                          void *priv_data)
 {
+                                             printf("ali \n");
     static bool subed[2] = {false};
 
     printf("Peer device address: %p\n", (void*)peer_device);
@@ -251,32 +252,34 @@ void app_driver_client_command_callback(client::peer_device_t *peer_device, clie
     if (cmd_handle->endpoint_id==2 && !subed[1])
     {
         printf("inside id 2\n");
-        on_off::attribute::subscribe_on_off(peer_device,/*remote_endpoint_id*/ 2, fan_control_cb);
+        on_off::attribute::subscribe_on_off(2, peer_device,/*remote_endpoint_id*/ 1, fan_control_cb);
+        //esp_matter::controller::send_subscribe_attr_command(22,2,6,0, 50, 100);
         subed[1] = true;
     }else if (cmd_handle->endpoint_id==1 && !subed[0]){
         printf("inside id 1\n");
-        on_off::attribute::subscribe_on_off(peer_device,/*remote_endpoint_id*/ 1, light_control_cb);
+        on_off::attribute::subscribe_on_off(1, peer_device,/*remote_endpoint_id*/ 1, light_control_cb);
+        //esp_matter::controller::send_subscribe_attr_command(22,1,6,0, 50, 100);
         subed[0] = true;
     }
 
-// esp_matter::controller::send_subscribe_attr_command(0,1,6,0, 50, 100);
-// esp_matter::controller::send_subscribe_attr_command(0,2,6,0, 50, 100);
+// esp_matter::controller::send_subscribe_attr_command(23,1,6,0, 50, 100);
+// esp_matter::controller::send_subscribe_attr_command(21,2,6,0, 50, 100);
 
     if (cmd_handle->cluster_id == OnOff::Id) {
         switch(cmd_handle->command_id) {
             case OnOff::Commands::Off::Id:
             {
-                on_off::command::send_off(peer_device, cmd_handle->endpoint_id);
+                on_off::command::send_off(peer_device, 1);
                 break;
             };
             case OnOff::Commands::On::Id:
             {
-                on_off::command::send_on(peer_device, cmd_handle->endpoint_id);
+                on_off::command::send_on(peer_device, 1);
                 break;
             };
             case OnOff::Commands::Toggle::Id:
             {
-                on_off::command::send_toggle(peer_device, cmd_handle->endpoint_id);
+                on_off::command::send_toggle(peer_device, 1);
                 break;
             };
             default:
@@ -290,7 +293,7 @@ void app_driver_client_command_callback(client::peer_device_t *peer_device, clie
                     ESP_LOGE(TAG, "Number of parameters error");
                     return;
                 }
-                level_control::command::send_move(peer_device, cmd_handle->endpoint_id, strtol((const char *)(cmd_handle->command_data) + 1, NULL, 16),
+                level_control::command::send_move(peer_device, 1, strtol((const char *)(cmd_handle->command_data) + 1, NULL, 16),
                         strtol((const char *)(cmd_handle->command_data) + 11, NULL, 16), strtol((const char *)(cmd_handle->command_data) + 21, NULL, 16),
                         strtol((const char *)(cmd_handle->command_data) + 31, NULL, 16));
                 break;
@@ -301,7 +304,7 @@ void app_driver_client_command_callback(client::peer_device_t *peer_device, clie
                     ESP_LOGE(TAG, "Number of parameters error");
                     return;
                 }
-                level_control::command::send_move_to_level(peer_device, cmd_handle->endpoint_id, strtol((const char *)(cmd_handle->command_data) + 1, NULL, 16),
+                level_control::command::send_move_to_level(peer_device, 1, strtol((const char *)(cmd_handle->command_data) + 1, NULL, 16),
                         strtol((const char *)(cmd_handle->command_data) + 11, NULL, 16), strtol((const char *)(cmd_handle->command_data) + 21, NULL, 16),
                         strtol((const char *)(cmd_handle->command_data) + 31, NULL, 16));
                 break;
@@ -312,7 +315,7 @@ void app_driver_client_command_callback(client::peer_device_t *peer_device, clie
                     ESP_LOGE(TAG, "Number of parameters error");
                     return;
                 }
-                level_control::command::send_step(peer_device, cmd_handle->endpoint_id, strtol((const char *)(cmd_handle->command_data) + 1, NULL, 16),
+                level_control::command::send_step(peer_device, 1, strtol((const char *)(cmd_handle->command_data) + 1, NULL, 16),
                         strtol((const char *)(cmd_handle->command_data) + 11, NULL, 16), strtol((const char *)(cmd_handle->command_data) + 21, NULL, 16),
                         strtol((const char *)(cmd_handle->command_data) + 31, NULL, 16), strtol((const char *)(cmd_handle->command_data) + 41, NULL, 16));
                 break;
@@ -323,7 +326,7 @@ void app_driver_client_command_callback(client::peer_device_t *peer_device, clie
                     ESP_LOGE(TAG, "Number of parameters error");
                     return;
                 }
-                level_control::command::send_stop(peer_device, cmd_handle->endpoint_id, strtol((const char *)(cmd_handle->command_data) + 1, NULL, 16),
+                level_control::command::send_stop(peer_device, 1, strtol((const char *)(cmd_handle->command_data) + 1, NULL, 16),
                         strtol((const char *)(cmd_handle->command_data) + 11, NULL, 16));
                 break;
             };
@@ -333,7 +336,7 @@ void app_driver_client_command_callback(client::peer_device_t *peer_device, clie
                     ESP_LOGE(TAG, "Number of parameters error");
                     return;
                 }
-                level_control::command::send_move_with_on_off(peer_device, cmd_handle->endpoint_id, strtol((const char *)(cmd_handle->command_data) + 1, NULL, 16),
+                level_control::command::send_move_with_on_off(peer_device, 1, strtol((const char *)(cmd_handle->command_data) + 1, NULL, 16),
                         strtol((const char *)(cmd_handle->command_data) + 11, NULL, 16));
                 break;
             };
@@ -343,7 +346,7 @@ void app_driver_client_command_callback(client::peer_device_t *peer_device, clie
                     ESP_LOGE(TAG, "Number of parameters error");
                     return;
                 }
-                level_control::command::send_move_to_level_with_on_off(peer_device, cmd_handle->endpoint_id, strtol((const char *)(cmd_handle->command_data) + 1, NULL, 16),
+                level_control::command::send_move_to_level_with_on_off(peer_device, 1, strtol((const char *)(cmd_handle->command_data) + 1, NULL, 16),
                         strtol((const char *)(cmd_handle->command_data) + 11, NULL, 16));
                 break;
             };
@@ -353,13 +356,13 @@ void app_driver_client_command_callback(client::peer_device_t *peer_device, clie
                     ESP_LOGE(TAG, "Number of parameters error");
                     return;
                 }
-                level_control::command::send_step_with_on_off(peer_device, cmd_handle->endpoint_id, strtol((const char *)(cmd_handle->command_data) + 1, NULL, 16),
+                level_control::command::send_step_with_on_off(peer_device, 1, strtol((const char *)(cmd_handle->command_data) + 1, NULL, 16),
                         strtol((const char *)(cmd_handle->command_data) + 11, NULL, 16), strtol((const char *)(cmd_handle->command_data) + 21, NULL, 16));
                 break;
             };
             case LevelControl::Commands::StopWithOnOff::Id:
             {
-                level_control::command::send_stop_with_on_off(peer_device, cmd_handle->endpoint_id);
+                level_control::command::send_stop_with_on_off(peer_device, 1);
                 break;
             };
             default:
@@ -373,7 +376,7 @@ void app_driver_client_command_callback(client::peer_device_t *peer_device, clie
                     ESP_LOGE(TAG, "Number of parameters error");
                     return;
                 }
-                color_control::command::send_move_hue(peer_device, cmd_handle->endpoint_id, strtol((const char *)(cmd_handle->command_data) + 1, NULL, 16),
+                color_control::command::send_move_hue(peer_device, 1, strtol((const char *)(cmd_handle->command_data) + 1, NULL, 16),
                         strtol((const char *)(cmd_handle->command_data) + 11, NULL, 16), strtol((const char *)(cmd_handle->command_data) + 21, NULL, 16),
                         strtol((const char *)(cmd_handle->command_data) + 31, NULL, 16));
                 break;
@@ -384,7 +387,7 @@ void app_driver_client_command_callback(client::peer_device_t *peer_device, clie
                     ESP_LOGE(TAG, "Number of parameters error");
                     return;
                 }
-                color_control::command::send_move_to_hue(peer_device, cmd_handle->endpoint_id, strtol((const char *)(cmd_handle->command_data) + 1, NULL, 16),
+                color_control::command::send_move_to_hue(peer_device, 1, strtol((const char *)(cmd_handle->command_data) + 1, NULL, 16),
                         strtol((const char *)(cmd_handle->command_data) + 11, NULL, 16), strtol((const char *)(cmd_handle->command_data) + 21, NULL, 16),
                         strtol((const char *)(cmd_handle->command_data) + 31, NULL, 16), strtol((const char *)(cmd_handle->command_data) + 41, NULL, 16));
                 break;
@@ -395,7 +398,7 @@ void app_driver_client_command_callback(client::peer_device_t *peer_device, clie
                     ESP_LOGE(TAG, "Number of parameters error");
                     return;
                 }
-                color_control::command::send_step_hue(peer_device, cmd_handle->endpoint_id, strtol((const char *)(cmd_handle->command_data) + 1, NULL, 16),
+                color_control::command::send_step_hue(peer_device, 1, strtol((const char *)(cmd_handle->command_data) + 1, NULL, 16),
                         strtol((const char *)(cmd_handle->command_data) + 11, NULL, 16), strtol((const char *)(cmd_handle->command_data) + 21, NULL, 16),
                         strtol((const char *)(cmd_handle->command_data) + 31, NULL, 16), strtol((const char *)(cmd_handle->command_data) + 41, NULL, 16));
                 break;
@@ -406,7 +409,7 @@ void app_driver_client_command_callback(client::peer_device_t *peer_device, clie
                     ESP_LOGE(TAG, "Number of parameters error");
                     return;
                 }
-                color_control::command::send_move_saturation(peer_device, cmd_handle->endpoint_id, strtol((const char *)(cmd_handle->command_data) + 1, NULL, 16),
+                color_control::command::send_move_saturation(peer_device, 1, strtol((const char *)(cmd_handle->command_data) + 1, NULL, 16),
                         strtol((const char *)(cmd_handle->command_data) + 11, NULL, 16), strtol((const char *)(cmd_handle->command_data) + 21, NULL, 16),
                         strtol((const char *)(cmd_handle->command_data) + 31, NULL, 16));
                 break;
@@ -417,7 +420,7 @@ void app_driver_client_command_callback(client::peer_device_t *peer_device, clie
                     ESP_LOGE(TAG, "Number of parameters error");
                     return;
                 }
-                color_control::command::send_move_to_saturation(peer_device, cmd_handle->endpoint_id, strtol((const char *)(cmd_handle->command_data) + 1, NULL, 16),
+                color_control::command::send_move_to_saturation(peer_device, 1, strtol((const char *)(cmd_handle->command_data) + 1, NULL, 16),
                         strtol((const char *)(cmd_handle->command_data) + 11, NULL, 16), strtol((const char *)(cmd_handle->command_data) + 21, NULL, 16),
                         strtol((const char *)(cmd_handle->command_data) + 31, NULL, 16));
                 break;
@@ -428,7 +431,7 @@ void app_driver_client_command_callback(client::peer_device_t *peer_device, clie
                     ESP_LOGE(TAG, "Number of parameters error");
                     return;
                 }
-                color_control::command::send_step_saturation(peer_device, cmd_handle->endpoint_id, strtol((const char *)(cmd_handle->command_data) + 1, NULL, 16),
+                color_control::command::send_step_saturation(peer_device, 1, strtol((const char *)(cmd_handle->command_data) + 1, NULL, 16),
                         strtol((const char *)(cmd_handle->command_data) + 11, NULL, 16), strtol((const char *)(cmd_handle->command_data) + 21, NULL, 16),
                         strtol((const char *)(cmd_handle->command_data) + 31, NULL, 16), strtol((const char *)(cmd_handle->command_data) + 41, NULL, 16));
                 break;
@@ -439,7 +442,7 @@ void app_driver_client_command_callback(client::peer_device_t *peer_device, clie
                     ESP_LOGE(TAG, "Number of parameters error");
                     return;
                 }
-                color_control::command::send_move_to_hue_and_saturation(peer_device, cmd_handle->endpoint_id, strtol((const char *)(cmd_handle->command_data) + 1, NULL, 16),
+                color_control::command::send_move_to_hue_and_saturation(peer_device, 1, strtol((const char *)(cmd_handle->command_data) + 1, NULL, 16),
                         strtol((const char *)(cmd_handle->command_data) + 11, NULL, 16), strtol((const char *)(cmd_handle->command_data) + 21, NULL, 16),
                         strtol((const char *)(cmd_handle->command_data) + 31, NULL, 16), strtol((const char *)(cmd_handle->command_data) + 41, NULL, 16));
                 break;
