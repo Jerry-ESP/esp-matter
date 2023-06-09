@@ -17,7 +17,7 @@
 
 #define LED_GPIO_PIN GPIO_NUM_8
 #define LED_CHANNEL 0 /* RMT_CHANNEL_0 */
-#define BUTTON_GPIO_PIN GPIO_NUM_9
+#define BUTTON_GPIO_PIN GPIO_NUM_10
 
 led_driver_config_t led_driver_get_config()
 {

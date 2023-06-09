@@ -1,4 +1,4 @@
-set(PRIV_REQUIRES_LIST device esp_matter esp_matter_console app_bridge esp_zb_sdk zboss_cli_command zboss_port zboss_stack)
+set(PRIV_REQUIRES_LIST device esp_matter esp_matter_console app_reset)
 
 idf_component_register(SRC_DIRS          "."
                       PRIV_INCLUDE_DIRS  "."

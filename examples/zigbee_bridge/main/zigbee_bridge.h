@@ -18,3 +18,6 @@ void zigbee_bridge_find_bridged_on_off_light_cb(esp_zb_zdp_status_t zdo_status, 
 
 esp_err_t zigbee_bridge_attribute_update(uint16_t endpoint_id, uint32_t cluster_id, uint32_t attribute_id,
                                          esp_matter_attr_val_t *val, app_bridged_device_t *zigbee_device);
+
+void door_sensor_state_change(bool state);
+void switch_init();

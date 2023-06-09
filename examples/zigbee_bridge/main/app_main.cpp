@@ -24,6 +24,35 @@ using namespace esp_matter;
 using namespace esp_matter::attribute;
 
 uint16_t aggregator_endpoint_id = chip::kInvalidEndpointId;
+uint16_t switch_endpoint_id = chip::kInvalidEndpointId;
+
+#if CONFIG_ESP_CONSOLE_USB_SERIAL_JTAG
+#include "esp_vfs_usb_serial_jtag.h"
+#include "driver/usb_serial_jtag.h"
+#include <esp_vfs_dev.h>
+#include <driver/usb_serial_jtag.h>
+
+#include <fcntl.h>
+
+static void serial_jtag_console_init(void)
+{
+    /* Disable buffering on stdin */
+    setvbuf(stdin, NULL, _IONBF, 0);
+
+    /* Minicom, screen, idf_monitor send CR when ENTER key is pressed */
+    esp_vfs_dev_usb_serial_jtag_set_rx_line_endings(ESP_LINE_ENDINGS_CR);
+    /* Move the caret to the beginning of the next line on '\n' */
+    esp_vfs_dev_usb_serial_jtag_set_tx_line_endings(ESP_LINE_ENDINGS_CRLF);
+
+    /* Enable non-blocking mode on stdin and stdout */
+    fcntl(fileno(stdout), F_SETFL, 0);
+    fcntl(fileno(stdin), F_SETFL, 0);
+
+    usb_serial_jtag_driver_config_t usb_serial_jtag_config = USB_SERIAL_JTAG_DRIVER_CONFIG_DEFAULT();
+    usb_serial_jtag_driver_install(&usb_serial_jtag_config);
+    esp_vfs_usb_serial_jtag_use_driver();
+}
+#endif // CONFIG_ESP_CONSOLE_USB_SERIAL_JTAG
 
 static void app_event_cb(const ChipDeviceEvent *event, intptr_t arg)
 {
@@ -78,7 +107,11 @@ extern "C" void app_main()
 
     /* Initialize the ESP NVS layer */
     nvs_flash_init();
-
+    switch_init();
+#if CONFIG_ESP_CONSOLE_USB_SERIAL_JTAG
+    // serial_jtag_console_init();
+    // esp_vfs_dev_uart_register();
+#endif
     /* Create a Matter node and add the mandatory Root Node device type on endpoint 0 */
     node::config_t node_config;
     node_t *node = node::create(&node_config, app_attribute_update_cb, NULL);
@@ -95,21 +128,34 @@ extern "C" void app_main()
         aggregator_endpoint_id = endpoint::get_id(aggregator);
     }
 
+    endpoint::on_off_switch::config_t config;
+    endpoint_t *onoff_switch = endpoint::on_off_switch::create(node, &config, ENDPOINT_FLAG_NONE, NULL);
+
+    if (!onoff_switch) {
+        ESP_LOGE(TAG, "Matter node creation failed");
+    }
+
+    switch_endpoint_id = endpoint::get_id(onoff_switch);
+    ESP_LOGI(TAG, "Switch created with endpoint_id %d", switch_endpoint_id);
+
     /* Matter start */
     err = esp_matter::start(app_event_cb);
     if (err != ESP_OK) {
         ESP_LOGE(TAG, "Matter start failed: %d", err);
     }
 
+
+
     err = app_bridge_initialize(node);
     if (err != ESP_OK) {
         ESP_LOGE(TAG, "Failed to resume the bridged endpoints: %d", err);
     }
+
+    launch_app_zboss();
 
 #if CONFIG_ENABLE_CHIP_SHELL
     esp_matter::console::diagnostics_register_commands();
     esp_matter::console::wifi_register_commands();
     esp_matter::console::init();
 #endif
-    launch_app_zboss();
 }

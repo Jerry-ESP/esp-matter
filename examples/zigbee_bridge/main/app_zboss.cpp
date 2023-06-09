@@ -13,12 +13,15 @@
 #include <freertos/FreeRTOS.h>
 #include <freertos/task.h>
 #include <zigbee_bridge.h>
+#include <zb_esp_cli.h>
 
 #if (!defined(ZB_MACSPLIT_HOST) && defined(ZB_MACSPLIT_DEVICE))
 #error "Zigbee host option should be enabled to use this example"
 #endif
 
 static const char *TAG = "esp_zboss";
+
+//static esp_zb_ias_zone_status_change_notif_callback_t door_sensor_state_report_callback(esp_zb_zcl_status_t status, uint16_t zone_status, uint8_t extzone_status, uint8_t zone_id, uint16_t delay);
 
 static void bdb_start_top_level_commissioning_cb(uint8_t mode_mask)
 {
@@ -86,10 +89,6 @@ void esp_zb_app_signal_handler(esp_zb_app_signal_t *signal_struct)
     case ESP_ZB_ZDO_SIGNAL_DEVICE_ANNCE:
         dev_annce_params = (esp_zb_zdo_signal_device_annce_params_t *)esp_zb_app_signal_get_params(p_sg_p);
         ESP_LOGI(TAG, "New device commissioned or rejoined (short: 0x%04hx)", dev_annce_params->device_short_addr);
-        esp_zb_zdo_match_desc_req_param_t cmd_req;
-        cmd_req.dst_nwk_addr = dev_annce_params->device_short_addr;
-        cmd_req.addr_of_interest = dev_annce_params->device_short_addr;
-        esp_zb_zdo_find_on_off_light(&cmd_req, zigbee_bridge_find_bridged_on_off_light_cb, NULL);
         break;
 
     default:
@@ -98,11 +97,42 @@ void esp_zb_app_signal_handler(esp_zb_app_signal_t *signal_struct)
     }
 }
 
+static void door_sensor_state_report_callback(esp_zb_zcl_status_t status, uint16_t zone_status, uint8_t extzone_status, uint8_t zone_id, uint16_t delay)
+{
+    printf("door_sensor_state_report_callback--zone_status: %d \n", zone_status);
+    door_sensor_state_change((bool)(zone_status & 0x0001));
+    return;
+}
+
+static uint8_t esp_zb_cli_agent_handler(uint8_t bufid)
+{
+    if (esp_zb_cli_agent_ep_handler_report(bufid) == true) {
+        return true;
+    }
+
+    return false;
+}
+
 static void zboss_task(void *pvParameters)
 {
+    uint8_t test_attr;
+    test_attr = 0;
     /* initialize Zigbee stack with Zigbee coordinator config */
     esp_zb_cfg_t zb_nwk_cfg = ESP_ZB_ZC_CONFIG();
     esp_zb_init(&zb_nwk_cfg);
+    esp_zb_attribute_list_t *esp_zb_basic_cluster = esp_zb_zcl_attr_list_create(ESP_ZB_ZCL_CLUSTER_ID_BASIC);
+    esp_zb_basic_cluster_add_attr(esp_zb_basic_cluster, ESP_ZB_ZCL_ATTR_BASIC_ZCL_VERSION_ID, &test_attr);
+    esp_zb_basic_cluster_add_attr(esp_zb_basic_cluster, ESP_ZB_ZCL_ATTR_BASIC_POWER_SOURCE_ID, &test_attr);
+    esp_zb_attribute_list_t *esp_zb_on_off_client_cluster = esp_zb_zcl_attr_list_create(ESP_ZB_ZCL_CLUSTER_ID_ON_OFF);
+    esp_zb_cluster_list_t *esp_zb_cluster_list = esp_zb_zcl_cluster_list_create();
+    esp_zb_cluster_list_add_basic_cluster(esp_zb_cluster_list, esp_zb_basic_cluster, ESP_ZB_ZCL_CLUSTER_SERVER_ROLE);
+    esp_zb_cluster_list_add_on_off_cluster(esp_zb_cluster_list, esp_zb_on_off_client_cluster, ESP_ZB_ZCL_CLUSTER_CLIENT_ROLE);
+    esp_zb_ep_list_t *esp_zb_ep_list = esp_zb_ep_list_create();
+    esp_zb_ep_list_add_ep(esp_zb_ep_list, esp_zb_cluster_list, 1, ESP_ZB_AF_HA_PROFILE_ID, ESP_ZB_HA_ON_OFF_SWITCH_DEVICE_ID);
+    esp_zb_device_register(esp_zb_ep_list);
+
+    esp_zb_ias_zone_add_status_change_notify_cb(1, door_sensor_state_report_callback);
+
     /* initiate Zigbee Stack start without zb_send_no_autostart_signal auto-start */
     esp_zb_set_primary_network_channel_set(ESP_ZB_PRIMARY_CHANNEL_MASK);
     ESP_ERROR_CHECK(esp_zb_start(false));
