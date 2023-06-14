@@ -64,6 +64,8 @@ static const sr_cmd_t g_default_cmd_info[] = {
     // English
     {SR_CMD_FAN_ON, SR_LANG_EN, 0, "Turn On the Fan", "TkN nN jc FaN", {NULL}},
     {SR_CMD_FAN_OFF, SR_LANG_EN, 0, "Turn Off the Fan", "TkN eF jc FaN", {NULL}},
+    {SR_CMD_PLUG_ON, SR_LANG_EN, 0, "Turn On the Plug", "TkN nN jc PLcG", {NULL}},
+    {SR_CMD_PLUG_OFF, SR_LANG_EN, 0, "Turn Off the Plug", "TkN eF jc PLcG", {NULL}},
     {SR_CMD_SET_RED, SR_LANG_EN, 0, "Turn Red", "TkN RfD", {NULL}},
     {SR_CMD_SET_GREEN, SR_LANG_EN, 0, "Turn Green", "TkN GRmN", {NULL}},
     {SR_CMD_SET_BLUE, SR_LANG_EN, 0, "Turn Blue", "TkN BLo", {NULL}},

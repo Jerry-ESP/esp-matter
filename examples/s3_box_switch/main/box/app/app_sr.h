@@ -18,7 +18,7 @@
 extern "C" {
 #endif
 
-#define SR_CONTINUE_DET 1 
+#define SR_CONTINUE_DET 1
 #define SR_RUN_TEST 0 /**< Just for sr experiment in laboratory >*/
 #if SR_RUN_TEST
 #ifdef SR_CONTINUE_DET
@@ -48,6 +48,8 @@ typedef enum {
     SR_CMD_LIGHT_OFF,
     SR_CMD_FAN_ON,
     SR_CMD_FAN_OFF,
+    SR_CMD_PLUG_ON,
+    SR_CMD_PLUG_OFF,
     SR_CMD_CUSTOMIZE_COLOR,
     SR_CMD_NEXT,
     SR_CMD_PLAY,

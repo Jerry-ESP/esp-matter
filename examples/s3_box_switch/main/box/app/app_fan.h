@@ -16,6 +16,8 @@ extern "C" {
 esp_err_t app_fan_change_io(gpio_num_t gpio, bool act_level);
 esp_err_t app_fan_set_power(bool power);
 bool app_fan_get_state(void);
+esp_err_t app_plug_set_power(bool power);
+bool app_plug_get_state(void);
 
 #ifdef __cplusplus
 }

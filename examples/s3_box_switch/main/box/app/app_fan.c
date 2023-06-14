@@ -19,6 +19,7 @@
 static const char *TAG = "app_fan";
 
 static bool g_fan_on = 0;
+static bool g_plug_on = 0;
 
 esp_err_t app_fan_change_io(gpio_num_t gpio, bool act_level)
 {
@@ -38,6 +39,25 @@ esp_err_t app_fan_set_power(bool power)
     ui_dev_ctrl_set_state(UI_DEV_FAN, g_fan_on);
 
     return ret_val;
+}
+
+esp_err_t app_plug_set_power(bool power)
+{
+    esp_err_t ret_val = ESP_OK;
+
+    if (power) {
+        g_plug_on = true;
+    } else {
+        g_plug_on = false;
+    }
+    ui_dev_ctrl_set_state(UI_DEV_SWITCH, g_plug_on);
+
+    return ret_val;
+}
+
+bool app_plug_get_state(void)
+{
+    return g_plug_on;
 }
 
 bool app_fan_get_state(void)
