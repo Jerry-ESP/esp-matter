@@ -139,6 +139,10 @@ extern "C" void app_main()
     /* Initialize the ESP NVS layer */
     nvs_flash_init();
 
+    nvs_stats_t nvs_stats;
+    nvs_get_stats("nvs", &nvs_stats);
+    printf("after nvs init---\nused entrys: %d \nfree entrys: %d \ntotal entrys:%d\n", nvs_stats.used_entries, nvs_stats.free_entries, nvs_stats.total_entries);
+
     /* Initialize driver */
     app_driver_handle_t light_handle = app_driver_light_init();
     app_driver_handle_t button_handle = app_driver_button_init();
