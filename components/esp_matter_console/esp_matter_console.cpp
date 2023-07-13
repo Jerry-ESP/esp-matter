@@ -20,6 +20,7 @@
 #include <esp_matter_console.h>
 #include <lib/shell/Engine.h>
 #include <platform/ESP32/ESP32Utils.h>
+#include </home/liyashuai/esp/esp-idf/components/nvs_flash/include/nvs.h>
 
 namespace esp_matter {
 namespace console {
@@ -84,6 +85,9 @@ esp_err_t print_description(const command_t *command, void *arg)
 static esp_err_t help_handler(int argc, char **argv)
 {
     base_engine.for_each_command(print_description, NULL);
+    nvs_stats_t nvs_stats;
+    nvs_get_stats("nvs", &nvs_stats);
+    printf("/**************************************/\n      used entrys: %d \n      free entrys: %d \n      total entrys:%d\n/**************************************/\n", nvs_stats.used_entries, nvs_stats.free_entries, nvs_stats.total_entries);
     return ESP_OK;
 }
 
