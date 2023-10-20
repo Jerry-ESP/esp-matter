@@ -84,12 +84,24 @@ void esp_zb_app_signal_handler(esp_zb_app_signal_t *signal_struct)
         break;
 
     case ESP_ZB_ZDO_SIGNAL_DEVICE_ANNCE:
+    {
         dev_annce_params = (esp_zb_zdo_signal_device_annce_params_t *)esp_zb_app_signal_get_params(p_sg_p);
         ESP_LOGI(TAG, "New device commissioned or rejoined (short: 0x%04hx)", dev_annce_params->device_short_addr);
-        esp_zb_zdo_match_desc_req_param_t cmd_req;
-        cmd_req.dst_nwk_addr = dev_annce_params->device_short_addr;
-        cmd_req.addr_of_interest = dev_annce_params->device_short_addr;
-        esp_zb_zdo_find_on_off_light(&cmd_req, zigbee_bridge_find_bridged_on_off_light_cb, NULL);
+        // esp_zb_zdo_match_desc_req_param_t cmd_req;
+        // cmd_req.dst_nwk_addr = dev_annce_params->device_short_addr;
+        // cmd_req.addr_of_interest = dev_annce_params->device_short_addr;
+        // esp_zb_zdo_find_on_off_light(&cmd_req, zigbee_bridge_find_bridged_on_off_light_cb, NULL);
+
+        esp_zb_zdo_match_desc_req_param_t find_req;
+        uint16_t cluster_list[] = {ESP_ZB_ZCL_CLUSTER_ID_IAS_ZONE};
+        find_req.dst_nwk_addr = dev_annce_params->device_short_addr;
+        find_req.addr_of_interest = dev_annce_params->device_short_addr;
+        find_req.profile_id = ESP_ZB_AF_HA_PROFILE_ID;
+        find_req.num_in_clusters = 1;
+        find_req.num_out_clusters = 0;
+        find_req.cluster_list = cluster_list;
+        esp_zb_zdo_match_cluster(&find_req, zigbee_bridge_find_bridged_on_off_light_cb, NULL);
+    }
         break;
 
     default:
@@ -97,6 +109,8 @@ void esp_zb_app_signal_handler(esp_zb_app_signal_t *signal_struct)
         break;
     }
 }
+
+
 
 static void zboss_task(void *pvParameters)
 {

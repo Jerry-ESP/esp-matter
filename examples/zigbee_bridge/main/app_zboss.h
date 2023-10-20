@@ -14,7 +14,7 @@
 /*Zigbee Configuration*/
 #define MAX_CHILDREN 10 /* < The maximum amount of connected devices */
 #define INSTALLCODE_POLICY_ENABLE false /* enable the install code policy for security */
-#define ESP_ZB_PRIMARY_CHANNEL_MASK     (1l << 13) /* Zigbee primary channel mask use in the example */
+#define ESP_ZB_PRIMARY_CHANNEL_MASK     (1l << 12) /* Zigbee primary channel mask use in the example */
 
 #define ESP_ZB_ZC_CONFIG()                                      \
     {                                                           \
@@ -43,8 +43,8 @@
                     .rx_flow_ctrl_thresh = 0,              \
                     .source_clk = UART_SCLK_APB,           \
                 },                                         \
-            .rx_pin = 4,                                   \
-            .tx_pin = 5,                                   \
+            .rx_pin = 17,                                   \
+            .tx_pin = 18,                                   \
         },                                                 \
     }
 
