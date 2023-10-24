@@ -186,6 +186,11 @@ esp_err_t set_device_type(device_t *bridged_device, uint32_t device_type_id)
     case ESP_MATTER_ON_OFF_LIGHT_DEVICE_TYPE_ID: {
         on_off_light::config_t on_off_light_conf;
         bridged_device->endpoint = on_off_light::add(bridged_device->endpoint, &on_off_light_conf);
+
+        cluster::binding::config_t binding_config;
+        cluster::binding::create(bridged_device->endpoint, &binding_config, CLUSTER_FLAG_SERVER);
+        cluster::on_off::config_t on_off_config;
+        cluster::on_off::create(bridged_device->endpoint, &on_off_config, CLUSTER_FLAG_CLIENT, ESP_MATTER_NONE_FEATURE_ID);
         break;
     }
     case ESP_MATTER_DIMMABLE_LIGHT_DEVICE_TYPE_ID: {
@@ -207,6 +212,16 @@ esp_err_t set_device_type(device_t *bridged_device, uint32_t device_type_id)
     case ESP_MATTER_ON_OFF_SWITCH_DEVICE_TYPE_ID: {
         on_off_switch::config_t switch_config;
         bridged_device->endpoint = on_off_switch::add(bridged_device->endpoint, &switch_config);
+        break;
+    }
+    case ESP_MATTER_CONTACT_SENSOR_DEVICE_TYPE_ID: {
+        contact_sensor::config_t contact_config;
+        bridged_device->endpoint = contact_sensor::add(bridged_device->endpoint, &contact_config);
+
+        cluster::binding::config_t binding_config;
+        cluster::binding::create(bridged_device->endpoint, &binding_config, CLUSTER_FLAG_SERVER);
+        cluster::on_off::config_t on_off_config;
+        cluster::on_off::create(bridged_device->endpoint, &on_off_config, CLUSTER_FLAG_CLIENT, ESP_MATTER_NONE_FEATURE_ID);
         break;
     }
     default: {

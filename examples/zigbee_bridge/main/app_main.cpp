@@ -17,6 +17,7 @@
 #include <app_bridged_device.h>
 #include <app_zboss.h>
 #include <zigbee_bridge.h>
+#include <app_priv.h>
 
 static const char *TAG = "app_main";
 
@@ -82,6 +83,8 @@ extern "C" void app_main()
 
     /* Initialize the ESP NVS layer */
     nvs_flash_init();
+
+    app_driver_switch_init();
 
     /* Create a Matter node and add the mandatory Root Node device type on endpoint 0 */
     node::config_t node_config;

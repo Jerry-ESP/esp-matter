@@ -14,7 +14,16 @@
 #include <app_bridged_device.h>
 #include <stdint.h>
 
+#define ENABLE_ONOFF_LIGHT_BRIDGE false
+#define ENABLE_CONTACT_SENSOR_BRIDGE true
+
 void zigbee_bridge_find_bridged_on_off_light_cb(esp_zb_zdp_status_t zdo_status, uint16_t addr, uint8_t endpoint, void *user_ctx);
+
+void zigbee_bridge_find_bridged_contact_sensor_cb(esp_zb_zdp_status_t zdo_status, uint16_t addr, uint8_t endpoint, void *user_ctx);
+
+void zigbee_bridge_contact_state_change_handler(uint16_t zb_addr, uint8_t zb_endpoint, bool state);
+
+void zigbee_bridge_on_off_report_handler(uint16_t zb_addr, uint8_t zb_endpoint, bool on_off);
 
 esp_err_t zigbee_bridge_attribute_update(uint16_t endpoint_id, uint32_t cluster_id, uint32_t attribute_id,
                                          esp_matter_attr_val_t *val, app_bridged_device_t *zigbee_device);
