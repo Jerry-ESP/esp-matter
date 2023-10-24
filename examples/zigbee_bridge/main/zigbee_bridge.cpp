@@ -49,6 +49,51 @@ void zigbee_bridge_find_bridged_on_off_light_cb(esp_zb_zdp_status_t zdo_status, 
     }
 }
 
+void zigbee_bridge_find_bridged_contact_sensor_cb(esp_zb_zdp_status_t zdo_status, uint16_t addr, uint8_t endpoint, void *user_ctx)
+{
+    ESP_LOGI(TAG, "contact sensor found: address:0x%" PRIx16 ", endpoint:%" PRId8 ", response_status:%d", addr, endpoint, zdo_status);
+    if (zdo_status == ESP_ZB_ZDP_STATUS_SUCCESS) {
+        node_t *node = node::get();
+        if (!node) {
+            ESP_LOGE(TAG, "Could not find esp_matter node");
+            return;
+        }
+        if (app_bridge_get_device_by_zigbee_shortaddr(addr)) {
+            ESP_LOGI(TAG, "Bridged node for 0x%04" PRIx16 " zigbee device on endpoint %" PRId16 " has been created", addr,
+                     app_bridge_get_matter_endpointid_by_zigbee_shortaddr(addr));
+        } else {
+            app_bridged_device_t *bridged_device =
+                app_bridge_create_bridged_device(node, aggregator_endpoint_id, ESP_MATTER_CONTACT_SENSOR_DEVICE_TYPE_ID,
+                                                 ESP_MATTER_BRIDGED_DEVICE_TYPE_ZIGBEE,
+                                                 app_bridge_zigbee_address(endpoint, addr));
+            if (!bridged_device) {
+                ESP_LOGE(TAG, "Failed to create zigbee bridged device (contact sensor)");
+                return;
+            }
+            ESP_LOGI(TAG, "Create/Update bridged node for 0x%04" PRIx16 " zigbee device on endpoint %" PRId16 "", addr,
+                     app_bridge_get_matter_endpointid_by_zigbee_shortaddr(addr));
+        }
+    }
+}
+
+void zigbee_bridge_contact_state_change_handler(uint16_t zb_addr, uint8_t zb_endpoint, bool state)
+{
+    ESP_LOGI(TAG, "Contact sensor state change: %s\n", (state?"closed":"open"));
+    uint16_t endpoint_id = 2;
+    uint32_t cluster_id = BooleanState::Id;
+    uint32_t attribute_id = BooleanState::Attributes::StateValue::Id;
+
+    node_t *node = node::get();
+    endpoint_t *endpoint = endpoint::get(node, endpoint_id);
+    cluster_t *cluster = cluster::get(endpoint, cluster_id);
+    attribute_t *attribute = attribute::get(cluster, attribute_id);
+
+    esp_matter_attr_val_t val = esp_matter_invalid(NULL);
+    val.val.b = state;
+    val.type = ESP_MATTER_VAL_TYPE_BOOLEAN;
+    attribute::update(endpoint_id, cluster_id, attribute_id, &val);
+}
+
 esp_err_t zigbee_bridge_attribute_update(uint16_t endpoint_id, uint32_t cluster_id, uint32_t attribute_id,
                                          esp_matter_attr_val_t *val, app_bridged_device_t *zigbee_device)
 {

@@ -209,6 +209,11 @@ esp_err_t set_device_type(device_t *bridged_device, uint32_t device_type_id)
         bridged_device->endpoint = on_off_switch::add(bridged_device->endpoint, &switch_config);
         break;
     }
+    case ESP_MATTER_CONTACT_SENSOR_DEVICE_TYPE_ID: {
+        contact_sensor::config_t contact_config;
+        bridged_device->endpoint = contact_sensor::add(bridged_device->endpoint, &contact_config);
+        break;
+    }
     default: {
         ESP_LOGE(TAG, "Unsupported bridged matter device type");
         return ESP_ERR_INVALID_ARG;

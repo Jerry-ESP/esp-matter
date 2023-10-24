@@ -5,17 +5,40 @@
    software is distributed on an "AS IS" BASIS, WITHOUT WARRANTIES OR
    CONDITIONS OF ANY KIND, either express or implied.
 */
-
-#include <app_zboss.h>
 #include <esp_err.h>
+#include "esp_check.h"
 #include <esp_log.h>
 #include <esp_zigbee_core.h>
 #include <freertos/FreeRTOS.h>
 #include <freertos/task.h>
+#include <app_zboss.h>
+extern "C" { 
+#include "zboss_api.h"
+}
 #include <zigbee_bridge.h>
 
 #if (!defined(ZB_MACSPLIT_HOST) && defined(ZB_MACSPLIT_DEVICE))
 #error "Zigbee host option should be enabled to use this example"
+#endif
+
+#if ENABLE_CONTACT_SENSOR_BRIDGE
+static esp_zb_ias_zone_cluster_cfg_t ias_zone_cfg = {
+    .zone_state = ESP_ZB_ZCL_IAS_ZONE_ZONESTATE_NOT_ENROLLED,
+    .zone_type = ESP_ZB_ZCL_IAS_ZONE_ZONETYPE_FIRE_SENSOR,
+    .zone_status = 0,
+    .ias_cie_addr = ESP_ZB_ZCL_ZONE_IAS_CIE_ADDR_DEFAULT,
+    .zone_id = 0,
+    .zone_ctx = {NULL, NULL, 0, 0},
+};
+
+/* define a single remote device struct for managing */
+typedef struct zigbee_device_params_s {
+    esp_zb_ieee_addr_t ieee_addr;
+    uint8_t  endpoint;
+    uint16_t short_addr;
+} zigbee_device_params_t;
+
+zigbee_device_params_t zigbee_device;
 #endif
 
 static const char *TAG = "esp_zboss";
@@ -23,6 +46,69 @@ static const char *TAG = "esp_zboss";
 static void bdb_start_top_level_commissioning_cb(uint8_t mode_mask)
 {
     ESP_ERROR_CHECK(esp_zb_bdb_start_top_level_commissioning(mode_mask));
+}
+
+static esp_err_t zb_ias_zone_enroll_request_handler(const esp_zb_zcl_ias_zone_enroll_request_message_t *message)
+{
+    esp_err_t ret = ESP_OK;
+    ESP_RETURN_ON_FALSE(message, ESP_FAIL, TAG, "Empty message");
+    ESP_RETURN_ON_FALSE(message->info.status == ESP_ZB_ZCL_STATUS_SUCCESS, ESP_ERR_INVALID_ARG, TAG, "Received message: error status(%d)",
+                        message->info.status);
+    ESP_LOGI(TAG, "Received request information: zone type: 0x%x, zone code: 0x%x\n", message->zone_type, message->manufacturer_code);
+    esp_zb_zcl_ias_zone_enroll_response_cmd_t resp_cmd;
+    resp_cmd.zcl_basic_cmd.dst_addr_u.addr_short = message->info.src_address; //zigbee_device.short_addr;
+    resp_cmd.zcl_basic_cmd.dst_endpoint = message->info.src_endpoint; //zigbee_device.endpoint;
+    resp_cmd.zcl_basic_cmd.src_endpoint = 1;
+    resp_cmd.address_mode = ESP_ZB_APS_ADDR_MODE_16_ENDP_PRESENT;
+    resp_cmd.enroll_rsp_code = ESP_ZB_ZCL_IAS_ZONE_ENROLL_RESPONSE_CODE_SUCCESS;
+    resp_cmd.zone_id = 0x12;
+
+    ESP_EARLY_LOGI(TAG, "send zone response cmd");
+    esp_zb_zcl_ias_zone_enroll_cmd_resp(&resp_cmd);
+    return ret;
+}
+
+static esp_err_t zb_ias_zone_status_change_handler(const esp_zb_zcl_ias_zone_status_change_notification_message_t *message)
+{
+    esp_err_t ret = ESP_OK;
+    ESP_RETURN_ON_FALSE(message, ESP_FAIL, TAG, "Empty message");
+    ESP_RETURN_ON_FALSE(message->info.status == ESP_ZB_ZCL_STATUS_SUCCESS, ESP_ERR_INVALID_ARG, TAG, "Received message: error status(%d)",
+                        message->info.status);
+    ESP_LOGI(TAG, "Received status information: zone status: 0x%x, zone id: 0x%x\n", message->zone_status, message->zone_id);
+
+    bool state = (message->zone_status & 0x0001) ? false : true;
+
+    zigbee_bridge_contact_state_change_handler(message->info.src_address.u.short_addr, message->info.src_endpoint, state);
+    return ret;
+}
+
+static esp_err_t zb_action_handler(esp_zb_core_action_callback_id_t callback_id, const void *message)
+{
+    esp_err_t ret = ESP_OK;
+    switch (callback_id) {
+    case ESP_ZB_CORE_CMD_IAS_ZONE_ZONE_ENROLL_REQUEST_ID:
+        ret = zb_ias_zone_enroll_request_handler((esp_zb_zcl_ias_zone_enroll_request_message_t *)message);
+        break;
+    case ESP_ZB_CORE_CMD_IAS_ZONE_ZONE_STATUS_CHANGE_NOT_ID:
+        ret = zb_ias_zone_status_change_handler((esp_zb_zcl_ias_zone_status_change_notification_message_t *)message);
+        break;
+    default:
+        ESP_LOGW(TAG, "Receive Zigbee action(0x%x) callback", callback_id);
+        break;
+    }
+    return ret;
+}
+
+void user_find_cb(esp_zb_zdp_status_t zdo_status, uint16_t addr, uint8_t endpoint, void *user_ctx)
+{
+    ESP_LOGI(TAG, "User find cb: response_status:%d, address:0x%x, endpoint:%d", zdo_status, addr, endpoint);
+    if (zdo_status == ESP_ZB_ZDP_STATUS_SUCCESS) {
+        zigbee_device.endpoint = endpoint;
+        zigbee_device.short_addr = addr;
+        zigbee_bridge_find_bridged_contact_sensor_cb(zdo_status, addr, endpoint, user_ctx);
+    }
+
+    return;
 }
 
 /**
@@ -43,6 +129,7 @@ void esp_zb_app_signal_handler(esp_zb_app_signal_t *signal_struct)
     switch (sig_type) {
     case ESP_ZB_ZDO_SIGNAL_SKIP_STARTUP:
         ESP_LOGI(TAG, "Zigbee stack initialized");
+        zb_set_node_descriptor_manufacturer_code_req(0x115f, NULL); /*0x115f is Aqara vendor id*/
         esp_zb_bdb_start_top_level_commissioning(ESP_ZB_BDB_MODE_INITIALIZATION);
         break;
 
@@ -100,7 +187,7 @@ void esp_zb_app_signal_handler(esp_zb_app_signal_t *signal_struct)
         find_req.num_in_clusters = 1;
         find_req.num_out_clusters = 0;
         find_req.cluster_list = cluster_list;
-        esp_zb_zdo_match_cluster(&find_req, zigbee_bridge_find_bridged_on_off_light_cb, NULL);
+        esp_zb_zdo_match_cluster(&find_req, user_find_cb, NULL);
     }
         break;
 
@@ -110,14 +197,20 @@ void esp_zb_app_signal_handler(esp_zb_app_signal_t *signal_struct)
     }
 }
 
-
-
 static void zboss_task(void *pvParameters)
 {
     /* initialize Zigbee stack with Zigbee coordinator config */
     esp_zb_cfg_t zb_nwk_cfg = ESP_ZB_ZC_CONFIG();
     esp_zb_init(&zb_nwk_cfg);
     /* initiate Zigbee Stack start without zb_send_no_autostart_signal auto-start */
+
+    esp_zb_ep_list_t *ep_list = esp_zb_ep_list_create();
+
+    esp_zb_cluster_list_t *cluster_list = esp_zb_zcl_cluster_list_create();
+    esp_zb_cluster_list_add_ias_zone_cluster(cluster_list, esp_zb_ias_zone_cluster_create(&ias_zone_cfg), ESP_ZB_ZCL_CLUSTER_CLIENT_ROLE);
+    esp_zb_ep_list_add_ep(ep_list, cluster_list, 1, ESP_ZB_AF_HA_PROFILE_ID, ESP_ZB_HA_ON_OFF_SWITCH_DEVICE_ID);
+    esp_zb_device_register(ep_list);
+    esp_zb_core_action_handler_register(zb_action_handler);
     esp_zb_set_primary_network_channel_set(ESP_ZB_PRIMARY_CHANNEL_MASK);
     ESP_ERROR_CHECK(esp_zb_start(false));
     esp_zb_main_loop_iteration();
