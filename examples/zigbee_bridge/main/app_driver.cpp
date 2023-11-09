@@ -8,6 +8,8 @@
 
 #include <esp_matter.h>
 #include <app_priv.h>
+#include <device.h>
+#include <app_reset.h>
 
 using namespace chip::app::Clusters;
 using namespace esp_matter;
@@ -52,7 +54,13 @@ void send_onoff_command_to_binding_table(uint16_t local_endpoint, bool on_off)
     lock::chip_stack_unlock();
 }
 
-void app_driver_switch_init()
+app_driver_handle_t app_driver_switch_init()
 {
+    /* Initialize button */
+    button_config_t config = button_driver_get_config();
+    button_handle_t handle = iot_button_create(&config);
+
     client::set_command_callback(app_driver_client_command_callback, NULL, NULL);
+
+    return (app_driver_handle_t)handle;
 }

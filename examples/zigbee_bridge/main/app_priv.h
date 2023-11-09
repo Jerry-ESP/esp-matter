@@ -11,6 +11,8 @@
 #include <esp_err.h>
 #include <esp_matter.h>
 
-void app_driver_switch_init();
+typedef void *app_driver_handle_t;
+
+app_driver_handle_t app_driver_switch_init();
 
 void send_onoff_command_to_binding_table(uint16_t local_endpoint, bool on_off);

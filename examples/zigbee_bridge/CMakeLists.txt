@@ -11,7 +11,8 @@ if(NOT DEFINED ENV{ESP_MATTER_DEVICE_PATH})
         # use hollow device type because the iot button has a require of 'esp_adc_cal'
         # which is renamed to 'esp_adc' in IDF v5.0
         # TODO: set the ESP_MATTER_DEVICE_PATH to a certain target.
-        set(ENV{ESP_MATTER_DEVICE_PATH} $ENV{ESP_MATTER_PATH}/device_hal/device/hollow)
+        #set(ENV{ESP_MATTER_DEVICE_PATH} $ENV{ESP_MATTER_PATH}/device_hal/device/hollow)
+        set(ENV{ESP_MATTER_DEVICE_PATH} $ENV{ESP_MATTER_PATH}/device_hal/device/esp32s3_devkit_c)
     else()
         message(FATAL_ERROR "Unsupported IDF_TARGET")
     endif()
