@@ -88,8 +88,15 @@ static esp_err_t app_identification_cb(identification::callback_type_t type, uin
 static esp_err_t app_attribute_update_cb(attribute::callback_type_t type, uint16_t endpoint_id, uint32_t cluster_id,
                                          uint32_t attribute_id, esp_matter_attr_val_t *val, void *priv_data)
 {
-    // If user want to use driver, can be called from here.
-    return ESP_OK;
+    esp_err_t err = ESP_OK;
+
+    if (type == POST_UPDATE) {
+        // If user want to use driver, can be called from here.
+        app_driver_handle_t driver_handle = (app_driver_handle_t)priv_data;
+        err = app_driver_attribute_update(driver_handle, endpoint_id, cluster_id, attribute_id, val);
+    }
+
+    return err;
 }
 
 extern "C" void app_main()
@@ -107,7 +114,7 @@ extern "C" void app_main()
     if (!node) {
         ESP_LOGE(TAG, "Matter node creation failed");
     }
-    
+
     uint8_t device_type_index;
     if(esp_matter::nvs_helpers::get_device_type_from_nvs(&device_type_index) != ESP_OK) {
         semaphoreHandle = xSemaphoreCreateBinary();
