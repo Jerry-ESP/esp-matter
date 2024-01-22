@@ -24,6 +24,8 @@ using namespace esp_matter;
 
 static const char *TAG = "esp_matter_console_helpers";
 
+uint16_t app_endpoint_id = 0;
+
 extern SemaphoreHandle_t semaphoreHandle;
 
 #define PROMPT_STR CONFIG_IDF_TARGET
@@ -198,6 +200,7 @@ int create(uint8_t device_type_index)
         case ESP_MATTER_FAN: {
             esp_matter::endpoint::fan::config_t fan_config;
             endpoint = esp_matter::endpoint::fan::create(node, &fan_config, ENDPOINT_FLAG_NONE, NULL);
+            app_endpoint_id = endpoint::get_id(endpoint);
             break;
         }
         case ESP_MATTER_THERMOSTAT: {
@@ -207,7 +210,7 @@ int create(uint8_t device_type_index)
         }
         case ESP_MATTER_AGGREGATOR: {
             esp_matter::endpoint::aggregator::config_t aggregator_config;
-	    endpoint = esp_matter::endpoint::aggregator::create(node, &aggregator_config, ENDPOINT_FLAG_NONE, NULL);
+            endpoint = esp_matter::endpoint::aggregator::create(node, &aggregator_config, ENDPOINT_FLAG_NONE, NULL);
             break;
         }
         case ESP_MATTER_BRIDGED_NODE: {
@@ -311,34 +314,34 @@ int create(uint8_t device_type_index)
             cluster::temperature_control::feature::temperature_number::add(cluster, &temperature_number_config);
             break;
         }
-	case ESP_MATTER_AIR_PURIFIER: {
-	    esp_matter::endpoint::air_purifier::config_t air_purifier_config;
-	    endpoint = esp_matter::endpoint::air_purifier::create(node, &air_purifier_config, ENDPOINT_FLAG_NONE, NULL);
-	    break;
-	}
-	case ESP_MATTER_AIR_QUALITY_SENSOR: {
+        case ESP_MATTER_AIR_PURIFIER: {
+            esp_matter::endpoint::air_purifier::config_t air_purifier_config;
+            endpoint = esp_matter::endpoint::air_purifier::create(node, &air_purifier_config, ENDPOINT_FLAG_NONE, NULL);
+            break;
+        }
+        case ESP_MATTER_AIR_QUALITY_SENSOR: {
             esp_matter::endpoint::air_quality_sensor::config_t air_quality_sensor_config;
-	    endpoint = esp_matter::endpoint::air_quality_sensor::create(node, &air_quality_sensor_config, ENDPOINT_FLAG_NONE, NULL);
-	    break;
-	}
-	case ESP_MATTER_ROBOTIC_VACUUM_CLEANER: {
-	    esp_matter::endpoint::robotic_vacuum_cleaner::config_t robotic_vacuum_cleaner_config;
-	    endpoint = esp_matter::endpoint::robotic_vacuum_cleaner::create(node, &robotic_vacuum_cleaner_config, ENDPOINT_FLAG_NONE, NULL);
-	    break;
-	}
-	case ESP_MATTER_LAUNDRY_WASHER: {
-	    esp_matter::endpoint::laundry_washer::config_t laundry_washer_config;
-	    endpoint = esp_matter::endpoint::laundry_washer::create(node, &laundry_washer_config, ENDPOINT_FLAG_NONE, NULL);
-	    break;
-	}
-	case ESP_MATTER_DISH_WASHER: {
-	    esp_matter::endpoint::dish_washer::config_t dish_washer_config;
-	    endpoint = esp_matter::endpoint::dish_washer::create(node, &dish_washer_config, ENDPOINT_FLAG_NONE, NULL);
-	    break;
-	}
-	case ESP_MATTER_SMOKE_CO_ALARM: {
-	    esp_matter::endpoint::smoke_co_alarm::config_t smoke_co_alarm_config;
-	    endpoint = esp_matter::endpoint::smoke_co_alarm::create(node, &smoke_co_alarm_config, ENDPOINT_FLAG_NONE, NULL);
+            endpoint = esp_matter::endpoint::air_quality_sensor::create(node, &air_quality_sensor_config, ENDPOINT_FLAG_NONE, NULL);
+            break;
+        }
+        case ESP_MATTER_ROBOTIC_VACUUM_CLEANER: {
+            esp_matter::endpoint::robotic_vacuum_cleaner::config_t robotic_vacuum_cleaner_config;
+            endpoint = esp_matter::endpoint::robotic_vacuum_cleaner::create(node, &robotic_vacuum_cleaner_config, ENDPOINT_FLAG_NONE, NULL);
+            break;
+        }
+        case ESP_MATTER_LAUNDRY_WASHER: {
+            esp_matter::endpoint::laundry_washer::config_t laundry_washer_config;
+            endpoint = esp_matter::endpoint::laundry_washer::create(node, &laundry_washer_config, ENDPOINT_FLAG_NONE, NULL);
+            break;
+        }
+        case ESP_MATTER_DISH_WASHER: {
+            esp_matter::endpoint::dish_washer::config_t dish_washer_config;
+            endpoint = esp_matter::endpoint::dish_washer::create(node, &dish_washer_config, ENDPOINT_FLAG_NONE, NULL);
+            break;
+        }
+        case ESP_MATTER_SMOKE_CO_ALARM: {
+            esp_matter::endpoint::smoke_co_alarm::config_t smoke_co_alarm_config;
+            endpoint = esp_matter::endpoint::smoke_co_alarm::create(node, &smoke_co_alarm_config, ENDPOINT_FLAG_NONE, NULL);
 
             esp_matter::endpoint::power_source_device::config_t power_source_config;
             esp_matter::endpoint_t *ps_endpoint = esp_matter::endpoint::power_source_device::create(node, &power_source_config, ENDPOINT_FLAG_NONE, NULL);
@@ -347,19 +350,19 @@ int create(uint8_t device_type_index)
                 ESP_LOGE(TAG, "Matter create endpoint failed");
                 return 1;
             }
-	    break;
-	}
-	case ESP_MATTER_WATER_LEAK_DETECTOR: {
-	    esp_matter::endpoint::water_leak_detector::config_t water_leak_detector_config;
-	    endpoint = esp_matter::endpoint::water_leak_detector::create(node, &water_leak_detector_config, ENDPOINT_FLAG_NONE, NULL);
-	    break;
-	}
+            break;
+        }
+        case ESP_MATTER_WATER_LEAK_DETECTOR: {
+            esp_matter::endpoint::water_leak_detector::config_t water_leak_detector_config;
+            endpoint = esp_matter::endpoint::water_leak_detector::create(node, &water_leak_detector_config, ENDPOINT_FLAG_NONE, NULL);
+            break;
+        }
         default: {
             ESP_LOGE(TAG, "Please input a valid device type");
             break;
         }
     }
-     
+
     if (!endpoint) {
         ESP_LOGE(TAG, "Matter create endpoint failed");
         return 1;
@@ -369,7 +372,7 @@ int create(uint8_t device_type_index)
             err = esp_matter::nvs_helpers::set_device_type_in_nvs(device_type_index);
             if(err != ESP_OK) {
                 ESP_LOGE(TAG, "Failed to store device type in nvs");
-    	        return 1;
+                return 1;
             }
         }
 
@@ -377,7 +380,7 @@ int create(uint8_t device_type_index)
             xSemaphoreGive(semaphoreHandle);
         }
     }
-     
+
     return 0;
 }
 
@@ -392,7 +395,7 @@ namespace console {
      struct arg_str *device_type;
      struct arg_end *end;
  } create_device_args;
- 
+
 static int create(int argc, char **argv)
 {
     int nerrors = arg_parse(argc, argv, (void **) &create_device_args);
@@ -410,7 +413,7 @@ static int create(int argc, char **argv)
     for(int traverse=0; traverse < ESP_MATTER_DEVICE_TYPE_MAX - 1 ; traverse++) {
         if(device_type_list[traverse].device_name == str) {
             index = device_type_list[traverse].device_id;
-       	    break;
+               break;
         }
     }
 
@@ -431,11 +434,11 @@ esp_err_t register_create_device_commands()
     };
 
     return esp_console_cmd_register(&create_cmd);
-    
+
 }
 
 void init(void)
-{    
+{
 #if CONFIG_STORE_HISTORY
     initialize_filesystem();
     ESP_LOGI(TAG, "Command history enabled");
@@ -503,7 +506,7 @@ void init(void)
 }
 
 void deinit(void)
-{    
+{
     fflush(stdout);
     fsync(fileno(stdout));
     esp_console_deinit();

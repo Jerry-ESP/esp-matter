@@ -16,26 +16,30 @@
 
 #include <app_priv.h>
 #include <app_reset.h>
-#include "esp_console.h"
-#include <helpers.h>
-#include <freertos/FreeRTOS.h>
-#include <freertos/task.h>
-#include "freertos/semphr.h"
 #if CHIP_DEVICE_CONFIG_ENABLE_THREAD
 #include <platform/ESP32/OpenthreadLauncher.h>
 #endif
 
+#include <app/server/CommissioningWindowManager.h>
+#include <app/server/Server.h>
 
 static const char *TAG = "app_main";
-
-// Semaphore is used to block esp_matter::start(), it will be unblock when we have
-// valid device type input from user.
-SemaphoreHandle_t semaphoreHandle = NULL;
+uint16_t fan_endpoint_id = 0;
 
 using namespace esp_matter;
 using namespace esp_matter::attribute;
 using namespace esp_matter::endpoint;
 using namespace chip::app::Clusters;
+
+constexpr auto k_timeout_seconds = 300;
+
+#if CONFIG_ENABLE_ENCRYPTED_OTA
+extern const char decryption_key_start[] asm("_binary_esp_image_encryption_key_pem_start");
+extern const char decryption_key_end[] asm("_binary_esp_image_encryption_key_pem_end");
+
+static const char *s_decryption_key = decryption_key_start;
+static const uint16_t s_decryption_key_len = decryption_key_end - decryption_key_start;
+#endif // CONFIG_ENABLE_ENCRYPTED_OTA
 
 static void app_event_cb(const ChipDeviceEvent *event, intptr_t arg)
 {
@@ -68,6 +72,45 @@ static void app_event_cb(const ChipDeviceEvent *event, intptr_t arg)
         ESP_LOGI(TAG, "Commissioning window closed");
         break;
 
+    case chip::DeviceLayer::DeviceEventType::kFabricRemoved:
+        {
+            ESP_LOGI(TAG, "Fabric removed successfully");
+            if (chip::Server::GetInstance().GetFabricTable().FabricCount() == 0)
+            {
+                chip::CommissioningWindowManager & commissionMgr = chip::Server::GetInstance().GetCommissioningWindowManager();
+                constexpr auto kTimeoutSeconds = chip::System::Clock::Seconds16(k_timeout_seconds);
+                if (!commissionMgr.IsCommissioningWindowOpen())
+                {
+                    /* After removing last fabric, this example does not remove the Wi-Fi credentials
+                     * and still has IP connectivity so, only advertising on DNS-SD.
+                     */
+                    CHIP_ERROR err = commissionMgr.OpenBasicCommissioningWindow(kTimeoutSeconds,
+                                                    chip::CommissioningWindowAdvertisement::kDnssdOnly);
+                    if (err != CHIP_NO_ERROR)
+                    {
+                        ESP_LOGE(TAG, "Failed to open commissioning window, err:%" CHIP_ERROR_FORMAT, err.Format());
+                    }
+                }
+            }
+        break;
+        }
+
+    case chip::DeviceLayer::DeviceEventType::kFabricWillBeRemoved:
+        ESP_LOGI(TAG, "Fabric will be removed");
+        break;
+
+    case chip::DeviceLayer::DeviceEventType::kFabricUpdated:
+        ESP_LOGI(TAG, "Fabric is updated");
+        break;
+
+    case chip::DeviceLayer::DeviceEventType::kFabricCommitted:
+        ESP_LOGI(TAG, "Fabric is committed");
+        break;
+
+    case chip::DeviceLayer::DeviceEventType::kBLEDeinitialized:
+        ESP_LOGI(TAG, "BLE deinitialized and memory reclaimed");
+        break;
+
     default:
         break;
     }
@@ -78,7 +121,7 @@ static void app_event_cb(const ChipDeviceEvent *event, intptr_t arg)
 static esp_err_t app_identification_cb(identification::callback_type_t type, uint16_t endpoint_id, uint8_t effect_id,
                                        uint8_t effect_variant, void *priv_data)
 {
-    ESP_LOGI(TAG, "Identification callback: type: %d, effect: %d", type, effect_id);
+    ESP_LOGI(TAG, "Identification callback: type: %u, effect: %u, variant: %u", type, effect_id, effect_variant);
     return ESP_OK;
 }
 
@@ -90,8 +133,8 @@ static esp_err_t app_attribute_update_cb(attribute::callback_type_t type, uint16
 {
     esp_err_t err = ESP_OK;
 
-    if (type == POST_UPDATE) {
-        // If user want to use driver, can be called from here.
+    if (type == PRE_UPDATE) {
+        /* Driver update */
         app_driver_handle_t driver_handle = (app_driver_handle_t)priv_data;
         err = app_driver_attribute_update(driver_handle, endpoint_id, cluster_id, attribute_id, val);
     }
@@ -106,36 +149,26 @@ extern "C" void app_main()
     /* Initialize the ESP NVS layer */
     nvs_flash_init();
 
+    /* Initialize driver */
+    app_driver_handle_t button_handle = app_driver_button_init();
+    app_reset_button_register(button_handle);
+    /* Can ininialize Fan driver here */
+
     /* Create a Matter node and add the mandatory Root Node device type on endpoint 0 */
     node::config_t node_config;
     node_t *node = node::create(&node_config, app_attribute_update_cb, app_identification_cb);
 
+    fan::config_t fan_config;
+    fan_config.fan_control.fan_mode_sequence = FAN_MODE_SEQUEBCE_VALUE;
+    endpoint_t *endpoint = fan::create(node, &fan_config, ENDPOINT_FLAG_NONE, NULL);
+
     /* These node and endpoint handles can be used to create/add other endpoints and clusters. */
-    if (!node) {
+    if (!node || !endpoint) {
         ESP_LOGE(TAG, "Matter node creation failed");
     }
 
-    uint8_t device_type_index;
-    if(esp_matter::nvs_helpers::get_device_type_from_nvs(&device_type_index) != ESP_OK) {
-        semaphoreHandle = xSemaphoreCreateBinary();
-        if (semaphoreHandle == NULL)
-        {
-            ESP_LOGE(TAG, "Failed to create semaphore %d");
-        }
-
-        ESP_LOGI(TAG, "\r\n\r\nEnter command: create --device_type to get started");
-        example::console::init();
-
-        xSemaphoreTake(semaphoreHandle, portMAX_DELAY);
-        vSemaphoreDelete(semaphoreHandle);
-        semaphoreHandle = NULL;
-
-        example::console::deinit();
-    }
-    else
-    {
-        esp_matter::data_model::create(device_type_index);
-    }
+    fan_endpoint_id = endpoint::get_id(endpoint);
+    ESP_LOGI(TAG, "Fan created with endpoint_id %d", fan_endpoint_id);
 
 #if CHIP_DEVICE_CONFIG_ENABLE_THREAD
     /* Set OpenThread platform config */
@@ -148,11 +181,17 @@ extern "C" void app_main()
 #endif
 
     /* Matter start */
-     err = esp_matter::start(app_event_cb);
-     if (err != ESP_OK) {
-         ESP_LOGE(TAG, "Matter start failed: %d", err);
-     }
+    err = esp_matter::start(app_event_cb);
+    if (err != ESP_OK) {
+        ESP_LOGE(TAG, "Matter start failed: %d", err);
+    }
 
+#if CONFIG_ENABLE_ENCRYPTED_OTA
+    err = esp_matter_ota_requestor_encrypted_init(s_decryption_key, s_decryption_key_len);
+    if (err != ESP_OK) {
+        ESP_LOGE(TAG, "Failed to initialized the encrypted OTA, err: %d", err);
+    }
+#endif // CONFIG_ENABLE_ENCRYPTED_OTA
 
 #if CONFIG_ENABLE_CHIP_SHELL
     esp_matter::console::diagnostics_register_commands();
