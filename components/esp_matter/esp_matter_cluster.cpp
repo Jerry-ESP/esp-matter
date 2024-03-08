@@ -12,6 +12,7 @@
 // See the License for the specific language governing permissions and
 // limitations under the License.
 
+#include "esp_matter_feature.h"
 #include <esp_log.h>
 #include <esp_matter.h>
 #include <esp_matter_attribute.h>
@@ -998,9 +999,14 @@ cluster_t *create(endpoint_t *endpoint, config_t *config, uint8_t flags, uint32_
     }
 
 #if defined(CHIP_CONFIG_ENABLE_ICD_CIP) && CHIP_CONFIG_ENABLE_ICD_CIP
-    if (features & feature::check_in_protocol_support::get_id()) {
-        feature::check_in_protocol_support::config_t cip_config;
-        feature::check_in_protocol_support::add(cluster, &cip_config);
+    if (features & feature::long_idle_time_support::get_id()) {
+        feature::long_idle_time_support::add(cluster);
+        if (features & feature::user_active_mode_trigger::get_id()) {
+            feature::user_active_mode_trigger::add(cluster, &config->user_active_mode_trigger);
+        }
+        if (features & feature::check_in_protocol_support::get_id()) {
+            feature::check_in_protocol_support::add(cluster);
+        }
     }
 #endif // defined(CHIP_CONFIG_ENABLE_ICD_CIP) && CHIP_CONFIG_ENABLE_ICD_CIP
 #endif // CONFIG_ENABLE_ICD_SERVER

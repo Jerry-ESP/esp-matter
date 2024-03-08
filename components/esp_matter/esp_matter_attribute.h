@@ -187,6 +187,9 @@ attribute_t *create_active_mode_threshold(cluster_t *cluster, uint16_t value, ui
 attribute_t *create_registered_clients(cluster_t *cluster, uint8_t *value, uint16_t length, uint16_t count);
 attribute_t *create_icd_counter(cluster_t *cluster,uint32_t value);
 attribute_t *create_clients_supported_per_fabric(cluster_t *cluster, uint16_t value, uint16_t min);
+attribute_t *create_user_active_mode_trigger_hint(cluster_t *cluster, uint32_t value);
+attribute_t *create_user_active_mode_trigger_instruction(cluster_t *cluster, char *value, uint16_t length);
+attribute_t *create_operating_mode(cluster_t *cluster, uint8_t value);
 } /* attribute */
 } /* icd_management */
 

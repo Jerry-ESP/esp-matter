@@ -249,6 +249,7 @@ typedef struct config {
     uint32_t idle_mode_interval;
     uint32_t active_mode_interval;
     uint16_t active_mode_threshold;
+    feature::user_active_mode_trigger::config_t user_active_mode_trigger;
     config() : cluster_revision(2), idle_mode_interval(5000), active_mode_interval(300), active_mode_threshold(300) {}
 } config_t;
 

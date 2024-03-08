@@ -630,7 +630,7 @@ attribute_t *create_registered_clients(cluster_t *cluster, uint8_t *value, uint1
                                          esp_matter_array(value,length, count));
 }
 
-attribute_t *create_icd_counter(cluster_t *cluster,uint32_t value)
+attribute_t *create_icd_counter(cluster_t *cluster, uint32_t value)
 {
     return esp_matter::attribute::create(cluster, IcdManagement::Attributes::ICDCounter::Id, ATTRIBUTE_FLAG_NONVOLATILE,
                                          esp_matter_uint32(value));
@@ -647,6 +647,24 @@ attribute_t *create_clients_supported_per_fabric(cluster_t *cluster, uint16_t va
     esp_matter::attribute::add_bounds(attribute, esp_matter_uint16(min), esp_matter_uint16(UINT16_MAX));
     return attribute;
 
+}
+
+attribute_t *create_user_active_mode_trigger_hint(cluster_t *cluster, uint32_t value)
+{
+    return esp_matter::attribute::create(cluster, IcdManagement::Attributes::UserActiveModeTriggerHint::Id,
+                                         ATTRIBUTE_FLAG_NONE, esp_matter_bitmap32(value));
+}
+
+attribute_t *create_user_active_mode_trigger_instruction(cluster_t *cluster, char *value, uint16_t length)
+{
+    return esp_matter::attribute::create(cluster, IcdManagement::Attributes::UserActiveModeTriggerInstruction::Id,
+                                         ATTRIBUTE_FLAG_NONE, esp_matter_char_str(value, length));
+}
+
+attribute_t *create_operating_mode(cluster_t *cluster, uint8_t value)
+{
+    return esp_matter::attribute::create(cluster, IcdManagement::Attributes::OperatingMode::Id,
+                                         ATTRIBUTE_FLAG_NONE, esp_matter_enum8(value));
 }
 
 } /* attribute */
