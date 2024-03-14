@@ -6,9 +6,16 @@
    CONDITIONS OF ANY KIND, either express or implied.
 */
 
+#include <freertos/FreeRTOS.h>
+#include <freertos/timers.h>
+
 #include <esp_err.h>
 #include <esp_log.h>
 #include <nvs_flash.h>
+
+#ifdef CONFIG_IDF_TARGET_ESP32S3
+#include <esp32s3/rom/rtc.h>
+#endif
 
 #include <esp_matter.h>
 #include <esp_matter_console.h>
@@ -91,12 +98,76 @@ static esp_err_t app_attribute_update_cb(callback_type_t type, uint16_t endpoint
     return ESP_OK;
 }
 
+static esp_err_t box_switch_nvs_set_u8(uint8_t value)
+{
+    nvs_handle_t handle = 0;
+    esp_err_t err = nvs_open_from_partition("nvs", "matter_box_app", NVS_READWRITE, &handle);
+    if (err != ESP_OK) {
+        ESP_LOGE(TAG, "Error opening NVS: %d", err);
+        return err;
+    }
+    err = nvs_set_u8(handle, "reboot_count", value);
+    if (err != ESP_OK) {
+        ESP_LOGE(TAG, "Error setting in NVS: %d", err);
+    }
+    nvs_commit(handle);
+    nvs_close(handle);
+    return err;
+}
+
+static uint8_t box_switch_nvs_get_u8(void)
+{
+    uint8_t value = 0;
+    nvs_handle_t handle = 0;
+    esp_err_t err = nvs_open_from_partition("nvs", "matter_box_app", NVS_READWRITE, &handle);
+    if (err != ESP_OK) {
+        ESP_LOGE(TAG, "Error opening NVS: %d", err);
+        return value;
+    }
+    err = nvs_get_u8(handle, "reboot_count", &value);
+    if (err != ESP_OK) {
+        ESP_LOGI(TAG, "Error getting from NVS: %d", err);
+    }
+    nvs_commit(handle);
+    nvs_close(handle);
+    return value;
+}
+
+static void reset_reboot_count(TimerHandle_t timer)
+{
+    ESP_LOGW(TAG, "Resetting reboot count-------------------------");
+    uint8_t reboot_count = box_switch_nvs_get_u8();
+    box_switch_nvs_set_u8(0);
+    if (reboot_count >= 5) {
+        esp_matter::factory_reset();
+    }
+    xTimerDelete(timer, 0);
+}
+
+static void factory_reset_check(void)
+{
+    uint8_t reboot_count = box_switch_nvs_get_u8();
+    reboot_count ++;
+    ESP_LOGW(TAG, "Reboot count: %d-------------------------------", reboot_count);
+
+    box_switch_nvs_set_u8(reboot_count);
+    TimerHandle_t timer = xTimerCreate("reset_reboot_count", pdMS_TO_TICKS(5 * 1000), pdFALSE, NULL,
+                                    &reset_reboot_count);
+    if (!timer) {
+        ESP_LOGE(TAG, "Could not initialize timer");
+        return;
+    }
+    xTimerStart(timer, 0);
+}
+
 extern "C" void app_main()
 {
     esp_err_t err = ESP_OK;
 
     /* Initialize the ESP NVS layer */
     nvs_flash_init();
+
+    factory_reset_check();
 
     /* Initialize driver */
     app_driver_handle_t switch_handle = app_driver_switch_init();
