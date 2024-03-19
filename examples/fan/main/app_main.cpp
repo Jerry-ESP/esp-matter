@@ -22,6 +22,11 @@
 
 #include <app/server/CommissioningWindowManager.h>
 #include <app/server/Server.h>
+#include <app/clusters/fan-control-server/fan-control-server.h>
+#include <app-common/zap-generated/attributes/Accessors.h>
+#include <app/util/error-mapping.h>
+#include <app/AttributeAccessInterface.h>
+#include <app/util/attribute-storage.h>
 
 static const char *TAG = "app_main";
 uint16_t fan_endpoint_id = 0;
@@ -29,7 +34,12 @@ uint16_t fan_endpoint_id = 0;
 using namespace esp_matter;
 using namespace esp_matter::attribute;
 using namespace esp_matter::endpoint;
+using namespace chip;
+using namespace chip::app;
 using namespace chip::app::Clusters;
+using namespace chip::app::Clusters::FanControl;
+using namespace chip::app::Clusters::FanControl::Attributes;
+using Protocols::InteractionModel::Status;
 
 constexpr auto k_timeout_seconds = 300;
 
@@ -140,6 +150,91 @@ static esp_err_t app_attribute_update_cb(attribute::callback_type_t type, uint16
     }
 
     return err;
+}
+
+class FanControlManager : public Delegate
+{
+public:
+    FanControlManager(EndpointId aEndpointId) : Delegate(aEndpointId){}
+
+    Status HandleStep(StepDirectionEnum aDirection, bool aWrap, bool aLowestOff) override;
+};
+
+static FanControlManager * mFanControlManager = nullptr;
+
+Status FanControlManager::HandleStep(StepDirectionEnum aDirection, bool aWrap, bool aLowestOff)
+{
+    VerifyOrReturnError(aDirection != StepDirectionEnum::kUnknownEnumValue, Status::InvalidCommand);
+
+    uint8_t speedMax;
+    FanControl::Attributes::SpeedMax::Get(mEndpoint, &speedMax);
+
+    DataModel::Nullable<uint8_t> speedSetting;
+    FanControl::Attributes::SpeedSetting::Get(mEndpoint, speedSetting);
+
+    uint8_t newSpeedSetting = speedSetting.IsNull() ? 0 : speedSetting.Value();
+
+    if (aDirection == StepDirectionEnum::kIncrease)
+    {
+        if (speedSetting.IsNull())
+        {
+            newSpeedSetting = 1;
+        }
+        else if (speedSetting.Value() < speedMax)
+        {
+            newSpeedSetting = static_cast<uint8_t>(speedSetting.Value() + 1);
+        }
+        else if (speedSetting.Value() == speedMax)
+        {
+            if (aWrap)
+            {
+                newSpeedSetting = aLowestOff ? 0 : 1;
+            }
+        }
+    }
+    else if (aDirection == StepDirectionEnum::kDecrease)
+    {
+        if (speedSetting.IsNull())
+        {
+            newSpeedSetting = aLowestOff ? 0 : 1;
+        }
+        else if ((speedSetting.Value() > 1) && (speedSetting.Value() <= speedMax))
+        {
+            newSpeedSetting = static_cast<uint8_t>(speedSetting.Value() - 1);
+        }
+        else if (speedSetting.Value() == 1)
+        {
+            if (aLowestOff)
+            {
+                newSpeedSetting = static_cast<uint8_t>(speedSetting.Value() - 1);
+            }
+            else if (aWrap)
+            {
+                newSpeedSetting = speedMax;
+            }
+        }
+        else if (speedSetting.Value() == 0)
+        {
+            if (aWrap)
+            {
+                newSpeedSetting = speedMax;
+            }
+            else if (!aLowestOff)
+            {
+                newSpeedSetting = 1;
+            }
+        }
+    }
+
+    return ToInteractionModelStatus(FanControl::Attributes::SpeedSetting::Set(mEndpoint, newSpeedSetting));
+}
+
+void emberAfFanControlClusterInitCallback(EndpointId endpoint)
+{
+    VerifyOrDie(mFanControlManager == nullptr);
+    mFanControlManager = new FanControlManager(endpoint);
+    //registerAttributeAccessOverride(mFanControlManager);
+    FanControl::SetDefaultDelegate(endpoint, mFanControlManager);
 }
 
 extern "C" void app_main()
