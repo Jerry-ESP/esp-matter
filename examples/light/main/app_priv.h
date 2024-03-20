@@ -83,12 +83,12 @@ esp_err_t app_driver_light_set_defaults(uint16_t endpoint_id);
 #if CHIP_DEVICE_CONFIG_ENABLE_THREAD
 #define ESP_OPENTHREAD_DEFAULT_RADIO_CONFIG()                                           \
     {                                                                                   \
-        .radio_mode = RADIO_MODE_NATIVE,                                                \
+        .radio_mode = OT_RADIO_MODE_NATIVE,                                                \
     }
 
 #define ESP_OPENTHREAD_DEFAULT_HOST_CONFIG()                                            \
     {                                                                                   \
-        .host_connection_mode = HOST_CONNECTION_MODE_NONE,                              \
+        .host_connection_mode = OT_HOST_CONNECTION_MODE_NONE,                              \
     }
 
 #define ESP_OPENTHREAD_DEFAULT_PORT_CONFIG()                                            \

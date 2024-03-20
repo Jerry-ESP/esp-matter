@@ -14,6 +14,7 @@
 #include "bsp/esp-bsp.h"
 
 #include <app_priv.h>
+#include "esp_touchlink_light.h"
 
 using namespace chip::app::Clusters;
 using namespace esp_matter;
@@ -111,24 +112,32 @@ esp_err_t app_driver_attribute_update(app_driver_handle_t driver_handle, uint16_
 {
     esp_err_t err = ESP_OK;
     if (endpoint_id == light_endpoint_id) {
-        led_indicator_handle_t handle = (led_indicator_handle_t)driver_handle;
         if (cluster_id == OnOff::Id) {
             if (attribute_id == OnOff::Attributes::OnOff::Id) {
-                err = app_driver_light_set_power(handle, val);
-            }
-        } else if (cluster_id == LevelControl::Id) {
-            if (attribute_id == LevelControl::Attributes::CurrentLevel::Id) {
-                err = app_driver_light_set_brightness(handle, val);
-            }
-        } else if (cluster_id == ColorControl::Id) {
-            if (attribute_id == ColorControl::Attributes::CurrentHue::Id) {
-                err = app_driver_light_set_hue(handle, val);
-            } else if (attribute_id == ColorControl::Attributes::CurrentSaturation::Id) {
-                err = app_driver_light_set_saturation(handle, val);
-            } else if (attribute_id == ColorControl::Attributes::ColorTemperatureMireds::Id) {
-                err = app_driver_light_set_temperature(handle, val);
+                light_driver_set_power(val->val.b);
+                // err = app_driver_light_set_power(handle, val);
             }
         }
+        // light_driver_set_power(light_state);
+        // led_indicator_handle_t handle = (led_indicator_handle_t)driver_handle;
+        // if (cluster_id == OnOff::Id) {
+        //     if (attribute_id == OnOff::Attributes::OnOff::Id) {
+        //         err = app_driver_light_set_power(handle, val);
+        //     }
+        // } else if (cluster_id == LevelControl::Id) {
+        //     if (attribute_id == LevelControl::Attributes::CurrentLevel::Id) {
+        //         err = app_driver_light_set_brightness(handle, val);
+        //     }
+        // } else if (cluster_id == ColorControl::Id) {
+        //     if (attribute_id == ColorControl::Attributes::CurrentHue::Id) {
+        //         err = app_driver_light_set_hue(handle, val);
+        //     } else if (attribute_id == ColorControl::Attributes::CurrentSaturation::Id) {
+        //         err = app_driver_light_set_saturation(handle, val);
+        //     } else if (attribute_id == ColorControl::Attributes::ColorTemperatureMireds::Id) {
+        //         err = app_driver_light_set_temperature(handle, val);
+        //     }
+        // }
+
     }
     return err;
 }
@@ -136,6 +145,10 @@ esp_err_t app_driver_attribute_update(app_driver_handle_t driver_handle, uint16_
 esp_err_t app_driver_light_set_defaults(uint16_t endpoint_id)
 {
     esp_err_t err = ESP_OK;
+    if (endpoint_id  == 1) {
+        light_driver_set_power(true);
+        return ESP_OK;
+    }
     void *priv_data = endpoint::get_priv_data(endpoint_id);
     led_indicator_handle_t handle = (led_indicator_handle_t)priv_data;
     node_t *node = node::get();
@@ -186,8 +199,8 @@ app_driver_handle_t app_driver_light_init()
 #if CONFIG_BSP_LEDS_NUM > 0
     /* Initialize led */
     led_indicator_handle_t leds[CONFIG_BSP_LEDS_NUM];
-    ESP_ERROR_CHECK(bsp_led_indicator_create(leds, NULL, CONFIG_BSP_LEDS_NUM));
-    led_indicator_set_hsv(leds[0], SET_HSV(DEFAULT_HUE, DEFAULT_SATURATION, DEFAULT_BRIGHTNESS));
+    // ESP_ERROR_CHECK(bsp_led_indicator_create(leds, NULL, CONFIG_BSP_LEDS_NUM));
+    // led_indicator_set_hsv(leds[0], SET_HSV(DEFAULT_HUE, DEFAULT_SATURATION, DEFAULT_BRIGHTNESS));
     
     return (app_driver_handle_t)leds[0];
 #else
