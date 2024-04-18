@@ -21,10 +21,22 @@
 #include <platform/ESP32/OpenthreadLauncher.h>
 #endif
 
+#include "esp_system.h"
 #include <app/server/CommissioningWindowManager.h>
 #include <app/server/Server.h>
 #include "esp_vfs_dev.h"
 #include "esp_vfs_eventfd.h"
+
+#include "openthread/platform/settings.h"
+#include "esp_touchlink_light.h"
+#include "esp_check.h"
+#include "esp_log.h"
+#include "esp_ieee802154.h"
+#include "nvs_flash.h"
+#include <string.h>
+#include "freertos/FreeRTOS.h"
+#include "freertos/task.h"
+#include "ha/esp_zigbee_ha_standard.h"
 
 static const char *TAG = "app_main";
 uint16_t light_endpoint_id = 0;
@@ -44,27 +56,24 @@ static const char *s_decryption_key = decryption_key_start;
 static const uint16_t s_decryption_key_len = decryption_key_end - decryption_key_start;
 #endif // CONFIG_ENABLE_ENCRYPTED_OTA
 
-
-#include "esp_touchlink_light.h"
-#include "esp_check.h"
-#include "esp_log.h"
-#include "esp_ieee802154.h"
-#include "nvs_flash.h"
-#include <string.h>
-#include "freertos/FreeRTOS.h"
-#include "freertos/task.h"
-#include "ha/esp_zigbee_ha_standard.h"
-
 #if ! defined ZB_ROUTER_ROLE
 #error define ZB_ROUTER_ROLE to compile
 #endif /* defined ZB_ROUTER_ROLE */
 
 static const char *ZB_TAG = "ESP_TL_ON_OFF_LIGHT";
-
+static TaskHandle_t s_zb_task = NULL;
 static esp_err_t deferred_driver_init(void)
 {
     light_driver_init(LIGHT_DEFAULT_OFF);
     return ESP_OK;
+}
+
+static void free_heap_print()
+{
+    printf("---------%s: Current Free Memory: %d, Minimum Ever Free Size: %d, Largest Free Block: %d------------\n", TAG,
+            heap_caps_get_free_size(MALLOC_CAP_8BIT) - heap_caps_get_free_size(MALLOC_CAP_SPIRAM),
+            heap_caps_get_minimum_free_size(MALLOC_CAP_8BIT | MALLOC_CAP_INTERNAL),
+            heap_caps_get_largest_free_block(MALLOC_CAP_8BIT | MALLOC_CAP_INTERNAL));
 }
 
 void esp_zb_app_signal_handler(esp_zb_app_signal_t *signal_struct)
@@ -81,13 +90,13 @@ void esp_zb_app_signal_handler(esp_zb_app_signal_t *signal_struct)
     case ESP_ZB_BDB_SIGNAL_DEVICE_FIRST_START:
     case ESP_ZB_BDB_SIGNAL_DEVICE_REBOOT:
         if (err_status == ESP_OK) {
-            ESP_LOGI(ZB_TAG, "Deferred driver initialization %s", deferred_driver_init() ? "failed" : "successful");
             ESP_LOGI(ZB_TAG, "Device started up in %s factory-reset mode", esp_zb_bdb_is_factory_new() ? "" : "non");
             if (esp_zb_bdb_is_factory_new()) {
                 esp_zb_bdb_start_top_level_commissioning(ESP_ZB_BDB_TOUCHLINK_TARGET);
             } else {
                 ESP_LOGI(ZB_TAG, "Device rebooted");
             }
+            free_heap_print();
         } else {
             ESP_LOGW(ZB_TAG, "Failed to initialize Zigbee stack (status: %s)", esp_err_to_name(err_status));
         }
@@ -116,6 +125,7 @@ void esp_zb_app_signal_handler(esp_zb_app_signal_t *signal_struct)
     case ESP_ZB_ZDO_SIGNAL_DEVICE_ANNCE:
         dev_annce_params = (esp_zb_zdo_signal_device_annce_params_t *)esp_zb_app_signal_get_params(p_sg_p);
         ESP_LOGI(ZB_TAG, "New device commissioned or rejoined (short: 0x%04hx)", dev_annce_params->device_short_addr);
+        free_heap_print();
         break;
     case ESP_ZB_NWK_SIGNAL_PERMIT_JOIN_STATUS:
         if (err_status == ESP_OK) {
@@ -170,20 +180,7 @@ static esp_err_t zb_action_handler(esp_zb_core_action_callback_id_t callback_id,
 
 void esp_zb_task(void *pvParameters)
 {
-    /* Initialize Zigbee stack with Zigbee coordinator config */
-    esp_zb_platform_config_t config = {
-        .radio_config = ESP_ZB_DEFAULT_RADIO_CONFIG(),
-        .host_config = ESP_ZB_DEFAULT_HOST_CONFIG(),
-    };
-    ESP_ERROR_CHECK(esp_zb_platform_config(&config));
 
-    esp_zb_cfg_t zb_nwk_cfg;
-    memset((void*)(&zb_nwk_cfg), 0, sizeof(esp_zb_cfg_t));
-    zb_nwk_cfg.esp_zb_role = ESP_ZB_DEVICE_TYPE_ROUTER, zb_nwk_cfg.install_code_policy = INSTALLCODE_POLICY_ENABLE, zb_nwk_cfg.nwk_cfg.zczr_cfg .max_children = MAX_CHILDREN;
-    esp_zb_init(&zb_nwk_cfg);
-
-    esp_zb_set_channel_mask(ESP_ZB_TOUCHLINK_CHANNEL_MASK);
-    esp_zb_set_rx_on_when_idle(true);
     esp_zb_zdo_touchlink_target_set_timeout(TOUCHLINK_TARGET_TIMEOUT);
 
     esp_zb_attribute_list_t *touchlink_cluster = esp_zb_touchlink_commissioning_cluster_create();
@@ -204,7 +201,7 @@ void esp_zb_task(void *pvParameters)
         .app_device_version = 0
     };
     esp_zb_ep_list_add_ep(esp_zb_ep_list, cluster_list, endpoint_config);
-    
+
     esp_zb_device_register(esp_zb_ep_list);
     esp_zb_core_action_handler_register(zb_action_handler);
 
@@ -221,6 +218,7 @@ static void app_event_cb(const ChipDeviceEvent *event, intptr_t arg)
 
     case chip::DeviceLayer::DeviceEventType::kCommissioningComplete:
         ESP_LOGI(TAG, "Commissioning complete");
+        free_heap_print();
         break;
 
     case chip::DeviceLayer::DeviceEventType::kFailSafeTimerExpired:
@@ -230,6 +228,10 @@ static void app_event_cb(const ChipDeviceEvent *event, intptr_t arg)
     case chip::DeviceLayer::DeviceEventType::kCommissioningSessionStarted:
         ESP_LOGI(TAG, "Commissioning session started");
         esp_ieee802154_set_ot_started(true);
+        if (s_zb_task) {
+            printf("suspend zigbee task-----------\n");
+            vTaskSuspend(s_zb_task);
+        }
         break;
 
     case chip::DeviceLayer::DeviceEventType::kCommissioningSessionStopped:
@@ -249,20 +251,8 @@ static void app_event_cb(const ChipDeviceEvent *event, intptr_t arg)
             ESP_LOGI(TAG, "Fabric removed successfully");
             if (chip::Server::GetInstance().GetFabricTable().FabricCount() == 0)
             {
-                chip::CommissioningWindowManager & commissionMgr = chip::Server::GetInstance().GetCommissioningWindowManager();
-                constexpr auto kTimeoutSeconds = chip::System::Clock::Seconds16(k_timeout_seconds);
-                if (!commissionMgr.IsCommissioningWindowOpen())
-                {
-                    /* After removing last fabric, this example does not remove the Wi-Fi credentials
-                     * and still has IP connectivity so, only advertising on DNS-SD.
-                     */
-                    CHIP_ERROR err = commissionMgr.OpenBasicCommissioningWindow(kTimeoutSeconds,
-                                                    chip::CommissioningWindowAdvertisement::kDnssdOnly);
-                    if (err != CHIP_NO_ERROR)
-                    {
-                        ESP_LOGE(TAG, "Failed to open commissioning window, err:%" CHIP_ERROR_FORMAT, err.Format());
-                    }
-                }
+                otPlatSettingsWipe(NULL);
+                esp_restart();
             }
         break;
         }
@@ -281,6 +271,7 @@ static void app_event_cb(const ChipDeviceEvent *event, intptr_t arg)
 
     case chip::DeviceLayer::DeviceEventType::kBLEDeinitialized:
         ESP_LOGI(TAG, "BLE deinitialized and memory reclaimed");
+        free_heap_print();
         break;
 
     default:
@@ -310,6 +301,7 @@ static esp_err_t app_attribute_update_cb(attribute::callback_type_t type, uint16
         app_driver_handle_t driver_handle = (app_driver_handle_t)priv_data;
         err = app_driver_attribute_update(driver_handle, endpoint_id, cluster_id, attribute_id, val);
     }
+    free_heap_print();
 
     return err;
 }
@@ -330,6 +322,27 @@ extern "C" void app_main()
 
     /* Initialize the ESP NVS layer */
     nvs_flash_init();
+
+    /* Initialize Zigbee stack with Zigbee coordinator config */
+    esp_zb_platform_config_t zbconfig = {
+        .radio_config = ESP_ZB_DEFAULT_RADIO_CONFIG(),
+        .host_config = ESP_ZB_DEFAULT_HOST_CONFIG(),
+    };
+    ESP_ERROR_CHECK(esp_zb_platform_config(&zbconfig));
+
+    esp_zb_overall_network_size_set(8);
+    esp_zb_io_buffer_size_set(48);
+    esp_zb_aps_src_binding_table_size_set(2);
+    esp_zb_aps_dst_binding_table_size_set(2);
+
+    esp_zb_cfg_t zb_nwk_cfg;
+    memset((void*)(&zb_nwk_cfg), 0, sizeof(esp_zb_cfg_t));
+    zb_nwk_cfg.esp_zb_role = ESP_ZB_DEVICE_TYPE_ROUTER, zb_nwk_cfg.install_code_policy = INSTALLCODE_POLICY_ENABLE, zb_nwk_cfg.nwk_cfg.zczr_cfg .max_children = MAX_CHILDREN;
+    esp_zb_init(&zb_nwk_cfg);
+    esp_zb_set_channel_mask(ESP_ZB_TOUCHLINK_CHANNEL_MASK);
+    esp_zb_set_rx_on_when_idle(true);
+
+    deferred_driver_init();
 
     /* Initialize driver */
     app_driver_handle_t light_handle = app_driver_light_init();
@@ -384,12 +397,22 @@ extern "C" void app_main()
 #endif
 
     /* Matter start */
-    xTaskCreate(esp_zb_task, "Zigbee_main", 4096, NULL, 5, NULL);
     err = esp_matter::start(app_event_cb);
+    if (chip::Server::GetInstance().GetFabricTable().FabricCount() > 0) {
+        esp_ieee802154_set_ot_started(true);
+    } else {
+        if (esp_ieee802154_get_ot_started()) {
+            otPlatSettingsWipe(NULL);
+            esp_restart();
+        }
+        xTaskCreate(esp_zb_task, "Zigbee_main", 4096, NULL, 5, &s_zb_task);
+    }
     ABORT_APP_ON_FAILURE(err == ESP_OK, ESP_LOGE(TAG, "Failed to start Matter, err:%d", err));
 
     /* Starting driver with default values */
     app_driver_light_set_defaults(light_endpoint_id);
+
+    free_heap_print();
 
 #if CONFIG_ENABLE_ENCRYPTED_OTA
     err = esp_matter_ota_requestor_encrypted_init(s_decryption_key, s_decryption_key_len);
