@@ -166,8 +166,8 @@ static esp_err_t app_attribute_update_cb(attribute::callback_type_t type, uint16
 
     if (type == PRE_UPDATE) {
         /* Driver update */
-        //app_driver_handle_t driver_handle = (app_driver_handle_t)priv_data;
-        //err = app_driver_attribute_update(driver_handle, endpoint_id, cluster_id, attribute_id, val);
+        app_driver_handle_t driver_handle = (app_driver_handle_t)priv_data;
+        err = app_driver_attribute_update(driver_handle, endpoint_id, cluster_id, attribute_id, val);
     }
 
     printf("---------%s: Current Free Memory: %d, Minimum Ever Free Size: %d, Largest Free Block: %d------------\n", TAG,
@@ -186,7 +186,7 @@ extern "C" void app_main()
     nvs_flash_init();
 
     /* Initialize driver */
-    //app_driver_handle_t light_handle = app_driver_light_init();
+    app_driver_handle_t light_handle = app_driver_light_init();
     //app_driver_handle_t button_handle = app_driver_button_init();
     //app_reset_button_register(button_handle);
 
@@ -207,7 +207,7 @@ extern "C" void app_main()
     light_config.color_control.color_temperature.startup_color_temperature_mireds = nullptr;
 
     // endpoint handles can be used to add/modify clusters.
-    endpoint_t *endpoint = extended_color_light::create(node, &light_config, ENDPOINT_FLAG_NONE, NULL);
+    endpoint_t *endpoint = extended_color_light::create(node, &light_config, ENDPOINT_FLAG_NONE, light_handle);
     ABORT_APP_ON_FAILURE(endpoint != nullptr, ESP_LOGE(TAG, "Failed to create extended color light endpoint"));
 
     light_endpoint_id = endpoint::get_id(endpoint);
@@ -241,7 +241,7 @@ extern "C" void app_main()
     ABORT_APP_ON_FAILURE(err == ESP_OK, ESP_LOGE(TAG, "Failed to start Matter, err:%d", err));
 
     /* Starting driver with default values */
-    //app_driver_light_set_defaults(light_endpoint_id);
+    app_driver_light_set_defaults(light_endpoint_id);
 
 #if CONFIG_ENABLE_ENCRYPTED_OTA
     err = esp_matter_ota_requestor_encrypted_init(s_decryption_key, s_decryption_key_len);
