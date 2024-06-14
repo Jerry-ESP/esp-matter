@@ -23,6 +23,8 @@
 #include <app/server/CommissioningWindowManager.h>
 #include <app/server/Server.h>
 
+#include <static-supported-modes-manager.h>
+
 static const char *TAG = "app_main";
 uint16_t light_endpoint_id = 0;
 
@@ -162,6 +164,19 @@ extern "C" void app_main()
     light_config.color_control.enhanced_color_mode = EMBER_ZCL_COLOR_MODE_COLOR_TEMPERATURE;
     light_config.color_control.color_temperature.startup_color_temperature_mireds = nullptr;
     endpoint_t *endpoint = extended_color_light::create(node, &light_config, ENDPOINT_FLAG_NONE, light_handle);
+
+    cluster::mode_select::config_t ms_config;
+    char *desc = "coffee";
+    strcpy(ms_config.mode_select_description, desc);
+    cluster_t *ms_cluster = cluster::mode_select::create(endpoint, &ms_config, CLUSTER_FLAG_SERVER, (uint32_t)ModeSelect::ModeSelectFeature::kDeponoff);
+    attribute_t *start_up = cluster::mode_select::attribute::create_start_up_mode(ms_cluster, 0);
+
+
+    endpoint_t *endpoint2 = extended_color_light::create(node, &light_config, ENDPOINT_FLAG_NONE, light_handle);
+    char *desc2 = "light color";
+    strcpy(ms_config.mode_select_description, desc2);
+    cluster_t *ms_cluster2 = cluster::mode_select::create(endpoint2, &ms_config, CLUSTER_FLAG_SERVER, (uint32_t)ModeSelect::ModeSelectFeature::kDeponoff);
+    attribute_t *start_up2 = cluster::mode_select::attribute::create_start_up_mode(ms_cluster, 0);
 
     /* These node and endpoint handles can be used to create/add other endpoints and clusters. */
     if (!node || !endpoint) {
