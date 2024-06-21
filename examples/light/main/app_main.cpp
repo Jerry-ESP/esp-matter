@@ -38,6 +38,8 @@
 #include "freertos/task.h"
 #include "ha/esp_zigbee_ha_standard.h"
 
+#include "esp_pm.h"
+
 static const char *TAG = "app_main";
 uint16_t light_endpoint_id = 0;
 
@@ -317,6 +319,18 @@ extern "C" void app_main()
         */
         .max_fds = 7,
     };
+
+#if CONFIG_PM_ENABLE
+    // Configure dynamic frequency scaling:
+    // maximum and minimum frequencies are set in sdkconfig,
+    // automatic light sleep is enabled if tickless idle support is enabled.
+    esp_pm_config_t pm_config = {
+            .max_freq_mhz = 96,
+            .min_freq_mhz = 8,
+
+    };
+    ESP_ERROR_CHECK( esp_pm_configure(&pm_config) );
+#endif // CONFIG_PM_ENABLE
 
     ESP_ERROR_CHECK(esp_vfs_eventfd_register(&eventfd_config));
 
