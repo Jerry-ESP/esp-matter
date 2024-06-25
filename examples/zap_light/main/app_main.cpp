@@ -9,6 +9,9 @@
 #include <esp_err.h>
 #include <esp_log.h>
 #include <nvs_flash.h>
+#if CONFIG_PM_ENABLE
+#include <esp_pm.h>
+#endif
 
 #include <esp_matter.h>
 #include <esp_matter_console.h>
@@ -73,8 +76,8 @@ static esp_err_t app_attribute_update_cb(callback_type_t type, uint16_t endpoint
 
     if (type == PRE_UPDATE) {
         /* Driver update */
-        app_driver_handle_t driver_handle = light_handle;
-        err = app_driver_attribute_update(driver_handle, endpoint_id, cluster_id, attribute_id, val);
+        // app_driver_handle_t driver_handle = light_handle;
+        // err = app_driver_attribute_update(driver_handle, endpoint_id, cluster_id, attribute_id, val);
     }
 
     return err;
@@ -87,10 +90,21 @@ extern "C" void app_main()
     /* Initialize the ESP NVS layer */
     nvs_flash_init();
 
+#if CONFIG_PM_ENABLE
+    esp_pm_config_t pm_config = {
+        .max_freq_mhz = CONFIG_ESP_DEFAULT_CPU_FREQ_MHZ,
+        .min_freq_mhz = CONFIG_ESP_DEFAULT_CPU_FREQ_MHZ,
+#if CONFIG_FREERTOS_USE_TICKLESS_IDLE
+        .light_sleep_enable = true
+#endif
+    };
+    err = esp_pm_configure(&pm_config);
+#endif
+
     /* Initialize driver */
-    light_handle = app_driver_light_init();
-    app_driver_handle_t button_handle = app_driver_button_init();
-    app_reset_button_register(button_handle);
+    // light_handle = app_driver_light_init();
+    // app_driver_handle_t button_handle = app_driver_button_init();
+    // app_reset_button_register(button_handle);
 
     /* Initialize matter callback */
     attribute::set_callback(app_attribute_update_cb);
@@ -111,7 +125,7 @@ extern "C" void app_main()
     ABORT_APP_ON_FAILURE(err == ESP_OK, ESP_LOGE(TAG, "Failed to start Matter, err:%d", err));
 
     /* Starting driver with default values */
-    app_driver_light_set_defaults(light_endpoint_id);
+    //app_driver_light_set_defaults(light_endpoint_id);
 
 #if CONFIG_ENABLE_CHIP_SHELL
     esp_matter::console::diagnostics_register_commands();
