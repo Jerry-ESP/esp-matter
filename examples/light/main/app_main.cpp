@@ -20,6 +20,7 @@
 #if CHIP_DEVICE_CONFIG_ENABLE_THREAD
 #include <platform/ESP32/OpenthreadLauncher.h>
 #endif
+#include "esp_openthread.h"
 
 #include "esp_system.h"
 #include <app/server/CommissioningWindowManager.h>
@@ -225,6 +226,16 @@ static void app_event_cb(const ChipDeviceEvent *event, intptr_t arg)
 
     case chip::DeviceLayer::DeviceEventType::kFailSafeTimerExpired:
         ESP_LOGI(TAG, "Commissioning failed, fail safe timer expired");
+        //otThreadSetEnabled(esp_openthread_get_instance(), false);
+        if (esp_ieee802154_get_ot_started()) {
+            otThreadSetEnabled(esp_openthread_get_instance(), false);
+            esp_ieee802154_set_ot_started(false);
+            otPlatSettingsWipe(NULL);
+        }
+        if (s_zb_task) {
+            printf("resume zigbee task-----------\n");
+            vTaskResume(s_zb_task);
+        }
         break;
 
     case chip::DeviceLayer::DeviceEventType::kCommissioningSessionStarted:
@@ -238,6 +249,16 @@ static void app_event_cb(const ChipDeviceEvent *event, intptr_t arg)
 
     case chip::DeviceLayer::DeviceEventType::kCommissioningSessionStopped:
         ESP_LOGI(TAG, "Commissioning session stopped");
+        //otThreadSetEnabled(esp_openthread_get_instance(), false);
+        if (esp_ieee802154_get_ot_started()) {
+            otThreadSetEnabled(esp_openthread_get_instance(), false);
+            esp_ieee802154_set_ot_started(false);
+            otPlatSettingsWipe(NULL);
+        }
+        if (s_zb_task) {
+            printf("resume zigbee task-----------\n");
+            vTaskResume(s_zb_task);
+        }
         break;
 
     case chip::DeviceLayer::DeviceEventType::kCommissioningWindowOpened:
