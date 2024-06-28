@@ -13,6 +13,7 @@
 #include <esp_log.h>
 #include <esp_matter.h>
 #include "iot_button.h"
+#include "esp_zigbee_core.h"
 
 static const char *TAG = "app_reset";
 static bool perform_factory_reset = false;
@@ -29,6 +30,7 @@ static void button_factory_reset_released_cb(void *arg, void *data)
 {
     if (perform_factory_reset) {
         ESP_LOGI(TAG, "Starting factory reset");
+        esp_zb_zcl_reset_nvram_to_factory_default();
         esp_matter::factory_reset();
         perform_factory_reset = false;
     }

@@ -6,5 +6,5 @@ dependencies:
       - if: "target in [esp32c2]"
   esp_bsp_generic:
     version: "^1.1.0"
-  espressif/esp-zboss-lib: "^1.0.9"
-  espressif/esp-zigbee-lib: "^1.0.9"
+  # espressif/esp-zboss-lib: "^1.0.9"
+  # espressif/esp-zigbee-lib: "^1.0.9"

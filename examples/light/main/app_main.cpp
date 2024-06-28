@@ -95,7 +95,7 @@ void esp_zb_app_signal_handler(esp_zb_app_signal_t *signal_struct)
         if (err_status == ESP_OK) {
             ESP_LOGI(ZB_TAG, "Device started up in %s factory-reset mode", esp_zb_bdb_is_factory_new() ? "" : "non");
             if (esp_zb_bdb_is_factory_new()) {
-                esp_zb_bdb_start_top_level_commissioning(ESP_ZB_BDB_TOUCHLINK_TARGET);
+                esp_zb_bdb_start_top_level_commissioning(ESP_ZB_BDB_TOUCHLINK_TARGET | ESP_ZB_BDB_MODE_NETWORK_STEERING);
             } else {
                 ESP_LOGI(ZB_TAG, "Device rebooted");
             }
@@ -116,6 +116,11 @@ void esp_zb_app_signal_handler(esp_zb_app_signal_t *signal_struct)
                      "Channel:%d, Short Address: 0x%04hx)",
                      extended_pan_id[7], extended_pan_id[6], extended_pan_id[5], extended_pan_id[4], extended_pan_id[3], extended_pan_id[2],
                      extended_pan_id[1], extended_pan_id[0], esp_zb_get_pan_id(), esp_zb_get_current_channel(), esp_zb_get_short_address());
+        }
+        break;
+    case ESP_ZB_BDB_SIGNAL_STEERING:
+        if (err_status != ESP_OK) {
+            esp_zb_bdb_start_top_level_commissioning(ESP_ZB_BDB_TOUCHLINK_TARGET | ESP_ZB_BDB_MODE_NETWORK_STEERING);
         }
         break;
     case ESP_ZB_BDB_SIGNAL_TOUCHLINK_TARGET_FINISHED:
@@ -375,6 +380,7 @@ extern "C" void app_main()
     zb_nwk_cfg.esp_zb_role = ESP_ZB_DEVICE_TYPE_ROUTER, zb_nwk_cfg.install_code_policy = INSTALLCODE_POLICY_ENABLE, zb_nwk_cfg.nwk_cfg.zczr_cfg .max_children = MAX_CHILDREN;
     esp_zb_init(&zb_nwk_cfg);
     esp_zb_set_channel_mask(ESP_ZB_TOUCHLINK_CHANNEL_MASK);
+    esp_zb_set_secondary_network_channel_set(ESP_ZB_TRANSCEIVER_ALL_CHANNELS_MASK);
     esp_zb_set_rx_on_when_idle(true);
 
     deferred_driver_init();
@@ -393,7 +399,7 @@ extern "C" void app_main()
 
     extended_color_light::config_t light_config;
     light_config.on_off.on_off = DEFAULT_POWER;
-    light_config.on_off.lighting.start_up_on_off = nullptr;
+    light_config.on_off.lighting.start_up_on_off = true;
     light_config.level_control.current_level = DEFAULT_BRIGHTNESS;
     light_config.level_control.lighting.start_up_current_level = DEFAULT_BRIGHTNESS;
     light_config.color_control.color_mode = (uint8_t)ColorControl::ColorMode::kColorTemperature;
