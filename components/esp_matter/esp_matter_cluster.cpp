@@ -21,6 +21,8 @@
 
 #include <app-common/zap-generated/callback.h>
 #include <app/PluginApplicationCallbacks.h>
+#include "app/clusters/electrical-energy-measurement-server/electrical-energy-measurement-server.h"
+#include "app/util/attribute-storage.h"
 
 static const char *TAG = "esp_matter_cluster";
 
@@ -2889,7 +2891,7 @@ cluster_t *create(endpoint_t *endpoint, config_t *config, uint8_t flags, uint32_
         }
     }
 
-    
+
     /* Features */
     if (features & feature::visual::get_id()) {
         feature::visual::add(cluster, &(config->visual));
@@ -3728,7 +3730,7 @@ cluster_t *create(endpoint_t *endpoint, config_t *config, uint8_t flags, uint32_
                 feature::dynamic_power_flow::add(cluster);
             }
         }
-    
+
     return cluster;
 }
 } /* power_topology */
@@ -3804,6 +3806,13 @@ namespace electrical_energy_measurement {
 const function_generic_t *function_list = NULL;
 const int function_flags = CLUSTER_FLAG_NONE;
 
+ElectricalEnergyMeasurement::ElectricalEnergyMeasurementAttrAccess gElectricalEnergyMeasurementAttrAccess(0xF, 1);
+
+void electrical_energy_measurement_init_callback()
+{
+    registerAttributeAccessOverride(&gElectricalEnergyMeasurementAttrAccess);
+}
+
 cluster_t *create(endpoint_t *endpoint, config_t *config, uint8_t flags, uint32_t features)
 {
     cluster_t *cluster = cluster::create(endpoint, ElectricalEnergyMeasurement::Id, flags);
@@ -3813,6 +3822,8 @@ cluster_t *create(endpoint_t *endpoint, config_t *config, uint8_t flags, uint32_
     }
 
     if (flags & CLUSTER_FLAG_SERVER) {
+        static const auto plugin_server_init_cb = CALL_ONCE(electrical_energy_measurement_init_callback);
+        set_plugin_server_init_callback(cluster, plugin_server_init_cb);
         add_function_list(cluster, function_list, function_flags);
     }
 
@@ -4085,7 +4096,7 @@ cluster_t *create(endpoint_t *endpoint, config_t *config, uint8_t flags, uint32_
             (features & feature::forecast_adjustment::get_id()) ||
             (features & feature::constraint_based_adjustment::get_id())) &&
             !(features & feature::power_forecast_reporting::get_id())) {
-        
+
             feature::state_forecast_reporting::add(cluster);
         }
     }

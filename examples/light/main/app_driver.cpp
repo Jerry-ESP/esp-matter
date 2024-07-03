@@ -14,6 +14,7 @@
 #include "bsp/esp-bsp.h"
 
 #include <app_priv.h>
+#include "app/clusters/electrical-energy-measurement-server/electrical-energy-measurement-server.h"
 
 using namespace chip::app::Clusters;
 using namespace esp_matter;
@@ -91,19 +92,24 @@ static esp_err_t app_driver_light_set_temperature(led_indicator_handle_t handle,
 static void app_driver_button_toggle_cb(void *arg, void *data)
 {
     ESP_LOGI(TAG, "Toggle button pressed");
-    uint16_t endpoint_id = light_endpoint_id;
-    uint32_t cluster_id = OnOff::Id;
-    uint32_t attribute_id = OnOff::Attributes::OnOff::Id;
+    // uint16_t endpoint_id = light_endpoint_id;
+    // uint32_t cluster_id = OnOff::Id;
+    // uint32_t attribute_id = OnOff::Attributes::OnOff::Id;
 
-    node_t *node = node::get();
-    endpoint_t *endpoint = endpoint::get(node, endpoint_id);
-    cluster_t *cluster = cluster::get(endpoint, cluster_id);
-    attribute_t *attribute = attribute::get(cluster, attribute_id);
+    // node_t *node = node::get();
+    // endpoint_t *endpoint = endpoint::get(node, 1);
+    chip::app::Clusters::ElectricalEnergyMeasurement::Structs::EnergyMeasurementStruct::Type import_energy;
+    chip::app::Clusters::ElectricalEnergyMeasurement::Structs::EnergyMeasurementStruct::Type export_energy;
+    // cluster_t *cluster = cluster::get(endpoint, cluster_id);
+    // attribute_t *attribute = attribute::get(cluster, attribute_id);
 
     esp_matter_attr_val_t val = esp_matter_invalid(NULL);
-    attribute::get_val(attribute, &val);
-    val.val.b = !val.val.b;
-    attribute::update(endpoint_id, cluster_id, attribute_id, &val);
+    // attribute::get_val(attribute, &val);
+    // val.val.b = !val.val.b;
+    // attribute::update(endpoint_id, cluster_id, attribute_id, &val);
+    lock::status_t lock_status = lock::chip_stack_lock(portMAX_DELAY);
+    chip::app::Clusters::ElectricalEnergyMeasurement::NotifyCumulativeEnergyMeasured(1, chip::MakeOptional(import_energy), chip::MakeOptional(export_energy));
+    lock::chip_stack_unlock();
 }
 
 esp_err_t app_driver_attribute_update(app_driver_handle_t driver_handle, uint16_t endpoint_id, uint32_t cluster_id,
@@ -188,7 +194,7 @@ app_driver_handle_t app_driver_light_init()
     led_indicator_handle_t leds[CONFIG_BSP_LEDS_NUM];
     ESP_ERROR_CHECK(bsp_led_indicator_create(leds, NULL, CONFIG_BSP_LEDS_NUM));
     led_indicator_set_hsv(leds[0], SET_HSV(DEFAULT_HUE, DEFAULT_SATURATION, DEFAULT_BRIGHTNESS));
-    
+
     return (app_driver_handle_t)leds[0];
 #else
     return NULL;
@@ -201,6 +207,6 @@ app_driver_handle_t app_driver_button_init()
     button_handle_t btns[BSP_BUTTON_NUM];
     ESP_ERROR_CHECK(bsp_iot_button_create(btns, NULL, BSP_BUTTON_NUM));
     ESP_ERROR_CHECK(iot_button_register_cb(btns[0], BUTTON_PRESS_DOWN, app_driver_button_toggle_cb, NULL));
-    
+
     return (app_driver_handle_t)btns[0];
 }
