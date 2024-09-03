@@ -186,7 +186,7 @@ void esp_zb_task(void *pvParameters)
 
     esp_zb_zdo_touchlink_target_set_timeout(TOUCHLINK_TARGET_TIMEOUT);
 
-    esp_zb_attribute_list_t *touchlink_cluster = esp_zb_touchlink_commissioning_cluster_create();
+    esp_zb_attribute_list_t *touchlink_cluster = esp_zb_touchlink_commissioning_cluster_create(NULL);
 
     esp_zb_on_off_light_cfg_t light_cfg = ESP_ZB_DEFAULT_ON_OFF_LIGHT_CONFIG();
     /* Create a standard HA on-off light cluster list */
