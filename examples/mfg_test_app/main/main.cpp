@@ -20,6 +20,10 @@
 #include <lib/core/CHIPError.h>
 #include <lib/support/logging/CHIPLogging.h>
 
+#include "esp_system.h"
+#include "esp_partition.h"
+#include "esp_flash.h"
+
 using namespace chip;
 using namespace chip::Crypto;
 using namespace chip::Credentials;
@@ -279,30 +283,79 @@ void test_security_bits()
 
 }
 
+void read_flash_directly() {
+    // 查找分区（例如，名为"storage"的自定义分区）
+    const esp_partition_t *partition = esp_partition_find_first(
+        ESP_PARTITION_TYPE_ANY, ESP_PARTITION_SUBTYPE_ANY, "esp_secure_cert");
+
+    if (partition == NULL) {
+        printf("Partition not found!\n");
+        return;
+    }
+
+    // 定义一个缓冲区来存储读取的数据
+    uint8_t data[1024]; // 假设我们要读取 64 字节
+    esp_err_t err = ESP_OK;
+
+    for (int i =0; i < 8; i++) {
+        err = esp_partition_read(partition, 1024*i, data, sizeof(data)); // 从偏移0开始读取
+
+        esp_flash_write(NULL, data, 0x200000 + 1024*i, 1024);
+
+        if (err != ESP_OK) {
+            printf("Error reading from flash: %s\n", esp_err_to_name(err));
+        } else {
+            for (int i = 0; i < sizeof(data); i++) {
+                printf("%02X", data[i]);
+            }
+            printf("\n---------------------------------------------------------\n");
+        }
+    }
+
+    printf("\n---------------------------------------------------------\n");
+    printf("\n---------------------------------------------------------\n");
+    printf("\n---------------------------------------------------------\n");
+
+    partition = esp_partition_find_first(
+        ESP_PARTITION_TYPE_ANY, ESP_PARTITION_SUBTYPE_ANY, "ota_1");
+    for (int i =0; i < 8; i++) {
+        err = esp_partition_read(partition, 1024*i, data, sizeof(data)); // 从偏移0开始读取
+
+        if (err != ESP_OK) {
+            printf("Error reading from flash: %s\n", esp_err_to_name(err));
+        } else {
+            for (int i = 0; i < sizeof(data); i++) {
+                printf("%02X", data[i]);
+            }
+            printf("\n---------------------------------------------------------\n");
+        }
+    }
+}
+
 extern "C" void app_main()
 {
     // Setup providers based on configuration options
-    esp_matter::setup_providers();
+    // esp_matter::setup_providers();
 
-    // read PAA, PAI, and DAC in spans
-    CHIP_ERROR err = read_certs_in_spans();
-    VerifyOrReturn(err == CHIP_NO_ERROR, ESP_LOGE(TAG, "ERROR: Reading certificates failed, error: %" CHIP_ERROR_FORMAT, err.Format()));
+    // // read PAA, PAI, and DAC in spans
+    // CHIP_ERROR err = read_certs_in_spans();
+    // VerifyOrReturn(err == CHIP_NO_ERROR, ESP_LOGE(TAG, "ERROR: Reading certificates failed, error: %" CHIP_ERROR_FORMAT, err.Format()));
 
-    // Dump PAI details
-    err = dump_cert_details("PAI", pai_span);
-    VerifyOrReturn(err == CHIP_NO_ERROR, ESP_LOGE(TAG, "ERROR: Failed to dump PAI certificate details, error: %" CHIP_ERROR_FORMAT, err.Format()));
+    // // Dump PAI details
+    // err = dump_cert_details("PAI", pai_span);
+    // VerifyOrReturn(err == CHIP_NO_ERROR, ESP_LOGE(TAG, "ERROR: Failed to dump PAI certificate details, error: %" CHIP_ERROR_FORMAT, err.Format()));
 
-    // Dump DAC details
-    err = dump_cert_details("DAC", dac_span);
-    VerifyOrReturn(err == CHIP_NO_ERROR, ESP_LOGE(TAG, "ERROR: Failed to dump DAC certificate details, error: %" CHIP_ERROR_FORMAT, err.Format()));
+    // // Dump DAC details
+    // err = dump_cert_details("DAC", dac_span);
+    // VerifyOrReturn(err == CHIP_NO_ERROR, ESP_LOGE(TAG, "ERROR: Failed to dump DAC certificate details, error: %" CHIP_ERROR_FORMAT, err.Format()));
 
-    // Sign the message with DAC key and verify with public key in DAC certificate
-    err = test_dac(dac_span);
-    VerifyOrReturn(err == CHIP_NO_ERROR, ESP_LOGE(TAG, "ERROR: Failed to Sign and Verify using DAC keypair, error: %" CHIP_ERROR_FORMAT, err.Format()));
+    // // Sign the message with DAC key and verify with public key in DAC certificate
+    // err = test_dac(dac_span);
+    // VerifyOrReturn(err == CHIP_NO_ERROR, ESP_LOGE(TAG, "ERROR: Failed to Sign and Verify using DAC keypair, error: %" CHIP_ERROR_FORMAT, err.Format()));
 
-    // Test DAC -> PAI -> PAA chain validation
-    bool status = test_cert_chain(paa_span, pai_span, dac_span);
-    VerifyOrReturn(status, ESP_LOGE(TAG, "ERROR: Failed to validate attestation cert chain (DAC -> PAI -> PAA)"));
+    // // Test DAC -> PAI -> PAA chain validation
+    // bool status = test_cert_chain(paa_span, pai_span, dac_ESPTOOLPY_FLASHSIZE_4MB
+    // test_security_bits();
 
-    test_security_bits();
+    read_flash_directly();
 }
