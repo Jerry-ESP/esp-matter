@@ -156,12 +156,11 @@ esp_err_t add(cluster_t *cluster);
 
 } /* check_in_protocol_support */
 
-constexpr size_t k_max_user_active_mode_trigger_instruction_length = 128;
-
 namespace user_active_mode_trigger {
-typedef struct {
-    uint32_t user_active_mode_trigger_hint;
+typedef struct config {
     char user_active_mode_trigger_instruction[k_max_user_active_mode_trigger_instruction_length + 1];
+    uint32_t user_active_mode_trigger_hint;
+    config() : user_active_mode_trigger_instruction{0}, user_active_mode_trigger_hint(1) {}
 } config_t;
 
 uint32_t get_id();

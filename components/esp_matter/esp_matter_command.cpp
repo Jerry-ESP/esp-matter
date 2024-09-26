@@ -2048,6 +2048,12 @@ command_t *create_stay_active_request(cluster_t *cluster)
                                        esp_matter_command_callback_stay_active_request);
 }
 
+command_t *create_stay_active_response(cluster_t *cluster)
+{
+    return esp_matter::command::create(cluster, IcdManagement::Commands::StayActiveResponse::Id,
+                                       COMMAND_FLAG_GENERATED, NULL);
+}
+
 } /* command */
 } /* icd_management */
 

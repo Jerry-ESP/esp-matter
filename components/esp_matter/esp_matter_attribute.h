@@ -183,6 +183,8 @@ attribute_t *create_max_group_keys_per_fabric(cluster_t *cluster, uint16_t value
 
 namespace icd_management {
 namespace attribute {
+constexpr size_t k_max_user_active_mode_trigger_instruction_length = 128;
+
 attribute_t *create_idle_mode_duration(cluster_t *cluster, uint32_t value);
 attribute_t *create_active_mode_duration(cluster_t *cluster, uint32_t value);
 attribute_t *create_active_mode_threshold(cluster_t *cluster, uint16_t value);
@@ -192,6 +194,7 @@ attribute_t *create_clients_supported_per_fabric(cluster_t *cluster, uint16_t va
 attribute_t *create_user_active_mode_trigger_hint(cluster_t *cluster, uint32_t value);
 attribute_t *create_user_active_mode_trigger_instruction(cluster_t *cluster, char *value, uint16_t length);
 attribute_t *create_operating_mode(cluster_t *cluster, uint8_t value);
+attribute_t *create_maximum_checkin_backoff(cluster_t *cluster, uint32_t value);
 } /* attribute */
 } /* icd_management */
 

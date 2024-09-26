@@ -583,6 +583,7 @@ attribute_t *create_max_group_keys_per_fabric(cluster_t *cluster, uint16_t value
 
 namespace icd_management {
 namespace attribute {
+
 attribute_t *create_idle_mode_duration(cluster_t *cluster, uint32_t value)
 {
     return esp_matter::attribute::create(cluster, IcdManagement::Attributes::IdleModeDuration::Id,
@@ -627,14 +628,25 @@ attribute_t *create_user_active_mode_trigger_hint(cluster_t *cluster, uint32_t v
 
 attribute_t *create_user_active_mode_trigger_instruction(cluster_t *cluster, char *value, uint16_t length)
 {
+    if (length > k_max_user_active_mode_trigger_instruction_length) {
+        ESP_LOGE(TAG, "Could not create attribute, string length out of bound");
+        return NULL;
+    }
     return esp_matter::attribute::create(cluster, IcdManagement::Attributes::UserActiveModeTriggerInstruction::Id,
-                                         ATTRIBUTE_FLAG_NONE, esp_matter_char_str(value, length));
+                                         ATTRIBUTE_FLAG_NONE, esp_matter_char_str(value, length),
+                                         k_max_user_active_mode_trigger_instruction_length);
 }
 
 attribute_t *create_operating_mode(cluster_t *cluster, uint8_t value)
 {
     return esp_matter::attribute::create(cluster, IcdManagement::Attributes::OperatingMode::Id,
                                          ATTRIBUTE_FLAG_NONE, esp_matter_enum8(value));
+}
+
+attribute_t *create_maximum_checkin_backoff(cluster_t *cluster, uint32_t value)
+{
+    return esp_matter::attribute::create(cluster, IcdManagement::Attributes::MaximumCheckInBackOff::Id,
+                                         ATTRIBUTE_FLAG_NONE, esp_matter_uint32(value));
 }
 
 } /* attribute */

@@ -186,6 +186,7 @@ command_t *create_register_client(cluster_t *cluster);
 command_t *create_register_client_response(cluster_t *cluster);
 command_t *create_unregister_client(cluster_t *cluster);
 command_t *create_stay_active_request(cluster_t *cluster);
+command_t *create_stay_active_response(cluster_t *cluster);
 } /* command */
 } /* icd_management */
 
