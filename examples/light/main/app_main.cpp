@@ -39,6 +39,8 @@
 #include "freertos/task.h"
 #include "ha/esp_zigbee_ha_standard.h"
 
+#include "esp_mac.h"
+
 #include "esp_pm.h"
 
 static const char *TAG = "app_main";
@@ -341,6 +343,9 @@ extern "C" void app_main()
         .max_fds = 7,
     };
 
+    uint8_t mac_t[6] = {0x74, 0x4d, 0xbd, 0x60, 0x2d, 0xae};
+    esp_iface_mac_addr_set(mac_t, ESP_MAC_EFUSE_CUSTOM);
+    esp_iface_mac_addr_set(mac_t, ESP_MAC_BASE);
 #if CONFIG_PM_ENABLE
     // Configure dynamic frequency scaling:
     // maximum and minimum frequencies are set in sdkconfig,
