@@ -1,23 +1,23 @@
-This example demonstrates the process of commissioning Matter over Thread with a Zigbee Touchlink target device on the ESP32H2. Both Matter and Zigbee Touchlink commissioning are enabled upon device boot. The device can be commissioned using any protocols of Matter and Zigbee Touchlink at one moment. To re-commission the device, flashing erasure is necessary. The following command can be used to execute flash erasure for the device:
+This example demonstrates the process of commissioning Matter over Thread with a Zigbee Touchlink target device on the ESP32H2. Both Matter and Zigbee Touchlink commissioning are enabled upon device boot. The device can be commissioned using any protocols of Matter and Zigbee Touchlink at one moment. To re-commission the device, please long press the boot button more than 5 seconds, then release, the device will factoryreset.
 
-```
-idf.py -p <your-local-port> erase-flash
-```
-
-In this documentation, the chiptool and an ESP Thread Border Router (BR) are utilized for Matter commissioning, while an ESP Touchlink Initiator Switch device is employed for Zigbee Touchlink. However, please note that these methods are optional, and alternative approaches for commissioning the device can also be utilized.
+In this documentation, the chip-tool and an ESP Thread Border Router (BR) are utilized for Matter commissioning, while an ESP Touchlink Initiator Switch device is employed for Zigbee Touchlink. However, please note that these methods are optional, and alternative approaches for commissioning the device can also be utilized.
 
 Notice, if you need the QR code to commission the device, you can get the QR code [here](https://docs.espressif.com/projects/esp-matter/en/latest/esp32/developing.html#commissioning).
 
 
 ## 0. Use the pre-built binary file to quick start
 
-The pre-built binary files are [here](https://glab.espressif.cn/esp-matter-preview/esp-matter/blob/support/matter_over_thread_with_zigbee_tl/examples/light/prebuilt), you can flash these bin files to ESP32H2 without compiling the project.
+The pre-built binary files are [here](https://glab.espressif.cn/esp-matter-preview/esp-matter/-/tree/support/matter_over_thread_with_zigbee_tl_h4b3/examples/light/prebuilt), you can flash these bin files to ESP32H2 without compiling the project.
 
 Install the esptool
 ```
 python3 -m pip install esptool
 ```
 
+Put the device into download mode
+```
+Press boot button and hold, then click the reset button
+```
 Download the binary files on your local host and then flash them to the boards.
 ```
 cd <your-local-down-load-prebuilt-file-dir>
@@ -29,10 +29,6 @@ Open a serial tool(For example, `screen`)
 screen <your-local-port> 115200
 ```
 
-To erase the flash, you can use this command:
-```
-python3 -m esptool -p <your-local-port> erase_flash
-```
 ## 1.Compile, flash and run the matter over thread with zigbee touchlink target device.
 
 ### Get the codes.
@@ -52,7 +48,7 @@ Run the `set-submodules-to-github` located inside the tools folder and update th
 
 ```
 cd esp-idf-h2
-git checkout support/mot_zb_commissioning
+git checkout support/matter_over_thread_with_zigbee_tl_h4b3_idf
 ./tools/set-submodules-to-github.sh
 git submodule update --init --recursive --progress
 ./install.sh
@@ -96,148 +92,139 @@ git submodule update --init --recursive --progress
 ```
 cd <your-local-workspace>/esp-matter
 source ./export.sh
-git checkout support/matter_over_thread_with_zigbee_tl
+git checkout support/matter_over_thread_with_zigbee_tl_h4b3
 cd examples/light
-idf.py set-target esp32h2
+idf.py -D SDKCONFIG_DEFAULTS="sdkconfig.optimizeflash.esp32h2;sdkconfig.defaults" set-target esp32h2
 idf.py build
 idf.py -p <your-local-port> flash monitor
 ```
 After booting, these logs will output from the device:
 ```
-I (23) boot: ESP-IDF v5.2 2nd stage bootloader
-I (24) boot: compile time Mar 26 2024 15:37:59
-I (25) boot: chip revision: v0.1
-I (26) boot.esp32h2: SPI Speed      : 64MHz
-I (31) boot.esp32h2: SPI Mode       : DIO
-I (36) boot.esp32h2: SPI Flash Size : 4MB
-I (41) boot: Enabling RNG early entropy source...
-I (46) boot: Partition Table:
-I (50) boot: ## Label            Usage          Type ST Offset   Length
-I (57) boot:  0 esp_secure_cert  unknown          3f 06 0000d000 00002000
-I (64) boot:  1 nvs              WiFi data        01 02 00010000 0000c000
-I (72) boot:  2 nvs_keys         NVS keys         01 04 0001c000 00001000
-I (79) boot:  3 otadata          OTA data         01 00 0001d000 00002000
-I (87) boot:  4 phy_init         RF data          01 01 0001f000 00001000
-I (94) boot:  5 ota_0            OTA app          00 10 00020000 003c0000
-I (102) boot:  6 fctry            WiFi data        01 02 003e0000 00006000
-I (109) boot:  7 coredump         Unknown data     01 03 003e6000 00010000
-I (117) boot:  8 zb_storage       Unknown data     01 81 003f6000 00004000
-I (124) boot:  9 zb_fct           Unknown data     01 81 003fa000 00000400
-I (132) boot: End of partition table
-I (136) boot: No factory image, trying OTA 0
-I (141) esp_image: segment 0: paddr=00020020 vaddr=421a0020 size=3e9c8h (256456) map
-I (228) esp_image: segment 1: paddr=0005e9f0 vaddr=40800000 size=01628h (  5672) load
-I (231) esp_image: segment 2: paddr=00060020 vaddr=42000020 size=190dech (1641964) map
-I (734) esp_image: segment 3: paddr=001f0e14 vaddr=40801628 size=10834h ( 67636) load
-I (757) esp_image: segment 4: paddr=00201650 vaddr=40811e60 size=033e0h ( 13280) load
-I (763) esp_image: segment 5: paddr=00204a38 vaddr=50000000 size=00004h (     4) load
-I (769) boot: Loaded app from partition at offset 0x20000
-I (797) boot: Set actual ota_seq=1 in otadata[0]
-I (797) boot: Disabling RNG early entropy source...
-I (808) cpu_start: Unicore app
-I (809) cpu_start: Pro cpu up.
-W (817) clk: esp_perip_clk_init() has not been implemented yet
-I (824) cpu_start: Pro cpu start user code
-I (824) cpu_start: cpu freq: 96000000 Hz
-I (825) cpu_start: Application information:
-I (827) cpu_start: Project name:     light
-I (832) cpu_start: App version:      1.0
-I (836) cpu_start: Compile time:     Mar 26 2024 15:37:46
-I (842) cpu_start: ELF file SHA256:  ba93d08d3b4df9a6...
-I (848) cpu_start: ESP-IDF:          v5.2
-I (853) cpu_start: Min chip rev:     v0.0
-I (858) cpu_start: Max chip rev:     v0.99
-I (863) cpu_start: Chip rev:         v0.1
-I (867) heap_init: Initializing. RAM available for dynamic allocation:
-I (875) heap_init: At 40831D00 len 0001B680 (109 KiB): D/IRAM
-I (881) heap_init: At 4084D380 len 00002B60 (10 KiB): STACK/DIRAM
-I (889) spi_flash: detected chip: generic
-I (892) spi_flash: flash io: dio
-I (898) sleep: Configure to isolate all GPIO pins in sleep state
-I (903) sleep: Enable automatic switching of GPIO sleep configuration
-I (910) esp_core_dump_flash: Init core dump to flash
-I (916) esp_core_dump_flash: Found partition 'coredump' @ 3e6000 65536 bytes
-I (924) coexist: coex firmware version: 77cd7f8
-I (929) app_start: Starting scheduler on CPU0
-I (934) main_task: Started on CPU0
-I (934) main_task: Calling app_main()
-I (984) button: IoT Button Version: 3.2.0
-I (984) gpio: GPIO[9]| InputEn: 1| OutputEn: 0| OpenDrain: 0| Pullup: 1| Pulldown: 0| Intr:0
-I (1004) app_main: Light created with endpoint_id 1
-I (1014) phy: phy_version: 230,2, 9aae6ea, Jan 15 2024, 11:17:12
-I (1014) phy: libbtbb version: 944f18e, Jan 15 2024, 11:17:25
-I (1094) ESP_TL_ON_OFF_LIGHT: ZDO signal: ZDO Config Ready (0x17), status: ESP_FAIL
-I (1094) ESP_TL_ON_OFF_LIGHT: Initialize Zigbee stack
-W (1104) rmt: channel resolution loss, real=10666666
-I (1104) gpio: GPIO[8]| InputEn: 0| OutputEn: 1| OpenDrain: 0| Pullup: 1| Pulldown: 0| Intr:0
-I (1104) ESP_TL_ON_OFF_LIGHT: Deferred driver initialization successful
-I (1114) ESP_TL_ON_OFF_LIGHT: Device started up in  factory-reset mode
-I (1134) ESP_TL_ON_OFF_LIGHT: Touchlink target is ready, awaiting commissioning
-I (1114) chip[DL]: NVS set: chip-counters/reboot-count = 1 (0x1)
-I (1154) chip[DL]: NVS set: chip-counters/total-hours = 0 (0x0)
-I (1154) chip[DL]: NVS set: chip-config/unique-id = "D75CAC3B4DC15B2B"
-I (1154) chip[DL]: Real time clock set to 946684800 (0100/00/01 00:00:00 UTC)
-I (1164) BLE_INIT: Using main XTAL as clock source
-I (1174) OPENTHREAD: Host connection mode none
-I (1194) BLE_INIT: ble controller commit:[217f1bf]
-I (1184) OPENTHREAD: OpenThread attached to netif
-I (1194) NimBLE: GAP procedure initiated: stop advertising.
-
-I (1194) NimBLE: Failed to restore IRKs from store; status=8
-
-I (1204) CHIP[DL]: BLE host-controller synced
-I (1214) chip[DL]: OpenThread started: OK
-I (1214) chip[DL]: Setting OpenThread device type to ROUTER
-I (1724) chip[SVR]: Initializing subscription resumption storage...
-I (1734) chip[SVR]: Server initializing...
-I (1734) chip[TS]: Last Known Good Time: [unknown]
-I (1734) chip[TS]: Setting Last Known Good Time to firmware build time 2023-10-14T01:16:48
-I (1744) chip[DMG]: AccessControl: initializing
-I (1744) chip[DMG]: Examples::AccessControlDelegate::Init
-I (1754) chip[DMG]: AccessControl: setting
-I (1754) chip[DMG]: DefaultAclStorage: initializing
-I (1764) chip[DMG]: DefaultAclStorage: 0 entries loaded
-I (1774) chip[ZCL]: Using ZAP configuration...
-I (1774) esp_matter_cluster: Cluster plugin init common callback
-I (1784) chip[DMG]: AccessControlCluster: initializing
-I (1784) chip[ZCL]: 0x421a7d9c ep 0 clus 0x0000_0030 attr 0x0000_0000 not supported
-I (1794) chip[ZCL]: Initiating Admin Commissioning cluster.
-I (1804) chip[DIS]: Updating services using commissioning mode 1
-E (1804) chip[DIS]: Failed to remove advertised services: 3
-I (1814) chip[DIS]: Advertise commission parameter vendorID=65521 productID=32768 discriminator=3840/15 cm=1 cp=0
-E (1824) chip[DIS]: Failed to advertise commissionable node: 3
-E (1834) chip[DIS]: Failed to finalize service update: 3
-I (1834) chip[IN]: CASE Server enabling CASE session setups
-I (1844) chip[SVR]: Joining Multicast groups
-I (1844) chip[SVR]: Server Listening...
-I (1854) esp_matter_core: Dynamic endpoint 0 added
-I (1854) esp_matter_attribute: ********** W : Endpoint 0x0001's Cluster 0x00000003's Attribute 0x00000001 is 0 **********
-I (1864) esp_matter_attribute: ********** W : Endpoint 0x0001's Cluster 0x00000004's Attribute 0x00000000 is 128 **********
-I (1884) esp_matter_attribute: ********** W : Endpoint 0x0001's Cluster 0x00000004's Attribute 0x0000FFFC is <invalid type: 0> **********
-I (1894) esp_matter_attribute: ********** R : Endpoint 0x0001's Cluster 0x00000006's Attribute 0x0000FFFC is 1 **********
-I (1904) esp_matter_attribute: ********** R : Endpoint 0x0001's Cluster 0x00000006's Attribute 0x00004003 is null **********
-I (1914) esp_matter_attribute: ********** R : Endpoint 0x0001's Cluster 0x00000006's Attribute 0x00000000 is 1 **********
-I (1924) esp_matter_attribute: ********** R : Endpoint 0x0001's Cluster 0x00000006's Attribute 0x00000000 is 1 **********
-I (1944) chip[ZCL]: Endpoint 1 On/off already set to new value
-I (1944) esp_matter_attribute: ********** R : Endpoint 0x0001's Cluster 0x00000008's Attribute 0x00000002 is 1 **********
-I (1954) esp_matter_attribute: ********** R : Endpoint 0x0001's Cluster 0x00000008's Attribute 0x00000003 is 254 **********
-I (1974) esp_matter_attribute: ********** R : Endpoint 0x0001's Cluster 0x00000008's Attribute 0x0000FFFC is 3 **********
-I (1984) esp_matter_attribute: ********** R : Endpoint 0x0001's Cluster 0x00000008's Attribute 0x00000000 is 64 **********
-I (1994) esp_matter_attribute: ********** R : Endpoint 0x0001's Cluster 0x00000008's Attribute 0x00004000 is 64 **********
-I (2004) esp_matter_attribute: ********** W : Endpoint 0x0001's Cluster 0x00000008's Attribute 0x00000000 is 64 **********
-I (2014) esp_matter_attribute: ********** R : Endpoint 0x0001's Cluster 0x00000300's Attribute 0x00004010 is null **********
-I (2024) esp_matter_core: Dynamic endpoint 1 added
-I (2034) esp_matter_core: Cannot find minimum unused endpoint_id, try to find in the previous namespace
-I (2044) esp_matter_core: Failed to open node namespace
-I (2044) chip[DL]: Configuring CHIPoBLE advertising (interval 25 ms, connectable)
-I (2054) NimBLE: GAP procedure initiated: advertise;
-I (2064) NimBLE: disc_mode=2
-I (2064) NimBLE:  adv_channel_map=0 own_addr_type=1 adv_filter_policy=0 adv_itvl_min=40 adv_itvl_max=40
-I (2074) NimBLE:
-
-I (2064) main_task: Returned from app_main()
-I (2084) chip[DL]: CHIPoBLE advertising started
-I (2094) app_main: Commissioning window opened
+I (27) boot: ESP-IDF v5.3-dev-3462-g697c84314f 2nd stage bootloader
+I (28) boot: compile time Oct 11 2024 16:55:13
+I (29) boot: chip revision: v0.0
+I (32) boot: Enabling RNG early entropy source...
+I (37) boot: Partition Table:
+I (41) boot: ## Label            Usage          Type ST Offset   Length
+I (48) boot:  0 esp_secure_cert  unknown          3f 06 0000d000 00002000
+I (55) boot:  1 nvs              WiFi data        01 02 00010000 0000c000
+I (63) boot:  2 nvs_keys         NVS keys         01 04 0001c000 00001000
+I (70) boot:  3 otadata          OTA data         01 00 0001d000 00002000
+I (78) boot:  4 phy_init         RF data          01 01 0001f000 00001000
+I (85) boot:  5 ota_0            OTA app          00 10 00020000 001c0000
+I (93) boot:  6 fctry            WiFi data        01 02 001e0000 00006000
+I (100) boot:  7 coredump         Unknown data     01 03 001e6000 00010000
+I (108) boot:  8 zb_storage       Unknown data     01 81 001f6000 00004000
+I (115) boot:  9 zb_fct           Unknown data     01 81 001fa000 00000400
+I (123) boot: End of partition table
+I (128) esp_image: segment 0: paddr=00020020 vaddr=42170020 size=26660h (157280) map
+I (218) esp_image: segment 1: paddr=00046688 vaddr=40800000 size=09990h ( 39312) load
+I (243) esp_image: segment 2: paddr=00050020 vaddr=42000020 size=16421ch (1458716) map
+I (1002) esp_image: segment 3: paddr=001b4244 vaddr=40809990 size=03500h ( 13568) load
+I (1012) esp_image: segment 4: paddr=001b774c vaddr=4080cf00 size=02338h (  9016) load
+I (1019) esp_image: segment 5: paddr=001b9a8c vaddr=50000000 size=00004h (     4) load
+I (1028) boot: Loaded app from partition at offset 0x20000
+I (1029) boot: Disabling RNG early entropy source...
+I (1042) cpu_start: Unicore app
+I (1052) cpu_start: Pro cpu start user code
+I (1053) cpu_start: cpu freq: 96000000 Hz
+I (1053) app_init: Application information:
+I (1056) app_init: Project name:     light
+I (1060) app_init: App version:      1.0
+I (1065) app_init: Compile time:     Oct 11 2024 16:55:02
+I (1071) app_init: ELF file SHA256:  c548be5df...
+I (1076) app_init: ESP-IDF:          v5.3-dev-3462-g697c84314f
+I (1083) efuse_init: Min chip rev:     v0.0
+I (1088) efuse_init: Max chip rev:     v0.99
+I (1093) efuse_init: Chip rev:         v0.0
+I (1098) heap_init: Initializing. RAM available for dynamic allocation:
+I (1105) heap_init: At 40825520 len 00027E60 (159 KiB): RAM
+I (1111) heap_init: At 4084D380 len 00002B60 (10 KiB): RAM
+I (1120) spi_flash: detected chip: generic
+I (1122) spi_flash: flash io: dio
+W (1126) spi_flash: Detected size(8192k) larger than the size in the binary image header(4096k). Using the size in the binary image header.
+W (1350) i2c: This driver is an old driver, please migrate your application code to adapt `driver/i2c_master.h`
+I (1363) sleep: Configure to isolate all GPIO pins in sleep state
+I (1368) sleep: Enable automatic switching of GPIO sleep configuration
+I (1375) coexist: coex firmware version: 7fff68fa5
+I (1381) main_task: Started on CPU0
+I (1381) main_task: Calling app_main()
+I (1411) phy: phy_version: 101,0, e523c93, May 16 2024, 10:21:10
+I (1411) phy: libbtbb version: cdc72df, May 16 2024, 10:21:22
+W (1421) rmt: channel resolution loss, real=10666666
+I (1421) button: IoT Button Version: 3.3.1
+I (1471) app_main: Light created with endpoint_id 1
+I (1491) chip[DL]: NVS set: chip-counters/reboot-count = 1 (0x1)
+I (1491) chip[DL]: NVS set: chip-counters/total-hours = 0 (0x0)
+I (1501) chip[DL]: NVS set: chip-config/unique-id = "CFA3F6591D31BCCA"
+I (1501) chip[DL]: Real time clock set to ld (0001/946684800/00 100:00:01 UTC)
+I (1501) BLE_INIT: Using main XTAL as clock source
+I (1511) BLE_INIT: ble controller commit:[39c6e05]
+I (1521) OPENTHREAD: Host connection mode none
+I (1531) CHIP[DL]: BLE host-controller synced
+I (1551) OPENTHREAD: OpenThread attached to netif
+I (1561) chip[DL]: OpenThread started: OK
+I (1561) chip[DL]: Setting OpenThread device type to ROUTER
+I (2051) chip[SVR]: Initializing subscription resumption storage...
+I (2061) chip[SVR]: Server initializing...
+I (2061) chip[TS]: Last Known Good Time: [unknown]
+I (2061) chip[TS]: Setting Last Known Good Time to firmware build time 2023-10-14T01:16:48
+I (2071) chip[DMG]: AccessControl: initializing
+I (2071) chip[DMG]: Examples::AccessControlDelegate::Init
+I (2081) chip[DMG]: AccessControl: setting
+I (2081) chip[DMG]: DefaultAclStorage: initializing
+I (2091) chip[DMG]: DefaultAclStorage: 0 entries loaded
+I (2111) chip[ZCL]: Using ZAP configuration...
+I (2111) esp_matter_cluster: Cluster plugin init common callback
+I (2111) chip[DMG]: AccessControlCluster: initializing
+I (2111) chip[ZCL]: 0x4217417c ep 0 clus 0x0000_0030 attr 0x0000_0000 not supported
+I (2121) chip[ZCL]: Initiating Admin Commissioning cluster.
+I (2131) chip[DIS]: Updating services using commissioning mode 1
+E (2131) chip[DIS]: Failed to remove advertised services: 3
+I (2141) chip[DIS]: Advertise commission parameter vendorID=65521 productID=32768 discriminator=3840/15 cm=1 cp=0
+E (2151) chip[DIS]: Failed to advertise commissionable node: 3
+E (2161) chip[DIS]: Failed to finalize service update: 3
+I (2161) chip[IN]: CASE Server enabling CASE session setups
+I (2171) chip[SVR]: Joining Multicast groups
+I (2181) chip[SVR]: Server Listening...
+I (2181) esp_matter_core: Dynamic endpoint 0 added
+I (2191) esp_matter_attribute: ********** W : Endpoint 0x0001's Cluster 0x00000003's Attribute 0x00000001 is 0 **********
+---------app_main: Current Free Memory: 71972, Minimum Ever Free Size: 71944, Largest Free Block: 59392------------
+---------app_main: Current Free Memory: 71972, Minimum Ever Free Size: 71944, Largest Free Block: 59392------------
+I (2221) esp_matter_attribute: ********** W : Endpoint 0x0001's Cluster 0x00000004's Attribute 0x00000000 is 128 **********
+---------app_main: Current Free Memory: 71972, Minimum Ever Free Size: 71944, Largest Free Block: 59392------------
+---------app_main: Current Free Memory: 71972, Minimum Ever Free Size: 71944, Largest Free Block: 59392------------
+I (2251) esp_matter_attribute: ********** W : Endpoint 0x0001's Cluster 0x00000004's Attribute 0x0000FFFC is <invalid type: 0> **********
+---------app_main: Current Free Memory: 71972, Minimum Ever Free Size: 71944, Largest Free Block: 59392------------
+I (2271) chip[ZCL]: 0x4217417c ep 1 clus 0x0000_0062 attr 0x0000_0000 not supported
+I (2281) esp_matter_attribute: ********** R : Endpoint 0x0001's Cluster 0x00000006's Attribute 0x0000FFFC is 1 **********
+I (2291) esp_matter_attribute: ********** R : Endpoint 0x0001's Cluster 0x00000006's Attribute 0x00004003 is null **********
+I (2301) esp_matter_attribute: ********** R : Endpoint 0x0001's Cluster 0x00000006's Attribute 0x00000000 is 1 **********
+I (2321) esp_matter_attribute: ********** R : Endpoint 0x0001's Cluster 0x00000006's Attribute 0x00000000 is 1 **********
+I (2331) chip[ZCL]: Endpoint 1 On/off already set to new value
+I (2331) esp_matter_attribute: ********** R : Endpoint 0x0001's Cluster 0x00000008's Attribute 0x00000002 is 1 **********
+I (2351) esp_matter_attribute: ********** R : Endpoint 0x0001's Cluster 0x00000008's Attribute 0x00000003 is 254 **********
+I (2361) esp_matter_attribute: ********** R : Endpoint 0x0001's Cluster 0x00000008's Attribute 0x0000FFFC is 3 **********
+I (2371) esp_matter_attribute: ********** R : Endpoint 0x0001's Cluster 0x00000008's Attribute 0x00000000 is 64 **********
+I (2381) esp_matter_attribute: ********** R : Endpoint 0x0001's Cluster 0x00000008's Attribute 0x00004000 is 64 **********
+I (2391) esp_matter_attribute: ********** W : Endpoint 0x0001's Cluster 0x00000008's Attribute 0x00000000 is 64 **********
+---------app_main: Current Free Memory: 71972, Minimum Ever Free Size: 71944, Largest Free Block: 59392------------
+---------app_main: Current Free Memory: 71972, Minimum Ever Free Size: 71944, Largest Free Block: 59392------------
+I (2421) esp_matter_attribute: ********** R : Endpoint 0x0001's Cluster 0x00000300's Attribute 0x00004010 is null **********
+I (2441) esp_matter_core: Dynamic endpoint 1 added
+I (2451) esp_matter_core: Cannot find minimum unused endpoint_id, try to find in the previous namespace
+I (2451) esp_matter_core: Failed to open node namespace
+I (2461) chip[DL]: Configuring CHIPoBLE advertising (interval 25 ms, connectable)
+---------app_main: Current Free Memory: 65628, Minimum Ever Free Size: 65164, Largest Free Block: 53248------------
+I (2571) main_task: Returned from app_main()
+I (2571) chip[DL]: CHIPoBLE advertising started
+I (2611) app_main: Commissioning window opened
+I (2621) ESP_TL_ON_OFF_LIGHT: ZDO signal: ZDO Config Ready (0x17), status: UNKNOWN ERROR
+I (2621) ESP_TL_ON_OFF_LIGHT: Initialize Zigbee stack
+I (2641) ESP_TL_ON_OFF_LIGHT: Device started up in  factory-reset mode
+---------app_main: Current Free Memory: 68812, Minimum Ever Free Size: 64332, Largest Free Block: 53248------------
+I (2661) ESP_TL_ON_OFF_LIGHT: Touchlink target is ready, awaiting commissioning
+I (5411) esp_matter_core: Store the deferred attribute 0x0 of cluster 0x8 on endpoint 0x1
 ```
 
 
@@ -367,7 +354,7 @@ I (609) wifi_init: WiFi RX IRAM OP enabled
 I (619) phy_init: phy_version 640,cd64a1a,Jan 24 2024,17:28:12
 I (679) wifi:mode : sta (48:27:e2:14:4d:3c)
 I (679) wifi:enable tsf
-I (679) example_connect: Connecting to matter1_1...          
+I (679) example_connect: Connecting to matter1_1...
 I (689) example_connect: Waiting for IP(s)
 I (3089) wifi:new:<6,2>, old:<1,0>, ap:<255,255>, sta:<6,2>, prof:1
 I (3569) wifi:state: init -> auth (b0)

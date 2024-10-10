@@ -13,6 +13,7 @@
 #include <esp_log.h>
 #include <esp_matter.h>
 #include "iot_button.h"
+#include "esp_partition.h"
 
 static const char *TAG = "app_reset";
 static bool perform_factory_reset = false;
@@ -25,10 +26,32 @@ static void button_factory_reset_pressed_cb(void *arg, void *data)
     }
 }
 
+static void factory_reset_zigbee()
+{
+    const esp_partition_t *fat_partition = esp_partition_find_first(
+        ESP_PARTITION_TYPE_DATA,     // 分区类型为 DATA
+        ESP_PARTITION_SUBTYPE_DATA_FAT, // 分区子类型为 FAT
+        "zb_storage"                    // 分区标签（可选）
+    );
+
+    if (fat_partition != NULL) {
+        printf("address:%ld ----- size:%ld\n", fat_partition->address, fat_partition->size);
+        esp_err_t err = esp_partition_erase_range(fat_partition, 0, fat_partition->size);
+        if (err != ESP_OK) {
+            printf("Failed to erase FAT partition: %s\n", esp_err_to_name(err));
+        } else {
+            printf("FAT partition erased successfully.\n");
+        }
+    } else {
+        printf("FAT partition not found.\n");
+    }
+}
+
 static void button_factory_reset_released_cb(void *arg, void *data)
 {
     if (perform_factory_reset) {
         ESP_LOGI(TAG, "Starting factory reset");
+        factory_reset_zigbee();
         esp_matter::factory_reset();
         perform_factory_reset = false;
     }
