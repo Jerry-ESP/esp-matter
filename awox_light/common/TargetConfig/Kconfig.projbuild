@@ -1,0 +1,320 @@
+menu "Awox Target Configuration"
+
+    menu "Device information"
+        config MODEL_NAME
+            string "Model Name"
+            default "GenericName"
+            help
+                Type the name of your product
+
+        config PRODUCT_ID
+            hex "Product ID"
+            default 0x0000
+            range 0x0000 0xFFFF
+            help
+                Type the product id of your device
+
+    endmenu
+
+    config SKIP_PRODUCTION
+        bool "Skip production"
+        default false
+        help
+            Select if you want to skip production mode
+
+    config USE_REGISTERED_MAC
+        bool "Use registered MAC"
+        default false
+        help
+            Select if you want to use a registered MAC address (TEST ONLY)
+
+    choice APPLICATION_TYPE
+    prompt "Device application"
+    help
+        Set the Zigbee target selector to define clusters and endpoints. Should not be changed, it is retrieved from Product Database
+        
+    config TARGET_DIMMABLE
+        bool "DIMMABLE"
+    config TARGET_TW
+        bool "TW"
+    config TARGET_RGBTW
+        bool "RGBTW"
+    config TARGET_RGBW
+        bool "RGBW"
+    config TARGET_RGBIC
+        bool "RGBIC"
+    config TARGET_RCU
+        bool "RCU"
+    config TARGET_RCU_3G
+        bool "RCU3G"
+    config TARGET_PIR
+        bool "PIR"
+    config TARGET_BLFL
+        bool "BLFL"
+    endchoice
+
+    menu "Hardware version"
+        choice ModuleVersion
+        prompt "Module Version"
+        help
+            Module Version selection:
+
+            Each device can operate on different hw version. Each version of module changes the GPIO mapping.
+
+        config MODULE_VERSION_WROOM_07
+            bool "ESP32-H2-WROOM-07"
+        config MODULE_VERSION_MINI_1
+            bool "ESP32H2-MINI-1"
+        config MODULE_VERSION_DEVKIT
+            bool "Development Kit"
+        config MODULE_VERSION_COB_GENERIC_TW
+            bool "COB Generic TW"
+        config MODULE_VERSION_COB_GENERIC_RGBTW
+            bool "COB Generic RGBTW"
+        config MODULE_VERSION_COB_GENERIC_RGBW
+            bool "COB Generic RGB W"
+        endchoice
+
+        config HARDWARE_VERSION_MAJOR
+            int "Major number of HW version"
+            default 0
+            range 0 255
+            help
+                Type the major number of the hardware version
+
+        config HARDWARE_VERSION_MINOR
+            int "Minor number of HW version"
+            default 0
+            range 0 255
+            help
+                Type the minor number of the hardware version
+    endmenu
+
+    menu "Firmware version"
+        config FIRMWARE_VERSION
+            string "FW version"
+            default "0.0.0"
+            help
+                Type the FW version for your device
+
+        config FIRMWARE_VERSION_MAJOR
+            int "Major number of FW version"
+            default 0
+            range 0 255
+            help
+                Type the major number of the firmware version
+
+        config FIRMWARE_VERSION_MINOR
+            int "Minor number of FW version"
+            default 0
+            range 0 255
+            help
+                Type the minor number of the firmware version
+
+        config FIRMWARE_VERSION_PATCH
+            int "Patch number of FW version"
+            default 0
+            range 0 255
+            help
+                Type the patch number of the firmware version
+
+        config FIRMWARE_VERSION_BUILD
+            int "Build number of FW version"
+            default 0
+            range 0 65535
+            help
+                Type the build number of the firmware version
+    endmenu
+
+    menu "White temperature range"
+        config MIN_TEMPERATURE_MIREDS
+            int "Min mireds temperature"
+            default 153
+            range 100 1000
+            help
+                Type the minimum mireds temperature of your device
+
+        config MAX_TEMPERATURE_MIREDS
+            int "Max mireds temperature"
+            default 370
+            range 100 1000
+            help
+                Type the maximum mireds temperature of your device
+    endmenu
+
+    menu "PWM configuration"
+        config PWM_FREQUENCY
+            int "PWM frequency"
+            default 16000
+            range 1000 20000
+            help
+                Type the PWM frequency of your device
+
+        config MIN_PWM_CW
+            int "Minimum of PWM for cold white LED"
+            default 10
+            range 1 1000
+            help
+                Type the minimum of PWM for cold white LED
+
+        config MIN_PWM_WW
+            int "Minimum of PWM for warm white LED"
+            default 10
+            range 1 1000
+            help
+                Type the minimum of PWM for warm white LED
+
+        config MIN_PWM_R
+            int "Minimum of PWM for red LED"
+            default 10
+            range 1 1000
+            help
+                Type the minimum of PWM for red LED
+
+        config MIN_PWM_G
+            int "Minimum of PWM for green LED"
+            default 10
+            range 1 1000
+            help
+                Type the minimum of PWM for green LED
+                
+        config MIN_PWM_B
+            int "Minimum of PWM for blue LED"
+            default 10
+            range 1 1000
+            help
+                Type the minimum of PWM for blue LED
+                
+        config INVERTED_PWM_CW
+            bool "Inversion of cold white PWM"
+            default False
+            help
+                Select if cold white PWM is inverted
+
+        config INVERTED_PWM_WW
+            bool "Inversion of warm white PWM"
+            default False
+            help
+                Select if warm white PWM is inverted
+
+        config INVERTED_PWM_R
+            bool "Inversion of red PWM"
+            default False
+            help
+                Select if red PWM is inverted
+
+        config INVERTED_PWM_G
+            bool "Inversion of green PWM"
+            default False
+            help
+                Select if green PWM is inverted
+                
+        config INVERTED_PWM_B
+            bool "Inversion of blue PWM"
+            default False
+            help
+                Select if blue PWM is inverted
+    endmenu
+
+    menu "Connectivities"
+        config EMULATE_TELINK_ADDR
+            bool "Emulate Telink ADDR"
+            default false
+            help
+                Select if BLE address is like Telink ones
+
+        config CONNECTIVITY_BLE
+            bool "BLE support"
+            default False
+            help
+                Select if BLE is supported in your device
+
+        config CONNECTIVITY_ZIGBEE
+            bool "Zigbee support"
+            default False
+            help
+                Select if Zigbee is supported in your device
+
+        config CONNECTIVITY_BEACON
+            bool "Beacon support"
+            default False
+            help
+                Select if Bluetooth beacons is supported in your device
+
+        config CONNECTIVITY_MATTER
+            bool "Matter support"
+            default False
+            help
+                Select if Matter is supported in your device
+    endmenu
+
+    menu "Capabilities"
+        config CAPABILITY_SWITCH
+            bool "ON/OFF support"
+            default False
+            help
+                Select if ON/OFF is supported in your device
+
+        config CAPABILITY_WHITE
+            bool "White support"
+            default False
+            help
+                Select if white is supported in your device
+
+        config CAPABILITY_DIMMING
+            bool "Dimming support"
+            default False
+            help
+                Select if dimming is supported in your device
+
+        config CAPABILITY_TEMPERATURE
+            bool "Temperature support"
+            default False
+            help
+                Select if color temperature is supported in your device
+
+        config CAPABILITY_COLOR
+            bool "RGB color support"
+            default False
+            help
+                Select if RGB color is supported in your device
+
+        config CAPABILITY_BACKLIGHT
+            bool "Backlight support"
+            default False
+            help
+                Select if backlight feature is supported in your device
+
+        config CAPABILITY_CONTROLLER_PLUG_IN
+            bool "Controlleur plug-in support"
+            default False
+            help
+                Select if your device is a plug-in controller
+
+        config CAPABILITY_RCUGROUPS
+            bool "RCU with multiple groups support"
+            default False
+            help
+                Select if your RCU support multiple groups
+
+        config CAPABILITY_RCU
+            bool "RCU support"
+            default False
+            help
+                Select if your device can control other devices
+
+        config CAPABILITY_MOTION
+            bool "Motion detection support"
+            default False
+            help
+                Select if motion detection is supported in your device
+
+        config CAPABILITY_I2C
+            bool "I2C support"
+            default False
+            help
+                Select if I2C is supported in your device
+    endmenu
+
+
+endmenu

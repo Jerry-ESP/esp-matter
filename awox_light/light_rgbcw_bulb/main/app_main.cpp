@@ -25,8 +25,11 @@
 #include <app/server/Server.h>
 
 #include <matter_dac_verify.h>
-#include <factory_reset.h>
+#include <product_util.h>
 #include <indicator.h>
+
+#include "freertos/FreeRTOS.h"
+#include "freertos/task.h"
 
 static const char *TAG = "app_main";
 uint16_t light_endpoint_id = 0;
@@ -190,7 +193,6 @@ extern "C" void app_main()
 
     /* Initialize the ESP NVS layer */
     nvs_flash_init();
-
     factory_reset_init();
 
     dump_dac_cert_details();
@@ -258,9 +260,6 @@ extern "C" void app_main()
     /* Matter start */
     err = esp_matter::start(app_event_cb);
     ABORT_APP_ON_FAILURE(err == ESP_OK, ESP_LOGE(TAG, "Failed to start Matter, err:%d", err));
-
-    // /* Starting driver with default values */
-    // app_driver_light_set_defaults(light_endpoint_id);
 
 #if CONFIG_ENABLE_ENCRYPTED_OTA
     err = esp_matter_ota_requestor_encrypted_init(s_decryption_key, s_decryption_key_len);

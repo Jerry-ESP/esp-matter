@@ -1,0 +1,2 @@
+1.1.0
+#Espressif build system just needs you to create a version.txt file in your project to handle versionning.

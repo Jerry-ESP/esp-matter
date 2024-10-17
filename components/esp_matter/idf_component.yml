@@ -8,3 +8,4 @@ dependencies:
         rules:
             - if: "idf_version >=5.0"
             - if: "target != esp32h2"
+    lvgl/lvgl: "9.2.0"
