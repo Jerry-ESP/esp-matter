@@ -25,8 +25,11 @@
 #include <app/server/Server.h>
 
 #include <matter_dac_verify.h>
-#include <factory_reset.h>
+#include <product_util.h>
 #include <indicator.h>
+
+#include "freertos/FreeRTOS.h"
+#include "freertos/task.h"
 
 static const char *TAG = "app_main";
 uint16_t light_endpoint_id = 0;
@@ -193,7 +196,7 @@ extern "C" void app_main()
 
     factory_reset_init();
 
-    dump_dac_cert_details();
+    // dump_dac_cert_details();
 
     /* Initialize driver */
     err = app_driver_light_init();
@@ -210,8 +213,8 @@ extern "C" void app_main()
     light_config.on_off.on_off = DEFAULT_POWER;
     light_config.on_off.lighting.start_up_on_off = nullptr;
     light_config.level_control.current_level = DEFAULT_BRIGHTNESS;
-    light_config.level_control.on_level = DEFAULT_BRIGHTNESS;
-    light_config.level_control.lighting.start_up_current_level = DEFAULT_BRIGHTNESS;
+    light_config.level_control.on_level = nullptr;
+    light_config.level_control.lighting.start_up_current_level = nullptr;
     light_config.color_control.color_mode = (uint8_t)ColorControl::ColorMode::kColorTemperature;
     light_config.color_control.enhanced_color_mode = (uint8_t)ColorControl::ColorMode::kColorTemperature;
     light_config.color_control.color_temperature.startup_color_temperature_mireds = nullptr;
@@ -239,6 +242,10 @@ extern "C" void app_main()
     attribute::set_deferred_persistence(current_x_attribute);
     attribute_t *current_y_attribute = attribute::get(color_control_cluster, ColorControl::Attributes::CurrentY::Id);
     attribute::set_deferred_persistence(current_y_attribute);
+    attribute_t *current_hue_attribute = attribute::get(color_control_cluster, ColorControl::Attributes::CurrentHue::Id);
+    attribute::set_deferred_persistence(current_hue_attribute);
+    attribute_t *current_saturation_attribute = attribute::get(color_control_cluster, ColorControl::Attributes::CurrentSaturation::Id);
+    attribute::set_deferred_persistence(current_saturation_attribute);
     attribute_t *color_temp_attribute = attribute::get(color_control_cluster, ColorControl::Attributes::ColorTemperatureMireds::Id);
     attribute::set_deferred_persistence(color_temp_attribute);
 
@@ -258,9 +265,6 @@ extern "C" void app_main()
     /* Matter start */
     err = esp_matter::start(app_event_cb);
     ABORT_APP_ON_FAILURE(err == ESP_OK, ESP_LOGE(TAG, "Failed to start Matter, err:%d", err));
-
-    // /* Starting driver with default values */
-    // app_driver_light_set_defaults(light_endpoint_id);
 
 #if CONFIG_ENABLE_ENCRYPTED_OTA
     err = esp_matter_ota_requestor_encrypted_init(s_decryption_key, s_decryption_key_len);

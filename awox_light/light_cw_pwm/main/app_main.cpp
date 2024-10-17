@@ -25,8 +25,11 @@
 #include <app/server/Server.h>
 
 #include <matter_dac_verify.h>
-#include <factory_reset.h>
+#include <product_util.h>
 #include <indicator.h>
+
+#include "freertos/FreeRTOS.h"
+#include "freertos/task.h"
 
 static const char *TAG = "app_main";
 uint16_t light_endpoint_id = 0;
@@ -206,25 +209,19 @@ extern "C" void app_main()
     node_t *node = node::create(&node_config, app_attribute_update_cb, app_identification_cb);
     ABORT_APP_ON_FAILURE(node != nullptr, ESP_LOGE(TAG, "Failed to create Matter node"));
 
-    extended_color_light::config_t light_config;
+    color_temperature_light::config_t light_config;
     light_config.on_off.on_off = DEFAULT_POWER;
     light_config.on_off.lighting.start_up_on_off = nullptr;
     light_config.level_control.current_level = DEFAULT_BRIGHTNESS;
-    light_config.level_control.on_level = DEFAULT_BRIGHTNESS;
-    light_config.level_control.lighting.start_up_current_level = DEFAULT_BRIGHTNESS;
+    light_config.level_control.on_level = nullptr;
+    light_config.level_control.lighting.start_up_current_level = nullptr;
     light_config.color_control.color_mode = (uint8_t)ColorControl::ColorMode::kColorTemperature;
     light_config.color_control.enhanced_color_mode = (uint8_t)ColorControl::ColorMode::kColorTemperature;
     light_config.color_control.color_temperature.startup_color_temperature_mireds = nullptr;
 
     // endpoint handles can be used to add/modify clusters.
-    endpoint_t *endpoint = extended_color_light::create(node, &light_config, ENDPOINT_FLAG_NONE, NULL);
-    ABORT_APP_ON_FAILURE(endpoint != nullptr, ESP_LOGE(TAG, "Failed to create extended color light endpoint"));
-
-    cluster::color_control::feature::hue_saturation::config_t hue_saturation;
-    hue_saturation.current_hue = DEFAULT_HUE;
-    hue_saturation.current_saturation = DEFAULT_SATURATION;
-    cluster_t *color_cluster = cluster::get(endpoint, ColorControl::Id);
-    cluster::color_control::feature::hue_saturation::add(color_cluster, &hue_saturation);
+    endpoint_t *endpoint = color_temperature_light::create(node, &light_config, ENDPOINT_FLAG_NONE, NULL);
+    ABORT_APP_ON_FAILURE(endpoint != nullptr, ESP_LOGE(TAG, "Failed to create color temperature light endpoint"));
 
     light_endpoint_id = endpoint::get_id(endpoint);
     ESP_LOGI(TAG, "Light created with endpoint_id %d", light_endpoint_id);
@@ -235,10 +232,6 @@ extern "C" void app_main()
     attribute::set_deferred_persistence(current_level_attribute);
 
     cluster_t *color_control_cluster = cluster::get(endpoint, ColorControl::Id);
-    attribute_t *current_x_attribute = attribute::get(color_control_cluster, ColorControl::Attributes::CurrentX::Id);
-    attribute::set_deferred_persistence(current_x_attribute);
-    attribute_t *current_y_attribute = attribute::get(color_control_cluster, ColorControl::Attributes::CurrentY::Id);
-    attribute::set_deferred_persistence(current_y_attribute);
     attribute_t *color_temp_attribute = attribute::get(color_control_cluster, ColorControl::Attributes::ColorTemperatureMireds::Id);
     attribute::set_deferred_persistence(color_temp_attribute);
 
@@ -258,9 +251,6 @@ extern "C" void app_main()
     /* Matter start */
     err = esp_matter::start(app_event_cb);
     ABORT_APP_ON_FAILURE(err == ESP_OK, ESP_LOGE(TAG, "Failed to start Matter, err:%d", err));
-
-    // /* Starting driver with default values */
-    // app_driver_light_set_defaults(light_endpoint_id);
 
 #if CONFIG_ENABLE_ENCRYPTED_OTA
     err = esp_matter_ota_requestor_encrypted_init(s_decryption_key, s_decryption_key_len);
