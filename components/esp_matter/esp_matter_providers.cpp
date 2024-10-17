@@ -18,6 +18,7 @@
 #include <platform/ESP32/ESP32DeviceInfoProvider.h>
 #include <platform/ESP32/ESP32FactoryDataProvider.h>
 #include <platform/ESP32/ESP32SecureCertDACProvider.h>
+#include <lib/support/Span.h>
 
 using namespace chip::DeviceLayer;
 using namespace chip::Credentials;
@@ -25,6 +26,12 @@ using namespace chip::Credentials;
 constexpr char TAG[] = "esp_matter_providers";
 
 namespace esp_matter {
+
+#ifdef CONFIG_ENABLE_SET_CERT_DECLARATION_API
+extern const uint8_t cd_start[] asm("_binary_certification_declaration_der_start");
+extern const uint8_t cd_end[] asm("_binary_certification_declaration_der_end");
+chip::ByteSpan cdSpan(cd_start, static_cast<size_t>(cd_end - cd_start));
+#endif // CONFIG_ENABLE_SET_CERT_DECLARATION_API
 
 #if CONFIG_ENABLE_ESP32_FACTORY_DATA_PROVIDER
 static ESP32FactoryDataProvider factory_data_provider;
@@ -75,8 +82,14 @@ static DeviceAttestationCredentialsProvider *get_dac_provider(void)
 {
 #if CONFIG_SEC_CERT_DAC_PROVIDER
     static ESP32SecureCertDACProvider instance;
+#ifdef CONFIG_ENABLE_SET_CERT_DECLARATION_API
+    instance.SetCertificationDeclaration(cdSpan);
+#endif // CONFIG_ENABLE_SET_CERT_DECLARATION_API
     return &instance;
 #elif CONFIG_FACTORY_PARTITION_DAC_PROVIDER
+#ifdef CONFIG_ENABLE_SET_CERT_DECLARATION_API
+    factory_data_provider.SetCertificationDeclaration(cdSpan);
+#endif // CONFIG_ENABLE_SET_CERT_DECLARATION_API
     return &factory_data_provider;
 #elif CONFIG_CUSTOM_DAC_PROVIDER
     if (s_custom_dac_provider) {

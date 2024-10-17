@@ -1,0 +1,4 @@
+idf_component_register(SRCS "."
+    INCLUDE_DIRS "."
+)
+set_property(TARGET ${COMPONENT_LIB} PROPERTY CXX_STANDARD 17)

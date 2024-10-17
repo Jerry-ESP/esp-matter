@@ -153,7 +153,7 @@
 /* Cluster specific macros which are generic */
 #define MATTER_DM_PLUGIN_ON_OFF                              // used in level control
 
-#define MATTER_DM_PLUGIN_LEVEL_CONTROL
+// #define MATTER_DM_PLUGIN_LEVEL_CONTROL
 #define MATTER_DM_PLUGIN_LEVEL_CONTROL_MAXIMUM_LEVEL 254     // used in level control
 #define MATTER_DM_PLUGIN_LEVEL_CONTROL_MINIMUM_LEVEL 0       // used in level control
 #define MATTER_DM_PLUGIN_LEVEL_CONTROL_RATE 0                // used in level control

@@ -1,0 +1,37 @@
+From b3f061b3fee5d56940a715b6f9d01e04f9fcb85c Mon Sep 17 00:00:00 2001
+From: liyashuai <liyashuai@espressif.com>
+Date: Tue, 24 Dec 2024 11:09:40 +0800
+Subject: [PATCH] add bootloader plus link
+
+---
+ config/esp32/components/chip/CMakeLists.txt | 7 +++++--
+ 1 file changed, 5 insertions(+), 2 deletions(-)
+
+diff --git a/config/esp32/components/chip/CMakeLists.txt b/config/esp32/components/chip/CMakeLists.txt
+index d5c8d1dfe8..fe377080c9 100644
+--- a/config/esp32/components/chip/CMakeLists.txt
++++ b/config/esp32/components/chip/CMakeLists.txt
+@@ -327,8 +327,8 @@ endif()
+ 
+ set(args_gn "${CMAKE_CURRENT_BINARY_DIR}/args.gn")
+ add_custom_command(OUTPUT "${args_gn}"
+-                   COMMAND ${python} 
+-                           ${CMAKE_CURRENT_LIST_DIR}/create_args_gn.py 
++                   COMMAND ${python}
++                           ${CMAKE_CURRENT_LIST_DIR}/create_args_gn.py
+                            "${CMAKE_BINARY_DIR}"
+                            "${idf_path}"
+                            "${CMAKE_CURRENT_LIST_DIR}/chip.c"
+@@ -513,6 +513,9 @@ list(APPEND chip_libraries $<TARGET_FILE:${esp_netif_lib}>)
+ idf_component_get_property(esp_hw_support_lib esp_hw_support COMPONENT_LIB)
+ list(APPEND chip_libraries $<TARGET_FILE:${esp_hw_support_lib}>)
+ 
++idf_component_get_property(bootloader_support_plus_lib espressif__bootloader_support_plus COMPONENT_LIB)
++list(APPEND chip_libraries $<TARGET_FILE:${bootloader_support_plus_lib}>)
++
+ idf_component_get_property(esp_phy_lib esp_phy COMPONENT_LIB)
+ idf_component_get_property(esp_phy_dir esp_phy COMPONENT_DIR)
+ list(APPEND chip_libraries $<TARGET_FILE:${esp_phy_lib}>)
+-- 
+2.25.1
+
