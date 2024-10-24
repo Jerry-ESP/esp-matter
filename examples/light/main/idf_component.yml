@@ -8,3 +8,15 @@ dependencies:
     version: "^1.0.0"
   espressif/led_strip:
     version: "^2.0.0"
+  esp_bsp_generic:
+    version: "^1.1.0"
+  espressif/esp_wifi_remote:
+    version: "*"
+    rules: # will add "optional_component" only when all if clauses are True
+      - if: "target in [esp32p4]"
+  espressif/esp_hosted:
+    version: "*"
+    rules: # will add "optional_component" only when all if clauses are True
+      - if: "target in [esp32p4]"
+
+
