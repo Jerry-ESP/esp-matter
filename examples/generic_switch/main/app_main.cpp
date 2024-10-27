@@ -35,6 +35,9 @@ using namespace esp_matter::endpoint;
 using namespace esp_matter::cluster;
 using namespace chip::app::Clusters;
 
+uint16_t generic_switch_endpoint_id = 0;
+
+
 #if CONFIG_ENABLE_ESP_INSIGHTS_TRACE
 extern const char insights_auth_key_start[] asm("_binary_insights_auth_key_txt_start");
 extern const char insights_auth_key_end[] asm("_binary_insights_auth_key_txt_end");
@@ -166,9 +169,20 @@ static esp_err_t create_button(struct gpio_button* button, node_t* node)
         return err;
     }
 
-    static uint16_t generic_switch_endpoint_id = 0;
     generic_switch_endpoint_id = endpoint::get_id(endpoint);
     ESP_LOGI(TAG, "Generic Switch created with endpoint_id %d", generic_switch_endpoint_id);
+
+    cluster::fixed_label::config_t fl_config;
+    cluster_t *fl_cluster = cluster::fixed_label::create(endpoint, &fl_config, CLUSTER_FLAG_SERVER);
+
+    cluster::user_label::config_t ul_config;
+    cluster_t *ul_cluster = cluster::user_label::create(endpoint, &ul_config, CLUSTER_FLAG_SERVER);
+
+    on_off::create(endpoint, NULL, CLUSTER_FLAG_CLIENT, ESP_MATTER_NONE_FEATURE_ID);
+
+    /* Add group cluster to the switch endpoint */
+    cluster::binding::config_t binding_config;
+    cluster::binding::create(endpoint, &binding_config, CLUSTER_FLAG_SERVER | CLUSTER_FLAG_CLIENT);
 
     /* Add additional features to the node */
     cluster_t *cluster = cluster::get(endpoint, Switch::Id);

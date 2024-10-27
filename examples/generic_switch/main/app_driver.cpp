@@ -27,6 +27,7 @@ using namespace esp_matter;
 using namespace esp_matter::cluster;
 
 static const char *TAG = "app_driver";
+extern uint16_t generic_switch_endpoint_id;
 
 esp_err_t app_driver_attribute_update(app_driver_handle_t driver_handle, uint16_t endpoint_id, uint32_t cluster_id,
                                       uint32_t attribute_id, esp_matter_attr_val_t *val)
@@ -35,21 +36,78 @@ esp_err_t app_driver_attribute_update(app_driver_handle_t driver_handle, uint16_
     return err;
 }
 
+static void send_command_success_callback(void *context, const ConcreteCommandPath &command_path,
+                                          const chip::app::StatusIB &status, TLVReader *response_data)
+{
+    ESP_LOGI(TAG, "Send command success");
+}
+
+static void send_command_failure_callback(void *context, CHIP_ERROR error)
+{
+    ESP_LOGI(TAG, "Send command failure: err :%" CHIP_ERROR_FORMAT, error.Format());
+}
+
+void app_driver_client_invoke_command_callback(client::peer_device_t *peer_device, client::request_handle_t *req_handle,
+                                               void *priv_data)
+{
+    if (req_handle->type != esp_matter::client::INVOKE_CMD) {
+        return;
+    }
+    char command_data_str[32];
+    // on_off light switch should support on_off cluster and identify cluster commands sending.
+    if (req_handle->command_path.mClusterId == OnOff::Id) {
+        strcpy(command_data_str, "{}");
+    } else if (req_handle->command_path.mClusterId == Identify::Id) {
+        if (req_handle->command_path.mCommandId == Identify::Commands::Identify::Id) {
+            if (((char *)req_handle->request_data)[0] != 1) {
+                ESP_LOGE(TAG, "Number of parameters error");
+                return;
+            }
+            sprintf(command_data_str, "{\"0:U16\": %ld}",
+                    strtoul((const char *)(req_handle->request_data) + 1, NULL, 16));
+        } else {
+            ESP_LOGE(TAG, "Unsupported command");
+            return;
+        }
+    } else {
+        ESP_LOGE(TAG, "Unsupported cluster");
+        return;
+    }
+    client::interaction::invoke::send_request(NULL, peer_device, req_handle->command_path, command_data_str,
+                                              send_command_success_callback, send_command_failure_callback,
+                                              chip::NullOptional);
+}
+
 #if CONFIG_GENERIC_SWITCH_TYPE_LATCHING
-static uint8_t latching_switch_previous_position = 0;
+static uint8_t newPosition = 0;
 static void app_driver_button_switch_latched(void *arg, void *data)
 {
     ESP_LOGI(TAG, "Switch lached pressed");
     gpio_button * button = (gpio_button*)data;
     int switch_endpoint_id = (button != NULL) ? get_endpoint(button) : 1;
+<<<<<<< HEAD
     // Press moves Position from 0 (idle) to 1 (press) and vice versa
     uint8_t newPosition = (latching_switch_previous_position == 1) ? 0 : 1;
     latching_switch_previous_position = newPosition;
-    chip::DeviceLayer::SystemLayer().ScheduleLambda([switch_endpoint_id, newPosition]() {
         chip::app::Clusters::Switch::Attributes::CurrentPosition::Set(switch_endpoint_id, newPosition);
         // SwitchLatched event takes newPosition as event data
-        switch_cluster::event::send_switch_latched(switch_endpoint_id, newPosition);
     });
+
+    client::request_handle_t req_handle;
+    req_handle.type = esp_matter::client::INVOKE_CMD;
+    req_handle.command_path.mClusterId = OnOff::Id;
+    if(newPosition == 1)
+    {
+        req_handle.command_path.mCommandId = OnOff::Commands::On::Id;
+    }
+    else if (newPosition == 0)
+    {
+        req_handle.command_path.mCommandId = OnOff::Commands::Off::Id;
+    }
+
+    lock::chip_stack_lock(portMAX_DELAY);
+    client::cluster_update(generic_switch_endpoint_id, &req_handle);
+    lock::chip_stack_unlock();
 }
 #endif
 #if CONFIG_GENERIC_SWITCH_TYPE_MOMENTARY
@@ -173,7 +231,12 @@ app_driver_handle_t app_driver_button_init(gpio_button * button)
 
 
 #if CONFIG_GENERIC_SWITCH_TYPE_LATCHING
+<<<<<<< HEAD
     iot_button_register_cb(handle, BUTTON_PRESS_DOWN, app_driver_button_switch_latched, button);
+=======
+    iot_button_register_cb(handle, BUTTON_DOUBLE_CLICK, app_driver_button_switch_latched, button);
+    client::set_request_callback(app_driver_client_invoke_command_callback, NULL, NULL);
+>>>>>>> e58e0259 (Added binding cluster to generic latching switch)
 #endif
 
 #if CONFIG_GENERIC_SWITCH_TYPE_MOMENTARY
