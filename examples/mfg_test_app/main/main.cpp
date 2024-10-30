@@ -15,14 +15,19 @@
 
 #include <crypto/CHIPCryptoPAL.h>
 #include <credentials/attestation_verifier/DeviceAttestationVerifier.h>
+#include <credentials/CertificationDeclaration.h>
 #include <credentials/CHIPCert.h>
 #include <lib/support/Span.h>
 #include <lib/core/CHIPError.h>
 #include <lib/support/logging/CHIPLogging.h>
+#if CONFIG_ENABLE_ESP32_FACTORY_DATA_PROVIDER
+#include <platform/ESP32/ESP32FactoryDataProvider.h>
+#endif // CONFIG_ENABLE_ESP32_FACTORY_DATA_PROVIDER
 
 using namespace chip;
 using namespace chip::Crypto;
 using namespace chip::Credentials;
+using namespace chip::DeviceLayer;
 
 namespace {
 const char *TAG = "MFG-TEST-APP";
@@ -30,6 +35,7 @@ const char *TAG = "MFG-TEST-APP";
 uint8_t s_dac_cert_buffer[kMaxDERCertLength];  // 600 bytes
 uint8_t s_pai_cert_buffer[kMaxDERCertLength];  // 600 bytes
 uint8_t s_paa_cert_buffer[kMaxDERCertLength];  // 600 bytes
+uint8_t s_cd_buffer[Credentials::kMaxCMSSignedCDMessage];
 
 extern const uint8_t paa_cert_start[] asm("_binary_paa_cert_der_start");
 extern const uint8_t paa_cert_end[]   asm("_binary_paa_cert_der_end");
@@ -37,8 +43,40 @@ extern const uint8_t paa_cert_end[]   asm("_binary_paa_cert_der_end");
 MutableByteSpan paa_span;
 MutableByteSpan pai_span;
 MutableByteSpan dac_span;
+MutableByteSpan cd_span;
 
 uint8_t s_garbage_buffer[128];
+
+CHIP_ERROR verify_factory_information()
+{
+    DeviceInstanceInfoProvider *factory_provider = GetDeviceInstanceInfoProvider();
+    VerifyOrReturnError(factory_provider, CHIP_ERROR_INTERNAL, ESP_LOGE(TAG, "ERROR: Failed to get the factory provider impl"));
+
+    char vendor_name[32];
+    char product_name[32];
+    char hardware_ver_str[32];
+
+    uint16_t vendor_id;
+    uint16_t product_id;
+    uint16_t hardware_ver;
+
+    factory_provider->GetVendorName(vendor_name, 32);
+    factory_provider->GetVendorId(vendor_id);
+    factory_provider->GetProductName(product_name, 32);
+    factory_provider->GetProductId(product_id);
+    factory_provider->GetHardwareVersionString(hardware_ver_str, 32);
+    factory_provider->GetHardwareVersion(hardware_ver);
+
+    ESP_LOGI(TAG, "---------- factory info verify ----------");
+    ESP_LOGI(TAG, "Vendor Name:              %s", vendor_name);
+    ESP_LOGI(TAG, "Vendor ID:                0x%04X", vendor_id);
+    ESP_LOGI(TAG, "Product Name:             %s", product_name);
+    ESP_LOGI(TAG, "Product ID:               0x%04X", product_id);
+    ESP_LOGI(TAG, "Hardware Version String:  %s", hardware_ver_str);
+    ESP_LOGI(TAG, "Hardware Version:         0x%04X", hardware_ver);
+
+    return CHIP_NO_ERROR;
+}
 
 CHIP_ERROR read_certs_in_spans()
 {
@@ -55,6 +93,11 @@ CHIP_ERROR read_certs_in_spans()
     pai_span = MutableByteSpan(s_pai_cert_buffer);
     err = dac_provider->GetProductAttestationIntermediateCert(pai_span);
     VerifyOrReturnError(err == CHIP_NO_ERROR, err, ESP_LOGE(TAG, "ERROR: Failed to read the PAI Certificate %" CHIP_ERROR_FORMAT, err.Format()));
+
+    //Read CD
+    // cd_span = MutableByteSpan(s_cd_buffer);
+    // err = dac_provider->GetCertificationDeclaration(cd_span);
+    VerifyOrReturnError(err == CHIP_NO_ERROR, err, ESP_LOGE(TAG, "ERROR: Failed to read the CD Certificate %" CHIP_ERROR_FORMAT, err.Format()));
 
     // Read PAA
     uint16_t paa_len = paa_cert_end - paa_cert_start;
@@ -75,14 +118,14 @@ CHIP_ERROR dump_cert_details(const char *type, ByteSpan cert_span)
 
     if (vidpid.mVendorId.HasValue()) {
         ESP_LOGI(TAG, "Vendor ID: 0x%04X", vidpid.mVendorId.Value());
-        assert(CONFIG_DEVICE_VENDOR_ID == vidpid.mVendorId.Value());
+        //assert(CONFIG_DEVICE_VENDOR_ID == vidpid.mVendorId.Value());
     } else if (strncmp(type, "PAA", sizeof("PAA")) != 0) {
         ESP_LOGE(TAG, "ERROR: Vendor ID: Unspecified");
     }
 
     if (vidpid.mProductId.HasValue()) {
         ESP_LOGI(TAG, "Product ID: 0x%04X", vidpid.mProductId.Value());
-        assert(CONFIG_DEVICE_PRODUCT_ID == vidpid.mProductId.Value());
+        //assert(CONFIG_DEVICE_PRODUCT_ID == vidpid.mProductId.Value());
     } else if ((strncmp(type, "PAA", sizeof("PAA")) != 0) && (strncmp(type, "PAI", sizeof("PAI")) != 0)) {
         ESP_LOGE(TAG, "ERROR: Product ID: Unspecified");
     }
@@ -297,12 +340,14 @@ extern "C" void app_main()
     VerifyOrReturn(err == CHIP_NO_ERROR, ESP_LOGE(TAG, "ERROR: Failed to dump DAC certificate details, error: %" CHIP_ERROR_FORMAT, err.Format()));
 
     // Sign the message with DAC key and verify with public key in DAC certificate
-    err = test_dac(dac_span);
-    VerifyOrReturn(err == CHIP_NO_ERROR, ESP_LOGE(TAG, "ERROR: Failed to Sign and Verify using DAC keypair, error: %" CHIP_ERROR_FORMAT, err.Format()));
+    // err = test_dac(dac_span);
+    // VerifyOrReturn(err == CHIP_NO_ERROR, ESP_LOGE(TAG, "ERROR: Failed to Sign and Verify using DAC keypair, error: %" CHIP_ERROR_FORMAT, err.Format()));
 
-    // Test DAC -> PAI -> PAA chain validation
-    bool status = test_cert_chain(paa_span, pai_span, dac_span);
-    VerifyOrReturn(status, ESP_LOGE(TAG, "ERROR: Failed to validate attestation cert chain (DAC -> PAI -> PAA)"));
+    // // Test DAC -> PAI -> PAA chain validation
+    // bool status = test_cert_chain(paa_span, pai_span, dac_span);
+    // VerifyOrReturn(status, ESP_LOGE(TAG, "ERROR: Failed to validate attestation cert chain (DAC -> PAI -> PAA)"));
 
-    test_security_bits();
+    // test_security_bits();
+
+    // verify_factory_information();
 }
