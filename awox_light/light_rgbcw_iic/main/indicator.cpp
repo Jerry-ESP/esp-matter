@@ -200,10 +200,6 @@ static esp_err_t indicator_trigger_lightbulb(indicator_config_t *config)
 
         uint8_t calculate_value;
         lightbulb_rgb2hsv(config->color.r, config->color.g, config->color.b, &effect_config.hue, &effect_config.saturation, &calculate_value);
-
-        printf("indicator_trigger_lightbulb--r:%d--g:%d--b:%d----------hue:%d--saturation:%d--value:%d\n", config->color.r, config->color.g,
-                                config->color.b, effect_config.hue, effect_config.saturation, calculate_value);
-
         get_light_driver().indicaceBreathOrBlink(&effect_config);
     } else if (config->mode == INDICATOR_MODE_RESTORE) {
         // Temporarily force power on when the lighting effect stops and restore.

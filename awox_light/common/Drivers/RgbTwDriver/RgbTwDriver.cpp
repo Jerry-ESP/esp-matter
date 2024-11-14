@@ -106,7 +106,6 @@ void Driver::_writeChannel(ledc_channel_t channel, uint8_t value)
  */
 void Driver::_applyRgb()
 {
-    printf("_applyRgb----------\n");
     RgbColor rgb = _color.toRgb();
     ESP_LOGD(TAG, "Updating Rgb color: 0x%x, 0x%x, 0x%x", rgb.getRed(), rgb.getGreen(), rgb.getBlue());
     _writeChannel(_redChannel, rgb.getRed());
@@ -119,7 +118,6 @@ void Driver::_applyRgb()
  */
 void Driver::_xy_applyRgb()
 {
-    printf("_xy_applyRgb----------\n");
     RgbColor rgb = _xy_color.toXyz(_white.getBrightness()).toRgb();
     ESP_LOGD(TAG, "Updating Rgb color: 0x%x, 0x%x, 0x%x", rgb.getRed(), rgb.getGreen(), rgb.getBlue());
     _writeChannel(_redChannel, rgb.getRed());
@@ -347,16 +345,13 @@ void Driver::setOff()
 
 void Driver::updateLightState()
 {
-    printf("updateLightState----------\n");
     if (_mode == LIGHT_DRIVER_MODE_RGB_HSV) {
         if (_on) {
-            printf("LIGHT_DRIVER_MODE_RGB_HSV----------\n");
             _applyRgb();
             _turnOffTunnableWhite();
         }
     } else if (_mode == LIGHT_DRIVER_MODE_RGB_XY) {
         if (_on) {
-            printf("LIGHT_DRIVER_MODE_RGB_XY----------\n");
             _xy_applyRgb();
             _turnOffTunnableWhite();
         }
@@ -390,7 +385,6 @@ void Driver::setMode(lightDriverMode_t mode)
 void Driver::setHue(uint8_t hue)
 {
     _color.setHue(hue);
-    printf("set hue --- hue: %d--saturation: %d---value:%d\n", _color.getHue(), _color.getSaturation(), _color.getValue());
     setColor(LIGHT_DRIVER_MODE_RGB_HSV);
 }
 
@@ -401,7 +395,6 @@ void Driver::setHue(uint8_t hue)
 void Driver::setSaturation(uint8_t saturation)
 {
     _color.setSaturation(saturation);
-    printf("set saturation --- hue: %d--saturation: %d---value:%d\n", _color.getHue(), _color.getSaturation(), _color.getValue());
     setColor(LIGHT_DRIVER_MODE_RGB_HSV);
 }
 
@@ -414,7 +407,6 @@ void Driver::setHueAndSaturation(uint8_t hue, uint8_t saturation)
 {
     _color.setHue(hue);
     _color.setSaturation(saturation);
-    printf("set saturation --- hue: %d--saturation: %d---value:%d\n", _color.getHue(), _color.getSaturation(), _color.getValue());
     setColor(LIGHT_DRIVER_MODE_RGB_HSV);
 }
 

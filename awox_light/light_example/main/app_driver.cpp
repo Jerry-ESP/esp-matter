@@ -256,7 +256,6 @@ static esp_err_t light_driver_set_cct(uint32_t cct)
     err |= lightbulb_get_all_detail(&lightbulb_status);
     err |= lightbulb_set_fades_function(light_config.color_fade);
     err |= lightbulb_kelvin2percentage(cct, &lightbulb_status.cct_percentage);
-    printf("cct:%ld-----------cct percentage: %d-----\n", cct, lightbulb_status.cct_percentage);
     err |= lightbulb_update_status(&lightbulb_status, true);
 
     return err;

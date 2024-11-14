@@ -36,14 +36,11 @@ static void led_pattern_change_state(TimerHandle_t timer)
     led_pattern_t *pattern = (led_pattern_t *)g_pattern_handle;//pvTimerGetTimerID(timer);
     pattern->state = !pattern->state;
 
-    printf("led_pattern_change_state--driver info: hue:%d--saturation:%d---mode:%d\n", pattern->led_driver.getHue(), pattern->led_driver.getSaturation(), pattern->led_driver.getMode());
     ESP_LOGD(TAG, "Pattern state change: %d", pattern->state);
     //led_driver_set_power(pattern->handle, pattern->state);
     if (pattern->state) {
-        printf("set on ------------\n");
         pattern->led_driver.setOn();
     } else {
-        printf("set off ------------\n");
         pattern->led_driver.setOff();
     }
 
@@ -62,13 +59,11 @@ static void led_pattern_change_state(TimerHandle_t timer)
     if (pattern->count == 0) {
         // led_driver_set_power(pattern->handle, pattern->restore_state);
         if (pattern->restore_state) {
-            printf("set on ------------stop\n");
             pattern->led_driver.setOn();
         } else {
-            printf("set off ------------stop\n");
             pattern->led_driver.setOff();
         }
-        ESP_LOGW(TAG, "Pattern auto stop, state restore: %d", pattern->restore_state);
+        ESP_LOGI(TAG, "Pattern auto stop, state restore: %d", pattern->restore_state);
         if (pattern->callback) {
             pattern->callback((led_pattern_handle_t)pattern);
         }
@@ -89,7 +84,6 @@ static void led_pattern_change_state(TimerHandle_t timer)
 esp_err_t led_pattern_blink_start(Tw::Driver& led_driver, int count, int delay_ms,
                                              led_pattern_blink_callback_t callback)
 {
-    printf("led_pattern_blink_start--driver info: hue:%d--saturation:%d---mode:%d\n", led_driver.getHue(), led_driver.getSaturation(), led_driver.getMode());
     if (!g_semaphore_handle) {
         g_semaphore_handle = xSemaphoreCreateMutex();
         if (!g_semaphore_handle) {
