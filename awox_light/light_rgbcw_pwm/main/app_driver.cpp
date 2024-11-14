@@ -253,7 +253,6 @@ esp_err_t app_driver_attribute_update(app_driver_handle_t driver_handle, uint16_
 
 esp_err_t app_driver_light_set_defaults(uint16_t endpoint_id)
 {
-    printf("app_driver_light_set_defaults\n");
     esp_err_t err = ESP_OK;
     node_t *node = node::get();
     endpoint_t *endpoint = endpoint::get(node, endpoint_id);

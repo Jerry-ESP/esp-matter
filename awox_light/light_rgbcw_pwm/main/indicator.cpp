@@ -103,8 +103,6 @@ static esp_err_t indicator_trigger_lightbulb(indicator_config_t *config)
         return ESP_FAIL;
     }
 
-    printf("indicator_trigger_lightbulb-----count: %d----time: %dms\n", config->blink_count, config->delay_ms);
-
     if (config->blink_count > 0) {
         led_pattern_blink_start(get_light_driver(), config->blink_count, config->delay_ms,
                                 config->if_restore ? led_indicator_lightbulb_effect_callback : NULL);
