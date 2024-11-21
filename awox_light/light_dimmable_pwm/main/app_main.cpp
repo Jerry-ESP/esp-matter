@@ -196,7 +196,7 @@ extern "C" void app_main()
 
     factory_reset_init();
 
-    // dump_dac_cert_details();
+    dump_dac_cert_details();
 
     /* Initialize driver */
     err = app_driver_light_init();
@@ -209,25 +209,16 @@ extern "C" void app_main()
     node_t *node = node::create(&node_config, app_attribute_update_cb, app_identification_cb);
     ABORT_APP_ON_FAILURE(node != nullptr, ESP_LOGE(TAG, "Failed to create Matter node"));
 
-    extended_color_light::config_t light_config;
+    dimmable_light::config_t light_config;
     light_config.on_off.on_off = DEFAULT_POWER;
     light_config.on_off.lighting.start_up_on_off = true;
     light_config.level_control.current_level = DEFAULT_BRIGHTNESS;
     light_config.level_control.on_level = nullptr;
     light_config.level_control.lighting.start_up_current_level = nullptr;
-    light_config.color_control.color_mode = (uint8_t)ColorControl::ColorMode::kColorTemperature;
-    light_config.color_control.enhanced_color_mode = (uint8_t)ColorControl::ColorMode::kColorTemperature;
-    light_config.color_control.color_temperature.startup_color_temperature_mireds = nullptr;
 
     // endpoint handles can be used to add/modify clusters.
-    endpoint_t *endpoint = extended_color_light::create(node, &light_config, ENDPOINT_FLAG_NONE, NULL);
-    ABORT_APP_ON_FAILURE(endpoint != nullptr, ESP_LOGE(TAG, "Failed to create extended color light endpoint"));
-
-    cluster::color_control::feature::hue_saturation::config_t hue_saturation;
-    hue_saturation.current_hue = DEFAULT_HUE;
-    hue_saturation.current_saturation = DEFAULT_SATURATION;
-    cluster_t *color_cluster = cluster::get(endpoint, ColorControl::Id);
-    cluster::color_control::feature::hue_saturation::add(color_cluster, &hue_saturation);
+    endpoint_t *endpoint = dimmable_light::create(node, &light_config, ENDPOINT_FLAG_NONE, NULL);
+    ABORT_APP_ON_FAILURE(endpoint != nullptr, ESP_LOGE(TAG, "Failed to create dimmable light endpoint"));
 
     light_endpoint_id = endpoint::get_id(endpoint);
     ESP_LOGI(TAG, "Light created with endpoint_id %d", light_endpoint_id);
@@ -236,18 +227,6 @@ extern "C" void app_main()
     cluster_t *level_control_cluster = cluster::get(endpoint, LevelControl::Id);
     attribute_t *current_level_attribute = attribute::get(level_control_cluster, LevelControl::Attributes::CurrentLevel::Id);
     attribute::set_deferred_persistence(current_level_attribute);
-
-    cluster_t *color_control_cluster = cluster::get(endpoint, ColorControl::Id);
-    attribute_t *current_x_attribute = attribute::get(color_control_cluster, ColorControl::Attributes::CurrentX::Id);
-    attribute::set_deferred_persistence(current_x_attribute);
-    attribute_t *current_y_attribute = attribute::get(color_control_cluster, ColorControl::Attributes::CurrentY::Id);
-    attribute::set_deferred_persistence(current_y_attribute);
-    attribute_t *current_hue_attribute = attribute::get(color_control_cluster, ColorControl::Attributes::CurrentHue::Id);
-    attribute::set_deferred_persistence(current_hue_attribute);
-    attribute_t *current_saturation_attribute = attribute::get(color_control_cluster, ColorControl::Attributes::CurrentSaturation::Id);
-    attribute::set_deferred_persistence(current_saturation_attribute);
-    attribute_t *color_temp_attribute = attribute::get(color_control_cluster, ColorControl::Attributes::ColorTemperatureMireds::Id);
-    attribute::set_deferred_persistence(color_temp_attribute);
 
 #if CHIP_DEVICE_CONFIG_ENABLE_THREAD
     /* Set OpenThread platform config */

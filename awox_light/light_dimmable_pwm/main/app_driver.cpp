@@ -14,18 +14,17 @@
 #include <app_priv.h>
 
 #include "Color.hpp"
-#include "TwDriver.hpp"
+#include "DimmableDriver.hpp"
 #include <product_util.h>
 
 using namespace chip::app::Clusters;
 using namespace esp_matter;
-using namespace Tw;
+using namespace Dimmable;
 
 static const char *TAG = "app_driver";
 extern uint16_t light_endpoint_id;
 
-#define PWM_CW_PIN    22
-#define PWM_WW_PIN    10
+#define PWM_PIN    22
 
 typedef struct {
     bool      on_off;
@@ -36,7 +35,7 @@ typedef struct {
 
 static light_current_state_t light_current_state;
 
-static Driver s_driver = Driver(PWM_CW_PIN, PWM_WW_PIN);
+static Driver s_driver = Driver(PWM_PIN);
 
 static esp_err_t light_driver_init()
 {
@@ -71,24 +70,6 @@ static esp_err_t light_driver_set_brightness(uint16_t level)
     return err;
 }
 
-static esp_err_t light_driver_set_cct(uint32_t cct)
-{
-    esp_err_t err = ESP_OK;
-    ESP_LOGI(TAG, "Set cct %ld", cct);
-
-    s_driver.setTemperature(cct);
-    return err;
-}
-
-static esp_err_t light_driver_set_colormode(lightDriverMode_t color_mode)
-{
-    esp_err_t err = ESP_OK;
-    ESP_LOGI(TAG, "Set colormode %d", color_mode);
-
-    s_driver.setMode(color_mode);
-    return err;
-}
-
 /* Do any conversions/remapping for the actual value here */
 static esp_err_t light_matter_set_power(bool onoff)
 {
@@ -103,39 +84,11 @@ static esp_err_t light_matter_set_brightness(uint8_t level)
     return light_driver_set_brightness(level);
 }
 
-static esp_err_t light_matter_set_temperature(uint16_t color_temp)
-{
-    ESP_LOGI(TAG, "Set temperature");
-    uint32_t value = color_temp;//REMAP_TO_RANGE_INVERSE(color_temp, STANDARD_TEMPERATURE_FACTOR);
-
-    return light_driver_set_cct(value);
-}
-
-static esp_err_t light_matter_set_colormode(uint8_t color_mode)
-{
-    ESP_LOGI(TAG, "Set colormode");
-    lightDriverMode_t mode = LIGHT_DRIVER_MODE_TW;
-
-    if (color_mode== (uint8_t)ColorControl::ColorMode::kCurrentHueAndCurrentSaturation) {
-        mode = LIGHT_DRIVER_MODE_RGB_HSV;
-    } else if (color_mode == (uint8_t)ColorControl::ColorMode::kColorTemperature) {
-        mode = LIGHT_DRIVER_MODE_TW;
-    } else if (color_mode == (uint8_t)ColorControl::ColorMode::kCurrentXAndCurrentY) {
-        // The xyy color space is currently not supported by any ecosystem,
-        // it is only used for certification testing
-        mode = LIGHT_DRIVER_MODE_RGB_XY;
-    }
-
-    return light_driver_set_colormode(mode);
-}
-
 static void print_current_light_state()
 {
     printf("Current light state:\n");
     printf("----------onoff:      %s\n", light_current_state.on_off ? "on" : "off");
     printf("----------level:      %d\n", light_current_state.level);
-    printf("----------color mode: %d\n", light_current_state.color_mode);
-    printf("----------color temp: %d\n", light_current_state.color_temp);
 }
 
 esp_err_t app_driver_attribute_update(app_driver_handle_t driver_handle, uint16_t endpoint_id, uint32_t cluster_id,
@@ -153,14 +106,6 @@ esp_err_t app_driver_attribute_update(app_driver_handle_t driver_handle, uint16_
             if (attribute_id == LevelControl::Attributes::CurrentLevel::Id) {
                 light_current_state.level = val->val.u8;
                 err = light_matter_set_brightness(val->val.u8);
-            }
-        } else if (cluster_id == ColorControl::Id) {
-            if (attribute_id == ColorControl::Attributes::ColorTemperatureMireds::Id) {
-                light_current_state.color_temp = val->val.u16;
-                err = light_matter_set_temperature(val->val.u16);
-            } else if (attribute_id == ColorControl::Attributes::ColorMode::Id) {
-                light_current_state.color_mode = val->val.u8;
-                err = light_matter_set_colormode(val->val.u8);
             }
         }
         print_current_light_state();
@@ -183,15 +128,6 @@ esp_err_t app_driver_light_set_defaults(uint16_t endpoint_id)
     attribute::get_val(attribute, &val);
     light_current_state.level = val.val.u8;
 
-    /* get color attributes*/
-    cluster = cluster::get(endpoint, ColorControl::Id);
-    attribute = attribute::get(cluster, ColorControl::Attributes::ColorMode::Id);
-    attribute::get_val(attribute, &val);
-    light_current_state.color_mode = val.val.u8;
-    attribute = attribute::get(cluster, ColorControl::Attributes::ColorTemperatureMireds::Id);
-    attribute::get_val(attribute, &val);
-    light_current_state.color_temp = val.val.u16;
-
     /* get onoff */
     cluster = cluster::get(endpoint, OnOff::Id);
     attribute = attribute::get(cluster, OnOff::Attributes::OnOff::Id);
@@ -202,21 +138,6 @@ esp_err_t app_driver_light_set_defaults(uint16_t endpoint_id)
 
     /* setting brightness*/
     err |= light_matter_set_brightness(light_current_state.level);
-
-    /* Setting color */
-    if (light_current_state.color_mode == (uint8_t)ColorControl::ColorMode::kCurrentHueAndCurrentSaturation) {
-        /* Setting hue */
-        // err |= light_matter_set_hue(light_current_state.hue);
-        // err |= light_matter_set_saturation(light_current_state.saturation);
-    } else if (light_current_state.color_mode == (uint8_t)ColorControl::ColorMode::kColorTemperature) {
-        /* Setting temperature */
-        err |= light_matter_set_temperature(light_current_state.color_temp);
-    } else if (light_current_state.color_mode == (uint8_t)ColorControl::ColorMode::kCurrentXAndCurrentY) {
-        /* Setting xy */
-        // err |= light_matter_set_current_xy(light_current_state.current_x, light_current_state.current_y, light_current_state.level);
-    } else {
-        ESP_LOGE(TAG, "Color mode not supported");
-    }
 
     /* Setting power */
     err |= light_matter_set_power(light_current_state.on_off);
