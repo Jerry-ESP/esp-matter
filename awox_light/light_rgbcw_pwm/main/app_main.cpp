@@ -211,7 +211,7 @@ extern "C" void app_main()
 
     extended_color_light::config_t light_config;
     light_config.on_off.on_off = DEFAULT_POWER;
-    light_config.on_off.lighting.start_up_on_off = nullptr;
+    light_config.on_off.lighting.start_up_on_off = true;
     light_config.level_control.current_level = DEFAULT_BRIGHTNESS;
     light_config.level_control.on_level = nullptr;
     light_config.level_control.lighting.start_up_current_level = nullptr;
