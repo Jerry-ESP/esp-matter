@@ -68,7 +68,7 @@ static esp_err_t light_driver_set_brightness(uint16_t level)
     esp_err_t err = ESP_OK;
     ESP_LOGI(TAG, "Set brightness: %d", level);
 
-    s_driver.setBrightness(level);
+    s_driver.setBrightness(s_driver.convertToBrightnessRange(level));
     return err;
 }
 
@@ -203,33 +203,51 @@ esp_err_t app_driver_attribute_update(app_driver_handle_t driver_handle, uint16_
                 light_current_state.on_off = val->val.b;
                 err = light_matter_set_power(val->val.b);
             }
+            print_current_light_state();
         } else if (cluster_id == LevelControl::Id) {
             if (attribute_id == LevelControl::Attributes::CurrentLevel::Id) {
                 light_current_state.level = val->val.u8;
-                err = light_matter_set_brightness(val->val.u8);
+                if (light_current_state.on_off == true) {
+                    err = light_matter_set_brightness(val->val.u8);
+                }
             }
+            print_current_light_state();
         } else if (cluster_id == ColorControl::Id) {
             if (attribute_id == ColorControl::Attributes::CurrentHue::Id) {
                 light_current_state.hue = val->val.u8;
-                err = light_matter_set_hue(val->val.u8);
+                if (light_current_state.on_off == true) {
+                    err = light_matter_set_saturation(light_current_state.saturation);
+                    err = light_matter_set_hue(val->val.u8);
+                }
             } else if (attribute_id == ColorControl::Attributes::CurrentSaturation::Id) {
                 light_current_state.saturation = val->val.u8;
-                err = light_matter_set_saturation(val->val.u8);
+                if (light_current_state.on_off == true) {
+                    err = light_matter_set_hue(light_current_state.hue);
+                    err = light_matter_set_saturation(val->val.u8);
+                }
             } else if (attribute_id == ColorControl::Attributes::ColorTemperatureMireds::Id) {
                 light_current_state.color_temp = val->val.u16;
-                err = light_matter_set_temperature(val->val.u16);
+                if (light_current_state.on_off == true) {
+                    err = light_matter_set_temperature(val->val.u16);
+                }
             } else if (attribute_id == ColorControl::Attributes::CurrentX::Id) {
                 light_current_state.current_x = val->val.u16;
-                err = light_matter_set_current_xy(val->val.u16, light_current_state.current_y, light_current_state.level);
+                if (light_current_state.on_off == true) {
+                    err = light_matter_set_current_xy(val->val.u16, light_current_state.current_y, light_current_state.level);
+                }
             } else if (attribute_id == ColorControl::Attributes::CurrentY::Id) {
                 light_current_state.current_y = val->val.u16;
-                err = light_matter_set_current_xy(light_current_state.current_x, val->val.u16, light_current_state.level);
+                if (light_current_state.on_off == true) {
+                    err = light_matter_set_current_xy(light_current_state.current_x, val->val.u16, light_current_state.level);
+                }
             } else if (attribute_id == ColorControl::Attributes::ColorMode::Id) {
                 light_current_state.color_mode = val->val.u8;
-                err = light_matter_set_colormode(val->val.u8);
+                if (light_current_state.on_off == true) {
+                    err = light_matter_set_colormode(val->val.u8);
+                }
             }
+            print_current_light_state();
         }
-        print_current_light_state();
     }
     return err;
 }
@@ -242,6 +260,7 @@ esp_err_t app_driver_light_set_defaults(uint16_t endpoint_id)
     cluster_t *cluster = NULL;
     attribute_t *attribute = NULL;
     esp_matter_attr_val_t val = esp_matter_invalid(NULL);
+    uint8_t start_up_onoff;
 
     /* get current level */
     cluster = cluster::get(endpoint, LevelControl::Id);
@@ -275,6 +294,9 @@ esp_err_t app_driver_light_set_defaults(uint16_t endpoint_id)
     attribute = attribute::get(cluster, OnOff::Attributes::OnOff::Id);
     attribute::get_val(attribute, &val);
     light_current_state.on_off = val.val.b;
+    attribute = attribute::get(cluster, OnOff::Attributes::StartUpOnOff::Id);
+    attribute::get_val(attribute, &val);
+    start_up_onoff = val.val.u8;
 
     print_current_light_state();
 
@@ -296,8 +318,15 @@ esp_err_t app_driver_light_set_defaults(uint16_t endpoint_id)
         ESP_LOGE(TAG, "Color mode not supported");
     }
 
+    printf("start up onoff value: %d\n", start_up_onoff);
     /* Setting power */
-    err |= light_matter_set_power(light_current_state.on_off);
+    if (start_up_onoff == 1) {
+        err |= light_matter_set_power(true);
+    } else if (start_up_onoff == 0) {
+        err |= light_matter_set_power(false);
+    } else if (start_up_onoff == 0xFF) {
+        err |= light_matter_set_power(light_current_state.on_off);
+    }
 
     return err;
 }

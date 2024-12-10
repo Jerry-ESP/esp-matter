@@ -30,8 +30,9 @@ public:
     void setMode(lightDriverMode_t mode) final;
     void updateLight() final {}; // Not needed for I2C Driver
     /*---DIMMABLE---*/
-    void setBrightness(uint8_t brightness) final;
+    void setBrightness(uint8_t level) final;
     uint8_t getBrightness() final;
+    uint8_t convertToBrightnessRange(uint8_t brightness);
     /*---COLOR---*/
     HsvColor getColor() final;
     uint8_t getHue() final;
