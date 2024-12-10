@@ -131,7 +131,8 @@ void Driver::setMode(lightDriverMode_t newMode)
             return;
         } else {
             setFadeTime(FADE_TIME_COLOR_MODE_MS);
-            setHue(getHue());
+            //setHue(getHue());
+            setHueAndSaturation(getHue(), getSaturation());
             setFadeTime(fade);
         }
     } else if (newMode == LIGHT_DRIVER_MODE_TW) {
@@ -160,17 +161,21 @@ uint8_t Driver::getBrightness()
     return _level;
 }
 
+uint8_t Driver::convertToBrightnessRange(uint8_t brightness)
+{
+    return SH_LIGHTNESS_MIN + brightness * (SH_LIGHTNESS_MAX - SH_LIGHTNESS_MIN) / BRIGHTNESS_RANGE;
+}
 /**
  * @brief Set the brightness level
  *
  * @param brightness level
  */
-void Driver::setBrightness(uint8_t brightness)
+void Driver::setBrightness(uint8_t level)
 {
     // Convert brightness from brightness range [1-254] to PWM range [10-255]
-    _level = SH_LIGHTNESS_MIN + brightness * (SH_LIGHTNESS_MAX - SH_LIGHTNESS_MIN) / BRIGHTNESS_RANGE;
+    _level = level;
     ESP_LOGV(TAG, "Corrected Brightness: %d", _level);
-    if (brightness == 0) {
+    if (level == 0) {
         lightbulb_set_switch(false);
     } else {
         if (lightbulb_get_mode() == WORK_WHITE) {
@@ -178,7 +183,7 @@ void Driver::setBrightness(uint8_t brightness)
         } else {
             lightbulb_set_value(levelToPercentage(_level));
         }
-        lightbulb_set_switch(true);
+        lightbulb_set_switch(_isOn);
     }
 }
 
@@ -225,8 +230,8 @@ void Driver::setHue(uint8_t hue)
 {
     CHECK_CAPABILITY(CAPABILITY_RGB_COLOR);
     if (lightbulb_get_mode() == WORK_COLOR) {
-        lightbulb_set_hue(hue * HueTheoricalMaxValue / HsvMaxValue);
         ESP_LOGW(TAG, "Hue set to %d", (hue * HueTheoricalMaxValue / HsvMaxValue));
+        lightbulb_set_hue(hue * HueTheoricalMaxValue / HsvMaxValue);
     } else {
         uint32_t fade = getFadeTime();
         setFadeTime(FADE_TIME_COLOR_MODE_MS);
