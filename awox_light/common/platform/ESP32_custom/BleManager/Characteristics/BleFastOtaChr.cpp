@@ -11,8 +11,8 @@
 
 /* BLE */
 #include "BleFastOtaChr.hpp"
-#include "BleGatt.hpp"
-#include "BleManager.hpp"
+#include "platform/ESP32_custom/BleManager/BleGatt.hpp"
+#include "platform/ESP32_custom/BleManager/BleManager.hpp"
 #include "esp_ota_ops.h"
 #include "esp_partition.h"
 #include "host/ble_hs.h"
@@ -93,9 +93,9 @@ int BleFastOtaChr::gattAccessReadChr(uint16_t connHandle, uint16_t attrHandle, o
     int result = BLE_ATT_ERR_UNLIKELY;
 
     if (connHandle != BLE_HS_CONN_HANDLE_NONE) {
-        ESP_LOGD(TAG, "Characteristic read; connHandle=%d attrHandle=%d", connHandle, attrHandle);
+        ESP_LOGI(TAG, "Characteristic read; connHandle=%d attrHandle=%d", connHandle, attrHandle);
     } else {
-        ESP_LOGD(TAG, "Characteristic read by NimBLE stack; attrHandle=%d", attrHandle);
+        ESP_LOGI(TAG, "Characteristic read by NimBLE stack; attrHandle=%d", attrHandle);
     }
     bleFastOtaRead();
     result = os_mbuf_append(om, (void*)&_gattFastOtaChr, sizeof(_gattFastOtaChr));
@@ -118,10 +118,10 @@ int BleFastOtaChr::gattAccessWriteChr(uint16_t connHandle, uint16_t attrHandle, 
     uint16_t lengthWritten;
 
     if (connHandle != BLE_HS_CONN_HANDLE_NONE) {
-        ESP_LOGD(TAG, "Characteristic write; connHandle=%d attrHandle=%d", connHandle, attrHandle);
+        ESP_LOGI(TAG, "Characteristic write; connHandle=%d attrHandle=%d", connHandle, attrHandle);
 
     } else {
-        ESP_LOGD(TAG, "Characteristic write by NimBLE stack; attrHandle=%d", attrHandle);
+        ESP_LOGI(TAG, "Characteristic write by NimBLE stack; attrHandle=%d", attrHandle);
     }
     result = BleGatt::getInstance()->gattSvrWrite(om, BLE_MIN_FAST_OTA_WRITE_SIZE, BLE_MAX_FAST_OTA_WRITE_SIZE, _gattFastOtaWriteData, &lengthWritten);
     if (result == BLE_ERR_SUCCESS) {

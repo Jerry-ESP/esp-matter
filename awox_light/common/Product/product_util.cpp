@@ -25,6 +25,7 @@
 #include <esp_matter.h>
 #include "RebootCounterManager.hpp"
 #include "StorageManager.hpp"
+#include "FlashDriver.hpp"
 #include <product_util.h>
 
 static const char *TAG = "factory_reset";
@@ -47,6 +48,7 @@ esp_err_t factory_reset_init()
 
 void product_factory_reset()
 {
+    Flash::Driver().erase();
     esp_matter::factory_reset();
 }
 

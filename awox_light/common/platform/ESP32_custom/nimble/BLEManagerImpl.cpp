@@ -44,7 +44,7 @@
 #include <platform/internal/BLEManager.h>
 #include <setup_payload/AdditionalDataPayloadGenerator.h>
 #include <system/SystemTimer.h>
-
+#include "esp_mac.h"
 #include "esp_bt.h"
 #include "esp_log.h"
 #if ESP_IDF_VERSION < ESP_IDF_VERSION_VAL(5, 0, 0)
@@ -62,10 +62,29 @@
 #include "services/gap/ble_svc_gap.h"
 #include "services/gatt/ble_svc_gatt.h"
 
+#include "platform/ESP32_custom/BleManager/Characteristics/BleDataNotificationChr.hpp"
+#include "platform/ESP32_custom/BleManager/Characteristics/BleFastOtaChr.hpp"
+#include "platform/ESP32_custom/BleManager/BleManager.hpp"
+#include "platform/ESP32_custom/BleManager/Characteristics/BlePairingChr.hpp"
+
+#ifdef __cplusplus
+extern "C" {
+#endif
+/**
+ * @brief Just a template for later use, the implementation is in the ble stack
+ *
+ */
+void ble_store_config_init(void);
+#ifdef __cplusplus
+}
+#endif
+
 #define MAX_ADV_DATA_LEN 31
 #define CHIP_ADV_DATA_TYPE_FLAGS 0x01
 #define CHIP_ADV_DATA_FLAGS 0x06
 #define CHIP_ADV_DATA_TYPE_SERVICE_DATA 0x16
+#define MANUFACTURER_DATA_FLAG 0xFF
+#define COMPLETE_LOCAL_NAME_DATA_FLAG 0x09
 
 using namespace ::chip;
 using namespace ::chip::Ble;
@@ -105,6 +124,45 @@ const ble_uuid128_t UUID_CHIPoBLEChar_TX   = {
     { BLE_UUID_TYPE_128 }, { 0x12, 0x9D, 0x9F, 0x42, 0x9C, 0x4F, 0x9F, 0x95, 0x59, 0x45, 0x3D, 0x26, 0xF5, 0x2E, 0xEE, 0x18 }
 };
 
+/** Service */
+const ble_uuid128_t gattSvrSvcUuid
+    = BLE_UUID128_INIT(0x10, 0x19, 0x0d, 0x0c, 0x0b, 0x0a, 0x09, 0x08, 0x07, 0x06, 0x05, 0x04, 0x03, 0x02, 0x01, 0x00);
+
+/** Pairing characteristic */
+const ble_uuid128_t gattPairingChrUuid
+    = BLE_UUID128_INIT(0x14, 0x19, 0x0d, 0x0c, 0x0b, 0x0a, 0x09, 0x08, 0x07, 0x06, 0x05, 0x04, 0x03, 0x02, 0x01, 0x00);
+
+/** Pairing descriptor */
+const ble_uuid16_t gattPairingDscUuid = BLE_UUID16_INIT(0x2901);
+
+/** Data Client to Server characteristic */
+const ble_uuid128_t gattDataCommandChrUuid
+    = BLE_UUID128_INIT(0x12, 0x19, 0x0d, 0x0c, 0x0b, 0x0a, 0x09, 0x08, 0x07, 0x06, 0x05, 0x04, 0x03, 0x02, 0x01, 0x00);
+
+/** Data Client to Server descriptor */
+const ble_uuid16_t gattDataCommandDscUuid = BLE_UUID16_INIT(0x2901);
+
+/** Data Notification (Server to Client) characteristic */
+const ble_uuid128_t gattDataNotificationChrUuid
+    = BLE_UUID128_INIT(0x11, 0x19, 0x0d, 0x0c, 0x0b, 0x0a, 0x09, 0x08, 0x07, 0x06, 0x05, 0x04, 0x03, 0x02, 0x01, 0x00);
+
+/** Data Notification (Server to Client) descriptor */
+const ble_uuid16_t gattDataNotificationDscUuid = BLE_UUID16_INIT(0x2901);
+
+/** Fast OTA characteristic */
+const ble_uuid128_t gattFastOtaChrUuid
+    = BLE_UUID128_INIT(0x15, 0x19, 0x0d, 0x0c, 0x0b, 0x0a, 0x09, 0x08, 0x07, 0x06, 0x05, 0x04, 0x03, 0x02, 0x01, 0x00);
+
+/** Fast OTA descriptor */
+const ble_uuid16_t gattFastOtaDscUuid = BLE_UUID16_INIT(0x2901);
+
+
+static const ble_uuid128_t Nanoleaf_BLE_UUID =
+    BLE_UUID128_INIT(0x02, 0x00, 0x13, 0xac, 0x42, 0x02, 0x37, 0xbb, 0xea, 0x11, 0xea, 0x9a, 0xc4, 0xe1, 0x2a, 0x6d);
+
+static const ble_uuid128_t Nanoleaf_OTA_UUID =
+    BLE_UUID128_INIT(0xb3, 0x0c, 0x79, 0x78, 0x82, 0x56, 0x4d, 0xb8, 0x83, 0x8b, 0x1f, 0xa7, 0x77, 0xc6, 0x9c, 0x0e);
+
 #if CHIP_ENABLE_ADDITIONAL_DATA_ADVERTISING
 const ble_uuid128_t UUID_CHIPoBLEChar_C3 = {
     { BLE_UUID_TYPE_128 }, { 0x04, 0x8F, 0x21, 0x83, 0x8A, 0x74, 0x7D, 0xB8, 0xF2, 0x45, 0x72, 0x87, 0x38, 0x02, 0x63, 0x64 }
@@ -122,6 +180,17 @@ uint8_t own_addr_type = BLE_OWN_ADDR_RANDOM;
 #if CONFIG_ENABLE_ESP32_BLE_CONTROLLER
 ChipDeviceScanner & mDeviceScanner = Internal::ChipDeviceScanner::GetInstance();
 #endif
+struct ble_instance_cb_register ble_instance_cb[BLE_ADV_INSTANCES];
+int ble_connectable_ext_cb(uint16_t instance);
+int ble_matter_ext_cb(uint16_t instance);
+static uint16_t adv_instance;
+
+/* In ble_data_pattern first two bytes reserved for comapnyID, next 4B for ModelNumber,
+ 3B for firmwareVersion, 3B for HardwareVersion, 1B for flags */
+
+const ble_uuid128_t ble_data_pattern = { BLE_UUID_TYPE_128, { 0x0b, 0x08, 0xaa ,0xaa, 0x11, 0x11, 0xbb ,0xbb, 0x22, 0xaa, 0xbb, 0x12, 0x01 } };
+const ble_uuid128_t ble_name_pattern = { BLE_UUID_TYPE_128, { 'N', 'L', '-', 'B', 'L', 'E'  } };
+
 BLEManagerImpl BLEManagerImpl::sInstance;
 const struct ble_gatt_svc_def BLEManagerImpl::CHIPoBLEGATTAttrs[] = {
     { .type = BLE_GATT_SVC_TYPE_PRIMARY,
@@ -152,7 +221,80 @@ const struct ble_gatt_svc_def BLEManagerImpl::CHIPoBLEGATTAttrs[] = {
                   0, /* No more characteristics in this service */
               },
           } },
-
+                 /*** Service ***/
+    { .type = BLE_GATT_SVC_TYPE_PRIMARY,
+      .uuid = &gattSvrSvcUuid.u,
+      .characteristics =
+          (struct ble_gatt_chr_def[]) {
+            {
+                .uuid = &gattPairingChrUuid.u,
+                .access_cb = BlePairingChr::gattPairingChrAccessWrapper,
+                .descriptors = (struct ble_gatt_dsc_def[]) {
+                    {
+                        .uuid = &gattPairingDscUuid.u,
+                        .att_flags = BLE_ATT_F_READ,
+                        .access_cb = BlePairingChr::gattPairingChrAccessWrapper,
+                    },
+                    {
+                        nullptr, /* No more descriptors in this characteristic */
+                    } },
+                .flags = BLE_GATT_CHR_F_READ | BLE_GATT_CHR_F_WRITE,
+                .val_handle = nullptr,
+            },
+            {
+                .uuid = &gattDataCommandChrUuid.u,
+                .access_cb = BleDataCommandChr::gattDataCommandChrAccessWrapper,
+                .descriptors = (struct ble_gatt_dsc_def[]) { {
+                                                                 .uuid = &gattDataCommandDscUuid.u,
+                                                                 .att_flags = BLE_ATT_F_READ,
+                                                                 .access_cb = BleDataCommandChr::gattDataCommandChrAccessWrapper,
+                                                             },
+                    {
+                        nullptr, /* No more descriptors in this characteristic */
+                    } },
+                .flags = BLE_GATT_CHR_F_READ | BLE_GATT_CHR_F_WRITE | BLE_GATT_CHR_F_WRITE_NO_RSP,
+                .val_handle = nullptr,
+            },
+            {
+                .uuid = &gattDataNotificationChrUuid.u,
+                .access_cb = BleDataNotificationChr::gattDataNotificationChrAccess,
+                .descriptors = (struct ble_gatt_dsc_def[]) { {
+                                                                 .uuid = &gattDataNotificationDscUuid.u,
+                                                                 .att_flags = BLE_ATT_F_READ,
+                                                                 .access_cb = BleDataNotificationChr::gattDataNotificationChrAccess,
+                                                             },
+                    {
+                        nullptr, /* No more descriptors in this characteristic */
+                    } },
+                .flags = BLE_GATT_CHR_F_READ | BLE_GATT_CHR_F_WRITE | BLE_GATT_CHR_F_NOTIFY,
+                .val_handle = &BleDataNotificationChr::_dataNotificationChrAttrHandle,
+            },
+            {
+                .uuid = &gattFastOtaChrUuid.u,
+                .access_cb = BleFastOtaChr::gattFastOtaChrAccess,
+                .descriptors = (struct ble_gatt_dsc_def[]) { {
+                                                                 .uuid = &gattFastOtaDscUuid.u,
+                                                                 .att_flags = BLE_ATT_F_READ,
+                                                                 .access_cb = BleFastOtaChr::gattFastOtaChrAccess,
+                                                             },
+                    {
+                        nullptr, /* No more descriptors in this characteristic */
+                    } },
+                .flags = BLE_GATT_CHR_F_READ | BLE_GATT_CHR_F_WRITE_NO_RSP,
+                .val_handle = nullptr,
+            },
+            {
+                nullptr, /* No more characteristics in this service. */
+            } },
+     },
+    {
+        .type = BLE_GATT_SVC_TYPE_PRIMARY,
+        .uuid = &Nanoleaf_BLE_UUID.u,
+    },
+    {
+        .type = BLE_GATT_SVC_TYPE_PRIMARY,
+        .uuid = &Nanoleaf_OTA_UUID.u,
+    },
     {
         0, /* No more services. */
     },
@@ -780,22 +922,22 @@ void BLEManagerImpl::DriveBLEState(void)
             // Configure advertising data if it hasn't been done yet.  This is an asynchronous step which
             // must complete before advertising can be started.  When that happens, this method will
             // be called again, and execution will proceed to the code below.
-            if (!mFlags.Has(Flags::kAdvertisingConfigured))
-            {
-                err = ConfigureAdvertisingData();
-                if (err != CHIP_NO_ERROR)
-                {
-                    ChipLogError(DeviceLayer, "Configure Adv Data failed: %s", ErrorStr(err));
-                    ExitNow();
-                }
-            }
+            // if (!mFlags.Has(Flags::kAdvertisingConfigured))
+            // {
+            //     err = ConfigureAdvertisingData();
+            //     if (err != CHIP_NO_ERROR)
+            //     {
+            //         ChipLogError(DeviceLayer, "Configure Adv Data failed: %s", ErrorStr(err));
+            //         ExitNow();
+            //     }
+            // }
 
             // Start advertising.  This is also an asynchronous step.
-            ESP_LOGD(TAG, "NimBLE start advertising...");
-            err = StartAdvertising();
+            ESP_LOGI(TAG, "NimBLE start advertising...");
+            err = StartMultiAdvertising();
             if (err != CHIP_NO_ERROR)
             {
-                ChipLogError(DeviceLayer, "Start advertising failed: %s", ErrorStr(err));
+                ChipLogError(DeviceLayer, "Start Multi advertising failed: %s", ErrorStr(err));
                 ExitNow();
             }
 
@@ -823,9 +965,9 @@ void BLEManagerImpl::DriveBLEState(void)
     {
         if (mFlags.Has(Flags::kAdvertising))
         {
-            if (ble_gap_adv_active())
+            if (ble_gap_ext_adv_active(adv_instance))
             {
-                err = MapBLEError(ble_gap_adv_stop());
+                err = MapBLEError(ble_gap_ext_adv_stop(adv_instance));
                 if (err != CHIP_NO_ERROR)
                 {
                     ChipLogError(DeviceLayer, "ble_gap_adv_stop() failed: %s", ErrorStr(err));
@@ -834,19 +976,22 @@ void BLEManagerImpl::DriveBLEState(void)
             }
 
             // Transition to the not Advertising state...
-            mFlags.Clear(Flags::kAdvertising);
-            mFlags.Set(Flags::kFastAdvertisingEnabled, true);
-
-            ChipLogProgress(DeviceLayer, "CHIPoBLE advertising stopped");
-
-            CancelBleAdvTimeoutTimer();
-
-            // Post a CHIPoBLEAdvertisingChange(Stopped) event.
+            if (mFlags.Has(Flags::kAdvertising))
             {
-                ChipDeviceEvent advChange;
-                advChange.Type                             = DeviceEventType::kCHIPoBLEAdvertisingChange;
-                advChange.CHIPoBLEAdvertisingChange.Result = kActivity_Stopped;
-                err                                        = PlatformMgr().PostEvent(&advChange);
+                mFlags.Clear(Flags::kAdvertising);
+                mFlags.Set(Flags::kFastAdvertisingEnabled, true);
+
+                ChipLogProgress(DeviceLayer, "CHIPoBLE advertising stopped");
+
+                CancelBleAdvTimeoutTimer();
+
+                // Post a CHIPoBLEAdvertisingChange(Stopped) event.
+                {
+                    ChipDeviceEvent advChange;
+                    advChange.Type                             = DeviceEventType::kCHIPoBLEAdvertisingChange;
+                    advChange.CHIPoBLEAdvertisingChange.Result = kActivity_Stopped;
+                    err                                        = PlatformMgr().PostEvent(&advChange);
+                }
             }
 
             ExitNow();
@@ -903,6 +1048,7 @@ CHIP_ERROR BLEManagerImpl::bleprph_set_random_addr(void)
 
 void BLEManagerImpl::bleprph_on_sync(void)
 {
+    BleManager::bleGapOnSyncWrapper();
     ESP_LOGI(TAG, "BLE host-controller synced");
     xSemaphoreGive(semaphoreHandle);
 }
@@ -918,6 +1064,7 @@ void BLEManagerImpl::bleprph_host_task(void * param)
 CHIP_ERROR BLEManagerImpl::InitESPBleLayer(void)
 {
     CHIP_ERROR err = CHIP_NO_ERROR;
+    char name[DEVICE_NAME_SIZE + 1] = { 0 };
 
     VerifyOrExit(!mFlags.Has(Flags::kESPBLELayerInitialized), /* */);
 
@@ -947,6 +1094,8 @@ CHIP_ERROR BLEManagerImpl::InitESPBleLayer(void)
     ble_hs_cfg.sm_bonding        = 1;
     ble_hs_cfg.sm_our_key_dist   = BLE_SM_PAIR_KEY_DIST_ENC | BLE_SM_PAIR_KEY_DIST_ID;
     ble_hs_cfg.sm_their_key_dist = BLE_SM_PAIR_KEY_DIST_ENC | BLE_SM_PAIR_KEY_DIST_ID;
+    ble_hs_cfg.sm_io_cap = BLE_SM_IO_CAP_NO_IO;
+    ble_hs_cfg.sm_sc = 0;
 
     // Register the CHIPoBLE GATT attributes with the ESP BLE layer if needed.
     if (mServiceMode == ConnectivityManager::kCHIPoBLEServiceMode_Enabled)
@@ -968,6 +1117,15 @@ CHIP_ERROR BLEManagerImpl::InitESPBleLayer(void)
             ExitNow();
         }
     }
+
+    /* Set the initial device name */
+    // blePairingInfo_t blePairingInfo = BasicBle::getInstance()->getBlePairingInfo();
+    memcpy(name, BasicBle::getInstance()->getBlePairingInfo().name, 8);
+    ESP_LOGI(TAG, "BLE name: %s ", name);
+    ble_svc_gap_device_name_set(name);
+
+    /* XXX Need to have template for store */
+    ble_store_config_init();
 
     nimble_port_freertos_init(bleprph_host_task);
 
@@ -1486,9 +1644,23 @@ bool BLEManagerImpl::IsSubscribed(uint16_t conId)
     return false;
 }
 
+void ble_multi_perform_gatt_proc(ble_addr_t addr)
+{
+    /* GATT procedures like notify, indicate can be perfomed now */
+    for (int i = 0; i < BLE_ADV_INSTANCES; i++) {
+        if (memcmp(&addr, &ble_instance_cb[i].addr, sizeof(addr)) == 0) {
+            if (ble_instance_cb[i].cb) {
+                ble_instance_cb[i].cb(i);
+            }
+        }
+    }
+    return;
+}
+
 int BLEManagerImpl::ble_svr_gap_event(struct ble_gap_event * event, void * arg)
 {
     CHIP_ERROR err = CHIP_NO_ERROR;
+    struct ble_gap_conn_desc desc;
 
     switch (event->type)
     {
@@ -1496,6 +1668,12 @@ int BLEManagerImpl::ble_svr_gap_event(struct ble_gap_event * event, void * arg)
         /* A new connection was established or a connection attempt failed */
         err = sInstance.HandleGAPConnect(event);
         SuccessOrExit(err);
+#if CONFIG_BT_NIMBLE_EXT_ADV
+        if (event->connect.status == 0) {
+            ble_gap_conn_find(event->connect.conn_handle, &desc);
+            ble_multi_perform_gatt_proc(desc.our_id_addr);
+        }
+#endif
         break;
 
     case BLE_GAP_EVENT_DISCONNECT:
@@ -1504,7 +1682,10 @@ int BLEManagerImpl::ble_svr_gap_event(struct ble_gap_event * event, void * arg)
         break;
 
     case BLE_GAP_EVENT_ADV_COMPLETE:
-        ESP_LOGD(TAG, "BLE_GAP_EVENT_ADV_COMPLETE event");
+        ESP_LOGI(TAG, "BLE_GAP_EVENT_ADV_COMPLETE event reason=%d", event->adv_complete.reason);
+        if ((ble_instance_cb[adv_instance].cb = &ble_connectable_ext_cb)){
+            err = sInstance.StartAdvertisingBleExt();
+        }
         break;
 
     case BLE_GAP_EVENT_SUBSCRIBE:
@@ -1663,60 +1844,187 @@ int BLEManagerImpl::gatt_svr_chr_access(uint16_t conn_handle, uint16_t attr_hand
     return err;
 }
 
+static int ble_multi_adv_set_addr(uint16_t instance)
+{
+    ble_addr_t addr;
+    int rc;
+
+    /* generate new non-resolvable private address */
+    rc = ble_hs_id_gen_rnd(1, &addr);
+    if (rc != 0) {
+        return rc;
+    }
+
+    /* Set generated address */
+    rc = ble_gap_ext_adv_set_addr(instance, &addr);
+    if (rc != 0) {
+        return rc;
+    }
+    memcpy(&ble_instance_cb[instance].addr, &addr, sizeof(addr));
+    return 0;
+}
+
+void BLEManagerImpl::ble_multi_adv_conf_set_addr(uint16_t instance, struct ble_gap_ext_adv_params *params,
+                            uint8_t *pattern, int size_pattern, int duration)
+{
+    struct os_mbuf *data;
+    int rc;
+
+    /* configure instance */
+    rc = ble_gap_ext_adv_configure(instance, params, NULL, ble_svr_gap_event, NULL);
+    assert (rc == 0);
+
+    rc = ble_multi_adv_set_addr(instance);
+    assert (rc == 0);
+
+    /* get mbuf for adv data */
+    data = os_msys_get_pkthdr(size_pattern, 0);
+    assert(data);
+
+    /* fill mbuf with adv data */
+    rc = os_mbuf_append(data, pattern, size_pattern);
+    assert(rc == 0);
+
+    rc = ble_gap_ext_adv_set_data(instance, data);
+    assert (rc == 0);
+
+    /* start advertising */
+    rc = ble_gap_ext_adv_start(instance, duration, 0);
+    assert (rc == 0);
+
+    ESP_LOGI(TAG, "Instance %d started", instance);
+}
+
+void BLEManagerImpl::ble_multi_adv_conf_set_addr_with_rsp(uint16_t instance, struct ble_gap_ext_adv_params *params,
+                            uint8_t *pattern, int size_pattern, uint8_t *pattern_rsp, int size_pattern_rsp, int duration)
+{
+    struct os_mbuf *data;
+    struct os_mbuf *data_rsp;
+    int rc;
+
+    /* configure instance */
+    rc = ble_gap_ext_adv_configure(instance, params, NULL, BleManager::bleGapEventWrapper, NULL);
+    assert (rc == 0);
+
+    rc = ble_multi_adv_set_addr(instance);
+    assert (rc == 0);
+
+    /* get mbuf for adv data */
+    data = os_msys_get_pkthdr(size_pattern, 0);
+    assert(data);
+
+    /* fill mbuf with adv rsp data */
+    rc = os_mbuf_append(data, pattern, size_pattern);
+    assert(rc == 0);
+
+    rc = ble_gap_ext_adv_set_data(instance, data);
+    assert (rc == 0);
+
+    /* get mbuf for adv rsp data */
+    data_rsp = os_msys_get_pkthdr(size_pattern_rsp, 0);
+    assert(data_rsp);
+
+    /* fill mbuf with adv rsp data */
+    rc = os_mbuf_append(data_rsp, pattern_rsp, size_pattern_rsp);
+    assert(rc == 0);
+
+    rc = ble_gap_ext_adv_rsp_set_data(instance, data_rsp);
+    assert (rc == 0);
+
+    /* start advertising */
+    rc = ble_gap_ext_adv_start(instance, duration, 0);
+    assert (rc == 0);
+
+    ESP_LOGI(TAG, "Instance %d started", instance);
+}
+
 CHIP_ERROR BLEManagerImpl::StartAdvertising(void)
 {
     CHIP_ERROR err;
-    ble_gap_adv_params adv_params;
-    memset(&adv_params, 0, sizeof(adv_params));
-    adv_params.disc_mode = BLE_GAP_DISC_MODE_GEN;
+    uint16_t instance = 0;
+    struct ble_gap_ext_adv_params params;
+    uint8_t index = 0;
+    uint8_t advData[MAX_ADV_DATA_LEN];
+    constexpr uint8_t kServiceDataTypeSize = 1;
+    int size_pattern = sizeof(advData);
+    uint16_t discriminator;
 
-    mFlags.Clear(Flags::kAdvertisingRefreshNeeded);
+    /* use defaults for non-set params */
+    memset (&params, 0, sizeof(params));
 
-    // Advertise connectable if we haven't reached the maximum number of connections.
-    size_t numCons       = _NumConnections();
-    bool connectable     = (numCons < kMaxConnections);
-    adv_params.conn_mode = connectable ? BLE_GAP_CONN_MODE_UND : BLE_GAP_CONN_MODE_NON;
+    /* enable connectable advertising */
+    params.connectable = 1;
+    params.scannable = 1;
+    params.legacy_pdu = 1;
 
-    // Advertise in fast mode if it is connectable advertisement and
-    // the application has expressly requested fast advertising.
-    if (connectable && mFlags.Has(Flags::kFastAdvertisingEnabled))
+    /* advertise using random addr */
+    params.own_addr_type = BLE_OWN_ADDR_RANDOM;
+
+    params.sid = 0;
+
+    if (mFlags.Has(Flags::kFastAdvertisingEnabled))
     {
-        adv_params.itvl_min = CHIP_DEVICE_CONFIG_BLE_FAST_ADVERTISING_INTERVAL_MIN;
-        adv_params.itvl_max = CHIP_DEVICE_CONFIG_BLE_FAST_ADVERTISING_INTERVAL_MAX;
+        params.itvl_min = CHIP_DEVICE_CONFIG_BLE_FAST_ADVERTISING_INTERVAL_MIN;
+        params.itvl_max = CHIP_DEVICE_CONFIG_BLE_FAST_ADVERTISING_INTERVAL_MAX;
     }
     else
     {
-#if CHIP_DEVICE_CONFIG_BLE_EXT_ADVERTISING
-        if (!mFlags.Has(Flags::kExtAdvertisingEnabled))
-        {
-            adv_params.itvl_min = CHIP_DEVICE_CONFIG_BLE_SLOW_ADVERTISING_INTERVAL_MIN;
-            adv_params.itvl_max = CHIP_DEVICE_CONFIG_BLE_SLOW_ADVERTISING_INTERVAL_MAX;
-        }
-        else
-        {
-            adv_params.itvl_min = CHIP_DEVICE_CONFIG_BLE_EXT_ADVERTISING_INTERVAL_MIN;
-            adv_params.itvl_max = CHIP_DEVICE_CONFIG_BLE_EXT_ADVERTISING_INTERVAL_MAX;
-        }
-#else
-
-        adv_params.itvl_min = CHIP_DEVICE_CONFIG_BLE_SLOW_ADVERTISING_INTERVAL_MIN;
-        adv_params.itvl_max = CHIP_DEVICE_CONFIG_BLE_SLOW_ADVERTISING_INTERVAL_MAX;
-
-#endif
+        params.itvl_min = CHIP_DEVICE_CONFIG_BLE_SLOW_ADVERTISING_INTERVAL_MIN;
+        params.itvl_max = CHIP_DEVICE_CONFIG_BLE_SLOW_ADVERTISING_INTERVAL_MAX;
     }
 
-    ChipLogProgress(DeviceLayer, "Configuring CHIPoBLE advertising (interval %" PRIu32 " ms, %sconnectable)",
-                    (((uint32_t) adv_params.itvl_min) * 10) / 16, (connectable) ? "" : "non-");
+    // params.itvl_min = BLE_GAP_ADV_FAST_INTERVAL1_MIN;
+    // params.itvl_max = BLE_GAP_ADV_FAST_INTERVAL1_MAX;
 
+    memset(advData, 0, sizeof(advData));
+    advData[index++] = 0x02;                                                                // length
+    advData[index++] = CHIP_ADV_DATA_TYPE_FLAGS;                                            // AD type : flags
+    advData[index++] = CHIP_ADV_DATA_FLAGS;                                                 // AD value
+    advData[index++] = kServiceDataTypeSize + sizeof(ESP32ChipServiceData);                 // length
+    advData[index++] = CHIP_ADV_DATA_TYPE_SERVICE_DATA;                                     // AD type: (Service Data - 16-bit UUID)
+    advData[index++] = static_cast<uint8_t>(ShortUUID_CHIPoBLEService.value & 0xFF);        // AD value
+    advData[index++] = static_cast<uint8_t>((ShortUUID_CHIPoBLEService.value >> 8) & 0xFF); // AD value
+
+    SuccessOrExit(err = GetCommissionableDataProvider()->GetSetupDiscriminator(discriminator));
+
+    if (!mFlags.Has(Flags::kUseCustomDeviceName))
+        {
+        snprintf(mDeviceName, sizeof(mDeviceName), "%s%04u", CHIP_DEVICE_CONFIG_BLE_DEVICE_NAME_PREFIX, discriminator);
+        mDeviceName[kMaxDeviceNameLength] = 0;
+        }
+
+    chip::Ble::ChipBLEDeviceIdentificationInfo deviceIdInfo;
+
+    err = ConfigurationMgr().GetBLEDeviceIdentificationInfo(deviceIdInfo);
+    if (err != CHIP_NO_ERROR)
     {
-        if (ble_gap_adv_active())
+        ChipLogError(DeviceLayer, "GetBLEDeviceIdentificationInfo(): %s", ErrorStr(err));
+        return err;
+    }
+    // Configure the BLE device name.
+    // err = MapBLEError(ble_svc_gap_device_name_set(mDeviceName));
+    // if (err != CHIP_NO_ERROR)
+    // {
+    //     ChipLogError(DeviceLayer, "ble_svc_gap_device_name_set() failed: %s", ErrorStr(err));
+    //     return err;
+    // }
+
+#if CHIP_ENABLE_ADDITIONAL_DATA_ADVERTISING
+    deviceIdInfo.SetAdditionalDataFlag(true);
+#endif
+
+    VerifyOrExit(index + sizeof(deviceIdInfo) <= sizeof(advData), err = CHIP_ERROR_OUTBOUND_MESSAGE_TOO_BIG);
+    memcpy(&advData[index], &deviceIdInfo, sizeof(deviceIdInfo));
+    index = static_cast<uint8_t>(index + sizeof(deviceIdInfo));
+
+        if (ble_gap_ext_adv_active(instance))
         {
             /* Advertising is already active. Stop and restart with the new parameters */
             ChipLogProgress(DeviceLayer, "Device already advertising, stop active advertisement and restart");
-            err = MapBLEError(ble_gap_adv_stop());
+            err = MapBLEError(ble_gap_ext_adv_stop(instance));
             if (err != CHIP_NO_ERROR)
             {
-                ChipLogError(DeviceLayer, "ble_gap_adv_stop() failed: %s, cannot restart", ErrorStr(err));
+                ChipLogError(DeviceLayer, "ble_gap_ext_adv_stop() failed: %s, cannot restart", ErrorStr(err));
                 return err;
             }
         }
@@ -1731,26 +2039,156 @@ CHIP_ERROR BLEManagerImpl::StartAdvertising(void)
             }
         }
 #endif
-        if (mScanResponse.HasValue())
-        {
-            err = MapBLEError(ble_gap_adv_rsp_set_data(mScanResponse.Value().data(), mScanResponse.Value().size()));
-            if (err != CHIP_NO_ERROR)
-            {
-                ChipLogError(DeviceLayer, "ble_gap_adv_rsp_set_data failed: %s", ErrorStr(err));
-                return err;
-            }
-        }
-        err = MapBLEError(ble_gap_adv_start(own_addr_type, NULL, BLE_HS_FOREVER, &adv_params, ble_svr_gap_event, NULL));
+        ble_multi_adv_conf_set_addr(instance, &params, advData, size_pattern, 0);
+        ble_instance_cb[instance].cb = &ble_matter_ext_cb;
         if (err == CHIP_NO_ERROR)
         {
             return CHIP_NO_ERROR;
         }
         else
         {
-            ChipLogError(DeviceLayer, "ble_gap_adv_start() failed: %s", ErrorStr(err));
+            ChipLogError(DeviceLayer, "ble_gap_ext_adv_start() failed: %s", ErrorStr(err));
             return err;
         }
+
+exit:
+    return err;
+}
+
+void BLEManagerImpl::AwoxBleAdvertising(bool advertise)
+{
+    uint8_t instance = 1;
+    if (advertise && (ble_gap_ext_adv_active(instance) == 0)) {
+        ble_gap_ext_adv_params advParams;
+        uint8_t index = 0;
+        uint8_t index_rsp = 0;
+        uint8_t advData[MAX_ADV_DATA_LEN];
+        uint8_t advRspData[MAX_ADV_DATA_LEN];
+        int size_pattern = sizeof(advData);
+        int size_pattern_rsp = sizeof(advRspData);
+        const char* name;
+        int result;
+
+        /**
+         *  Set the advertisement data included in our advertisements:
+         *     o Flags (Limited discoverability and BLE-only (BR/EDR unsupported))
+         *     o 16-bit service UUIDs
+         *     o Device name
+         *     o Manufacturer Data (Product ID + Mini MAC)
+         */
+        memset(advData, 0, sizeof(advData));
+        advData[index++] = 0x02;
+        advData[index++] = 0x01;
+        advData[index++] = BLE_HS_ADV_F_DISC_LTD | BLE_HS_ADV_F_BREDR_UNSUP;
+
+        advData[index++] = 0x03;
+        advData[index++] = 0x02;
+        advData[index++] = GATT_SVR_GENERIC_ACCESS_SVC & 0x00FF;
+        advData[index++] = GATT_SVR_GENERIC_ACCESS_SVC >> 8;
+
+        /* Set complete name */
+        name = ble_svc_gap_device_name();
+
+        advData[index++] = 0x09;
+        advData[index++] = 0x09;
+        memcpy(&advData[index], name, DEVICE_NAME_SIZE);
+        index += DEVICE_NAME_SIZE;
+
+        /* Set manufacturer data */
+        uint8_t mac_addr[MAC_ADDRESS_SIZE] = {0};
+        BleManager::getInstance()->getMacAddress(mac_addr);
+        auto manufData = manufacturerData_t();
+        memcpy(manufData.macAddress, mac_addr, MAC_ADDRESS_SIZE);
+        advData[index++] = 9;
+        advData[index++] = 0xFF;
+        memcpy(&advData[index], &manufData, sizeof(manufacturerData_t));
+        index += sizeof(manufacturerData_t);
+
+        size_pattern = index - 2;
+
+        /* Set Scan response data */
+        memset(advRspData, 0, sizeof(advRspData));
+        advRspData[index_rsp++] = 0x1E;
+        advRspData[index_rsp++] = 0xFF;
+        auto scanRespData = scanRespData_t();
+
+        /* Set Manufacturer Data */
+        memcpy(&scanRespData.manufData, &manufData, sizeof(manufacturerData_t));
+
+        /* Set Zigbee Address */
+        scanRespData.zigbeeAddress = 0;
+
+        /* Set Provisioned State */
+        scanRespData.zbProvisionedState = BasicBle::getInstance()->getBlePairingInfo().zbProvisionedState;
+
+        scanRespData.rtcState = 0;
+
+        memcpy(&advRspData[index_rsp], &scanRespData, sizeof(scanRespData_t));
+
+        index_rsp += sizeof(scanRespData_t);
+
+        advRspData[0] = sizeof(scanRespData_t) + 1;
+
+        size_pattern_rsp = index_rsp;
+
+        /* Begin advertising */
+        memset(&advParams, 0, sizeof advParams);
+        advParams.connectable = 1;
+        advParams.scannable = 1;
+        advParams.legacy_pdu = 1;
+
+        advParams.sid = 0;
+        advParams.itvl_min = BLE_GAP_ADV_ITVL_MS(300);
+        advParams.itvl_max = BLE_GAP_ADV_ITVL_MS(305);
+        advParams.own_addr_type = BLE_OWN_ADDR_RANDOM;
+
+        ble_multi_adv_conf_set_addr_with_rsp(instance, &advParams, advData,
+                           size_pattern, advRspData, size_pattern_rsp, 0);
+        ble_instance_cb[instance].cb = &ble_connectable_ext_cb;
+        ESP_LOGI(TAG, "ADVERTISE");
+    } else if (!advertise) {
+        ble_gap_ext_adv_stop(instance);
+    } else {
+        ESP_LOGI(TAG, "Advertisment already started");
     }
+}
+
+CHIP_ERROR BLEManagerImpl::StartAdvertisingBleExt(void)
+{
+    AwoxBleAdvertising(true);
+    return CHIP_NO_ERROR;
+}
+
+int ble_connectable_ext_cb(uint16_t instance)
+{
+    adv_instance = instance;
+    ESP_LOGI(TAG, "In %s, instance = %d", __func__, instance);
+    return 0;
+}
+
+int ble_matter_ext_cb(uint16_t instance)
+{
+    adv_instance = instance;
+    ESP_LOGI(TAG, "In %s, instance = %d", __func__, instance);
+    return 0;
+}
+
+CHIP_ERROR BLEManagerImpl::StartMultiAdvertising(void)
+{
+    CHIP_ERROR err;
+    err = StartAdvertising();
+    if (err != CHIP_NO_ERROR)
+    {
+        ChipLogError(DeviceLayer, "Start matter advertising failed: %s", ErrorStr(err));
+        return err;
+    }
+    err = StartAdvertisingBleExt();
+    if (err != CHIP_NO_ERROR)
+    {
+        ChipLogError(DeviceLayer, "Start ble_ext advertising failed: %s", ErrorStr(err));
+        return err;
+    }
+    return CHIP_NO_ERROR;
 }
 
 void BLEManagerImpl::DriveBLEState(intptr_t arg)
@@ -1809,7 +2247,6 @@ void BLEManagerImpl::OnDeviceScanned(const struct ble_hs_adv_fields & fields, co
     {
         if (!mBLEScanConfig.mDiscriminator.MatchesLongDiscriminator(info.GetDeviceDiscriminator()))
         {
-            printf("Discriminator didi not match \n");
             return;
         }
         ChipLogProgress(Ble, "Device Discriminator match. Attempting to connect");

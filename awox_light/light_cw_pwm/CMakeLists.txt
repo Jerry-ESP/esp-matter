@@ -25,7 +25,6 @@ set(EXTRA_COMPONENT_DIRS
     "${ESP_MATTER_PATH}/awox_light/common/Drivers/RgbTwDriver"
     "${ESP_MATTER_PATH}/awox_light/common/Drivers/TwDriver"
     "${ESP_MATTER_PATH}/awox_light/common/Drivers/VirtualDriver"
-    "${ESP_MATTER_PATH}/awox_light/common/Manager/BleManager"
     "${ESP_MATTER_PATH}/awox_light/common/Manager/RebootCounterManager"
     "${ESP_MATTER_PATH}/awox_light/common/Manager/StorageManager"
     "${ESP_MATTER_PATH}/awox_light/common/Manager/VirtualManager"

@@ -11,11 +11,12 @@
 #include "freertos/task.h"
 /* BLE */
 #include "BleDataCommandChr.hpp"
-#include "BleGatt.hpp"
-#include "BleManager.hpp"
+#include "platform/ESP32_custom/BleManager/BleGatt.hpp"
+#include "platform/ESP32_custom/BleManager/BleManager.hpp"
 #include "BlePairingChr.hpp"
 #include "host/ble_hs.h"
 #include "services/gatt/ble_svc_gatt.h"
+#include "Product/product_util.h"
 
 constexpr static const char* TAG = "awox_ble_data_command_chr"; /**< @brief Espressif tag for Log */
 
@@ -60,9 +61,9 @@ int BleDataCommandChr::gattDataCommandChrAccess(uint16_t connHandle, uint16_t at
     switch (ctxt->op) {
     case BLE_GATT_ACCESS_OP_READ_CHR:
         if (connHandle != BLE_HS_CONN_HANDLE_NONE) {
-            ESP_LOGD(TAG, "Characteristic read; connHandle=%d attrHandle=%d", connHandle, attrHandle);
+            ESP_LOGI(TAG, "Characteristic read; connHandle=%d attrHandle=%d", connHandle, attrHandle);
         } else {
-            ESP_LOGD(TAG, "Characteristic read by NimBLE stack; attrHandle=%d", attrHandle);
+            ESP_LOGI(TAG, "Characteristic read by NimBLE stack; attrHandle=%d", attrHandle);
         }
         result = os_mbuf_append(ctxt->om, _gattDataCommandChr, sizeof(_gattDataCommandChr));
         if (result != BLE_ERR_SUCCESS) {
@@ -72,13 +73,14 @@ int BleDataCommandChr::gattDataCommandChrAccess(uint16_t connHandle, uint16_t at
 
     case BLE_GATT_ACCESS_OP_WRITE_CHR:
         if (connHandle != BLE_HS_CONN_HANDLE_NONE) {
-            ESP_LOGD(TAG, "Characteristic write; connHandle=%d attrHandle=%d", connHandle, attrHandle);
+            ESP_LOGI(TAG, "Characteristic write; connHandle=%d attrHandle=%d", connHandle, attrHandle);
 
         } else {
-            ESP_LOGD(TAG, "Characteristic write by NimBLE stack; attrHandle=%d", attrHandle);
+            ESP_LOGI(TAG, "Characteristic write by NimBLE stack; attrHandle=%d", attrHandle);
         }
-        ESP_LOGD(TAG, "size %d", OS_MBUF_PKTLEN(ctxt->om));
+        ESP_LOGI(TAG, "size %d", OS_MBUF_PKTLEN(ctxt->om));
         result = BleGatt::getInstance()->gattSvrWrite(ctxt->om, BLE_COMMAND_CHR_MIN_SIZE, BLE_COMMAND_CHR_SIZE, _gattDataCommandChr, NULL);
+
         if (result == BLE_ERR_SUCCESS) {
             bleDataCommandWrite(_gattDataCommandChr, OS_MBUF_PKTLEN(ctxt->om));
         } else {
@@ -88,9 +90,9 @@ int BleDataCommandChr::gattDataCommandChrAccess(uint16_t connHandle, uint16_t at
 
     case BLE_GATT_ACCESS_OP_READ_DSC:
         if (connHandle != BLE_HS_CONN_HANDLE_NONE) {
-            ESP_LOGD(TAG, "Descriptor read; connHandle=%d attrHandle=%d", connHandle, attrHandle);
+            ESP_LOGI(TAG, "Descriptor read; connHandle=%d attrHandle=%d", connHandle, attrHandle);
         } else {
-            ESP_LOGD(TAG, "Descriptor read by NimBLE stack; attrHandle=%d", attrHandle);
+            ESP_LOGI(TAG, "Descriptor read by NimBLE stack; attrHandle=%d", attrHandle);
         }
         result = os_mbuf_append(ctxt->om, &_gattDataCommandDscVal, sizeof(_gattDataCommandDscVal));
         if (result != BLE_ERR_SUCCESS) {
@@ -133,7 +135,7 @@ int BleDataCommandChr::gattDataCommandChrAccessWrapper(uint16_t connHandle, uint
  */
 void BleDataCommandChr::bleDataCommandWrite(void* packet, uint8_t size) const
 {
-    ESP_LOGD(TAG, "RawCommand:");
+    ESP_LOGI(TAG, "RawCommand:");
     ESP_LOG_BUFFER_HEX_LEVEL(TAG, packet, size, ESP_LOG_DEBUG);
 
     // For alignment problem, the structure bleCommandInfo_t starts with a reserved byte. So we cast the structure to the byte just before packet
@@ -142,7 +144,7 @@ void BleDataCommandChr::bleDataCommandWrite(void* packet, uint8_t size) const
     // Discard messages without payload or not decrypted correctly
     if ((size > BLE_MESSAGE_RECEIVED_BLE_PAYLOAD_START_INDEX) && (BlePairingChr::getInstance()->bleDecryptIncommingCommand(theData, size) == BLE_ERR_SUCCESS)) {
         if (theData->packetInfo == CMD_BLE) {
-            ESP_LOGD(TAG, "COMMAND: This is a BLE command");
+            ESP_LOGI(TAG, "COMMAND: This is a BLE command");
             bleHandlerCommand(&theData->ble, theData->payloadLength);
         } else {
             ESP_LOGE(TAG, "COMMAND: Unknown");
@@ -158,7 +160,7 @@ void BleDataCommandChr::bleDataCommandWrite(void* packet, uint8_t size) const
  */
 void BleDataCommandChr::bleHandlerCommand(bleCommandHandler_t* command, uint8_t size) const
 {
-    ESP_LOGD(TAG, "COMMAND: Got BLE command 0x%X (length=%d)", static_cast<uint8_t>(command->cmdId), size);
+    ESP_LOGI(TAG, "COMMAND: Got BLE command 0x%X (length=%d)", static_cast<uint8_t>(command->cmdId), size);
     ESP_LOG_BUFFER_HEX_LEVEL(TAG, (uint8_t*)command, size, ESP_LOG_DEBUG);
 
     switch (command->cmdId) {
@@ -183,6 +185,7 @@ void BleDataCommandChr::kickout(void) const
         0x0000,
         notificationResult_t::SUCCESS);
     // TODO: Add Matter factory reset
+    product_factory_reset();
     QueueHandle_t flashQueue = Queue::getInstance()->getFlashQueue();
     attributeData_t data;
     data.id = ATTRIBUTE_ID::TOUCHLINK_FACTORY_RESET;

@@ -5,22 +5,27 @@
  *
  */
 
-#include "Api.hpp"
-#include "BluetoothData.hpp"
-#include "TargetConfig.hpp"
-#include "TaskConfig.hpp"
+#include "Data/BluetoothData.hpp"
 #include "esp_log.h"
 #include "freertos/FreeRTOS.h"
 #include "freertos/task.h"
 
 /* BLE */
-#include "BleFastOtaChr.hpp"
+#include "platform/ESP32_custom/BleManager/Characteristics/BleFastOtaChr.hpp"
 #include "BleManager.hpp"
 #include "host/ble_hs.h"
 #include "host/util/util.h"
 #include "nimble/nimble_port.h"
 #include "nimble/nimble_port_freertos.h"
 #include "services/gap/ble_svc_gap.h"
+
+#include <platform/internal/CHIPDeviceLayerInternal.h>
+
+#include "platform/ESP32_custom/BLEManagerImpl.h"
+
+using namespace chip::DeviceLayer::Internal;
+
+// extern struct ble_instance_cb_register ble_instance_cb[BLE_ADV_INSTANCES];
 
 #ifdef __cplusplus
 extern "C" {
@@ -34,7 +39,7 @@ void ble_store_config_init(void);
 }
 #endif
 
-constexpr static const char* TAG = "awox_ble_gap_manager"; /**< @brief Espressif tag for Log */
+// constexpr static const char* TAG = "awox_ble_gap_manager"; /**< @brief Espressif tag for Log */
 
 /********************* Define functions **************************/
 
@@ -85,7 +90,7 @@ void BleManager::managerTask()
 
     /* XXX Need to have template for store */
     ble_store_config_init();
-    ESP_LOGD(TAG, "BLE Host Task Started");
+    ESP_LOGI(TAG, "BLE Host Task Started");
     /* This function will return only when nimble_port_stop() is executed */
     nimble_port_run();
 
@@ -132,8 +137,8 @@ void BleManager::bleGapOnSyncWrapper(void)
  */
 BaseType_t BleManager::createManagerTask(TaskHandle_t* handle)
 {
-    BaseType_t baseType = xTaskCreate(BleManager::bleManagerWrapperTask, bleManagerTask.name, bleManagerTask.size, this, bleManagerTask.priority, handle);
-    _taskHandle = *handle;
+    BaseType_t baseType;// = xTaskCreate(BleManager::bleManagerWrapperTask, bleManagerTask.name, bleManagerTask.size, this, bleManagerTask.priority, handle);
+    //_taskHandle = *handle;
     return baseType;
 }
 
@@ -173,8 +178,8 @@ void BleManager::updateBlePairingInfo(bool updateNameNeeded) const
  */
 void BleManager::updateBleAdv() const
 {
-    if (ble_gap_adv_active() != 0) {
-        ble_gap_adv_stop();
+    if (ble_gap_ext_adv_active(1) != 0) {
+        ble_gap_ext_adv_stop(1);
         bleGapAdvertise(true);
     }
 }
@@ -222,18 +227,18 @@ int BleManager::bleGapEvent(struct ble_gap_event* event, const void* arg)
 
     case BLE_GAP_EVENT_CONN_UPDATE: {
         /* The central has updated the connection parameters. */
-        ESP_LOGD(TAG, "Connection updated; status=%d ", event->conn_update.status);
+        ESP_LOGI(TAG, "Connection updated; status=%d ", event->conn_update.status);
         result = ble_gap_conn_find(event->conn_update.conn_handle, &desc);
         assert(result == BLE_ERR_SUCCESS);
         bleGapPrintConnDesc(&desc);
     } break;
 
     case BLE_GAP_EVENT_ADV_COMPLETE:
-        ESP_LOGD(TAG, "Advertise complete; reason=%d", event->adv_complete.reason);
+        ESP_LOGI(TAG, "Advertise complete; reason=%d", event->adv_complete.reason);
         bleGapAdvertise(true);
         break;
     case BLE_GAP_EVENT_SUBSCRIBE: {
-        ESP_LOGD(TAG, "Subscribe event; conn_handle=%d attr_handle=%d reason=%d prevn=%d curn=%d previ=%d curi=%d",
+        ESP_LOGI(TAG, "Subscribe event; conn_handle=%d attr_handle=%d reason=%d prevn=%d curn=%d previ=%d curi=%d",
             event->subscribe.conn_handle,
             event->subscribe.attr_handle,
             event->subscribe.reason,
@@ -246,14 +251,14 @@ int BleManager::bleGapEvent(struct ble_gap_event* event, const void* arg)
 // Useful only with logs on
 #if CONFIG_LOG_DEFAULT_LEVEL
     case BLE_GAP_EVENT_NOTIFY_TX:
-        ESP_LOGD(TAG, "Notify_tx event; conn_handle=%d attr_handle=%d status=%d is_indication=%d",
+        ESP_LOGI(TAG, "Notify_tx event; conn_handle=%d attr_handle=%d status=%d is_indication=%d",
             event->notify_tx.conn_handle,
             event->notify_tx.attr_handle,
             event->notify_tx.status,
             event->notify_tx.indication);
         break;
     case BLE_GAP_EVENT_MTU:
-        ESP_LOGD(TAG, "mtu update event; conn_handle=%d cid=%d mtu=%d",
+        ESP_LOGI(TAG, "mtu update event; conn_handle=%d cid=%d mtu=%d",
             event->mtu.conn_handle,
             event->mtu.channel_id,
             event->mtu.value);
@@ -313,6 +318,66 @@ void BleManager::bleGapOnSync(void)
     bleGapAdvertise(true);
 }
 
+// int BleManager::ble_multi_adv_set_addr(uint16_t instance)
+// {
+//     ble_addr_t addr;
+//     int rc;
+
+//     /* generate new non-resolvable private address */
+//     rc = ble_hs_id_gen_rnd(1, &addr);
+//     if (rc != 0) {
+//         return rc;
+//     }
+
+//     /* Set generated address */
+//     rc = ble_gap_ext_adv_set_addr(instance, &addr);
+//     if (rc != 0) {
+//         return rc;
+//     }
+//     memcpy(&ble_instance_cb[instance].addr, &addr, sizeof(addr));
+//     return 0;
+// }
+
+// void BleManager::ble_multi_adv_conf_set_addr_test(uint16_t instance, struct ble_gap_ext_adv_params *params,
+//                             uint8_t *pattern, int size_pattern, uint8_t *pattern_rsp, int size_pattern_rsp, int duration)
+// {
+//     struct os_mbuf *data;
+//     struct os_mbuf *data_rsp;
+//     int rc;
+
+//     /* configure instance */
+//     rc = ble_gap_ext_adv_configure(instance, params, NULL, bleGapEventWrapper, NULL);
+//     assert (rc == 0);
+
+//     rc = ble_multi_adv_set_addr(instance);
+//     assert (rc == 0);
+
+//     /* get mbuf for adv data */
+//     data = os_msys_get_pkthdr(size_pattern, 0);
+//     assert(data);
+
+//     rc = ble_gap_ext_adv_set_data(instance, data);
+//     assert (rc == 0);
+
+//     /* get mbuf for adv rsp data */
+//     data_rsp = os_msys_get_pkthdr(size_pattern_rsp, 0);
+//     assert(data);
+
+//     /* fill mbuf with adv rsp data */
+//     rc = os_mbuf_append(data_rsp, pattern_rsp, size_pattern_rsp);
+//     assert(rc == 0);
+
+//     rc = ble_gap_ext_adv_rsp_set_data(instance, data_rsp);
+//     assert (rc == 0);
+
+//     /* start advertising */
+//     rc = ble_gap_ext_adv_start(instance, duration, 0);
+//     assert (rc == 0);
+
+//     ESP_LOGI(TAG, "Instance %d started", instance);
+// }
+
+
 /**
  * @brief Enables advertising with the following parameters:
  *     - Limited discoverable mode
@@ -322,97 +387,7 @@ void BleManager::bleGapOnSync(void)
  */
 void BleManager::bleGapAdvertise(bool advertise) const
 {
-    if (advertise && (ble_gap_adv_active() == 0)) {
-        ble_gap_adv_params advParams;
-        ble_hs_adv_fields fields;
-        const char* name;
-        int result;
-
-        /**
-         *  Set the advertisement data included in our advertisements:
-         *     o Flags (Limited discoverability and BLE-only (BR/EDR unsupported))
-         *     o 16-bit service UUIDs
-         *     o Device name
-         *     o Manufacturer Data (Product ID + Mini MAC)
-         */
-
-        memset(&fields, 0, sizeof fields);
-
-        fields.flags = BLE_HS_ADV_F_DISC_LTD | BLE_HS_ADV_F_BREDR_UNSUP;
-
-        /* Set UUIDs list */
-        ble_uuid16_t uuid16[1] = {
-            {
-             .u = {
-                    .type = BLE_UUID_TYPE_16,
-                },
-             .value = GATT_SVR_GENERIC_ACCESS_SVC,
-             }
-        };
-        fields.uuids16 = uuid16;
-        fields.num_uuids16 = 1;
-        fields.uuids16_is_complete = 0;
-
-        /* Set complete name */
-        name = ble_svc_gap_device_name();
-        fields.name = (uint8_t*)name;
-        fields.name_len = DEVICE_NAME_SIZE;
-        fields.name_is_complete = 1;
-
-        /* Set manufacturer data */
-        fields.mfg_data_len = 8;
-        auto manufData = manufacturerData_t();
-        memcpy(manufData.macAddress, _macAddr, MAC_ADDRESS_SIZE);
-        fields.mfg_data = (uint8_t*)&manufData;
-
-        result = ble_gap_adv_set_fields(&fields);
-        if (result != BLE_ERR_SUCCESS) {
-            ESP_LOGE(TAG, "error setting advertisement data; result=%d", result);
-            return;
-        }
-
-        /* Set Scan response data */
-        memset(&fields, 0, sizeof fields);
-        auto scanRespData = scanRespData_t();
-
-        /* Set Manufacturer Data */
-        memcpy(&scanRespData.manufData, &manufData, sizeof(manufacturerData_t));
-
-        /* Set Zigbee Address */
-        scanRespData.zigbeeAddress = _zbAddress;
-
-        /* Set Provisioned State */
-        scanRespData.zbProvisionedState = BasicBle::getInstance()->getBlePairingInfo().zbProvisionedState;
-
-        scanRespData.rtcState = 0;
-
-        fields.mfg_data_len = 29;
-        fields.mfg_data = (uint8_t*)&scanRespData;
-        result = ble_gap_adv_rsp_set_fields(&fields);
-        if (result != BLE_ERR_SUCCESS) {
-            ESP_LOGE(TAG, "error setting scan resp data; result=%d", result);
-            return;
-        }
-
-        /* Begin advertising */
-        memset(&advParams, 0, sizeof advParams);
-        advParams.conn_mode = BLE_GAP_CONN_MODE_UND;
-        advParams.disc_mode = BLE_GAP_DISC_MODE_LTD;
-        advParams.itvl_min = BLE_GAP_ADV_ITVL_MS(300);
-        advParams.itvl_max = BLE_GAP_ADV_ITVL_MS(305);
-
-        result = ble_gap_adv_start(_ownAddrType, NULL, BLE_HS_FOREVER,
-            &advParams, BleManager::bleGapEventWrapper, NULL);
-        if (result != BLE_ERR_SUCCESS) {
-            ESP_LOGE(TAG, "error enabling advertisement; result=%d", result);
-            return;
-        }
-        ESP_LOGI(TAG, "ADVERTISE");
-    } else if (!advertise) {
-        ble_gap_adv_stop();
-    } else {
-        ESP_LOGI(TAG, "Advertisment already started");
-    }
+    BLEMgrImpl().AwoxBleAdvertising(advertise);
 }
 
 /**
@@ -422,7 +397,7 @@ void BleManager::bleGapAdvertise(bool advertise) const
  */
 void BleManager::bleGapPrintConnDesc(const struct ble_gap_conn_desc* desc) const
 {
-    ESP_LOGD(TAG, " conn_itvl=%d conn_latency=%d supervision_timeout=%d "
+    ESP_LOGI(TAG, " conn_itvl=%d conn_latency=%d supervision_timeout=%d "
                   "encrypted=%d authenticated=%d bonded=%d",
         desc->conn_itvl, desc->conn_latency,
         desc->supervision_timeout,

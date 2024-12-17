@@ -1,0 +1,3 @@
+dependencies:
+  espressif/bootloader_support_plus:
+    version: "0.2.5"

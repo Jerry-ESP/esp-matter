@@ -1,13 +1,10 @@
 /**
- * @file BleGatt.hpp
+ * @file BleGatt.h
  * @author AWOX
  * @brief Manager for handle the Bluetooth Low Energy Gatt connection
  *
  */
-
-#include "Api.hpp"
-#include "TargetConfig.hpp"
-#include "VirtualManager.hpp"
+#include "Data/Api.hpp"
 #include "nimble/ble.h"
 #pragma once
 

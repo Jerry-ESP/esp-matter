@@ -5,17 +5,17 @@
  *
  */
 
-#include "Api.hpp"
-#include "TaskConfig.hpp"
+// #include "Api.h"
+// #include "TaskConfig.h"
 #include "esp_log.h"
 #include "freertos/FreeRTOS.h"
 #include "freertos/task.h"
 /* BLE */
-#include "BleDataCommandChr.hpp"
-#include "BleDataNotificationChr.hpp"
-#include "BleFastOtaChr.hpp"
+#include "platform/ESP32_custom/BleManager/Characteristics/BleDataCommandChr.hpp"
+#include "platform/ESP32_custom/BleManager/Characteristics/BleDataNotificationChr.hpp"
+#include "platform/ESP32_custom/BleManager/Characteristics/BleFastOtaChr.hpp"
 #include "BleManager.hpp"
-#include "BlePairingChr.hpp"
+#include "platform/ESP32_custom/BleManager/Characteristics/BlePairingChr.hpp"
 #include "host/ble_hs.h"
 #include "host/ble_uuid.h"
 #include "services/gap/ble_svc_gap.h"

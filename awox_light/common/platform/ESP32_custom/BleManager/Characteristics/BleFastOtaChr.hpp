@@ -1,5 +1,5 @@
 /**
- * @file BleFastOtaChr.hpp
+ * @file BleFastOtaChr.h
  * @author AWOX
  * @brief Handle the BLE OTA process
  *
@@ -7,7 +7,7 @@
 
 #pragma once
 
-#include "BleGatt.hpp"
+#include "platform/ESP32_custom/BleManager/BleGatt.hpp"
 #include "esp_ota_ops.h"
 #include "nimble/ble.h"
 

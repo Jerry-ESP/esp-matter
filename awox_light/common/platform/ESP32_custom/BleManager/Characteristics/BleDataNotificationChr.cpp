@@ -12,7 +12,7 @@
 /* BLE */
 #include "BleDataCommandChr.hpp"
 #include "BleDataNotificationChr.hpp"
-#include "BleManager.hpp"
+#include "platform/ESP32_custom/BleManager/BleManager.hpp"
 #include "BlePairingChr.hpp"
 #include "host/ble_hs.h"
 #include "services/gatt/ble_svc_gatt.h"
@@ -65,9 +65,9 @@ int BleDataNotificationChr::gattDataNotificationChrAccess(uint16_t connHandle, u
     switch (ctxt->op) {
     case BLE_GATT_ACCESS_OP_READ_CHR:
         if (connHandle != BLE_HS_CONN_HANDLE_NONE) {
-            ESP_LOGD(TAG, "Characteristic read; connHandle=%d attrHandle=%d", connHandle, attrHandle);
+            ESP_LOGI(TAG, "Characteristic read; connHandle=%d attrHandle=%d", connHandle, attrHandle);
         } else {
-            ESP_LOGD(TAG, "Characteristic read by NimBLE stack; attrHandle=%d", attrHandle);
+            ESP_LOGI(TAG, "Characteristic read by NimBLE stack; attrHandle=%d", attrHandle);
         }
         result = os_mbuf_append(ctxt->om, _gattDataNotificationChr, sizeof(_gattDataNotificationChr));
         if (result != BLE_ERR_SUCCESS) {
@@ -77,21 +77,21 @@ int BleDataNotificationChr::gattDataNotificationChrAccess(uint16_t connHandle, u
 
     case BLE_GATT_ACCESS_OP_WRITE_CHR:
         if (connHandle != BLE_HS_CONN_HANDLE_NONE) {
-            ESP_LOGD(TAG, "Characteristic write; connHandle=%d attrHandle=%d", connHandle, attrHandle);
+            ESP_LOGI(TAG, "Characteristic write; connHandle=%d attrHandle=%d", connHandle, attrHandle);
 
         } else {
-            ESP_LOGD(TAG, "Characteristic write by NimBLE stack; attrHandle=%d", attrHandle);
+            ESP_LOGI(TAG, "Characteristic write by NimBLE stack; attrHandle=%d", attrHandle);
         }
-        ESP_LOGD(TAG, "size %d", OS_MBUF_PKTLEN(ctxt->om));
+        ESP_LOGI(TAG, "size %d", OS_MBUF_PKTLEN(ctxt->om));
         ESP_LOGE(TAG, "gattSvrWrite failed: Should not write data in the notification characteristic");
         // Do Nothing, data should not be written in this characteristic
         break;
 
     case BLE_GATT_ACCESS_OP_READ_DSC:
         if (connHandle != BLE_HS_CONN_HANDLE_NONE) {
-            ESP_LOGD(TAG, "Descriptor read; connHandle=%d attrHandle=%d", connHandle, attrHandle);
+            ESP_LOGI(TAG, "Descriptor read; connHandle=%d attrHandle=%d", connHandle, attrHandle);
         } else {
-            ESP_LOGD(TAG, "Descriptor read by NimBLE stack; attrHandle=%d", attrHandle);
+            ESP_LOGI(TAG, "Descriptor read by NimBLE stack; attrHandle=%d", attrHandle);
         }
         result = os_mbuf_append(ctxt->om, &_gattDataNotificationDscVal, sizeof(_gattDataNotificationDscVal));
         if (result != BLE_ERR_SUCCESS) {
@@ -112,7 +112,7 @@ int BleDataNotificationChr::gattDataNotificationChrAccess(uint16_t connHandle, u
  */
 void BleDataNotificationChr::bleNotificationSend(bleNotifyInfo_t* theNotifyInfo)
 {
-    ESP_LOGD(TAG, "NOTIF: Before Encryption, data size %d:", BLE_NOTIFICATION_SIZE);
+    ESP_LOGI(TAG, "NOTIF: Before Encryption, data size %d:", BLE_NOTIFICATION_SIZE);
     ESP_LOG_BUFFER_HEX_LEVEL(TAG, (uint8_t*)theNotifyInfo, BLE_NOTIFICATION_SIZE, ESP_LOG_DEBUG);
     if (BlePairingChr::getInstance()->blePairingEncryptNotification(theNotifyInfo)) {
         memcpy(_gattDataNotificationChr, theNotifyInfo, BLE_NOTIFICATION_SIZE);
