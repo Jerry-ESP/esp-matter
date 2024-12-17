@@ -1,14 +1,13 @@
 /**
- * @file BlePairingChr.hpp
+ * @file BlePairingChr.h
  * @author AWOX
  * @brief Handle the BLE pairing proccess (APP)
  *
  */
 
-#include "Api.hpp"
 #include "BleDataCommandChr.hpp"
 #include "BleDataNotificationChr.hpp"
-#include "BluetoothData.hpp"
+#include "Data/BluetoothData.hpp"
 #include "nimble/ble.h"
 // undefine min and max to avoid conflicts between definition in nimble and std
 #undef min

@@ -4,8 +4,7 @@
  * @brief Class to handle the Command BLE characteristic
  *
  */
-#include "Api.hpp"
-#include "BluetoothData.hpp"
+#include "Data/BluetoothData.hpp"
 #include "nimble/ble.h"
 #pragma once
 /**@{*/

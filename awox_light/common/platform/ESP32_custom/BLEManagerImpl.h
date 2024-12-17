@@ -77,6 +77,13 @@ namespace chip {
 namespace DeviceLayer {
 namespace Internal {
 
+typedef int ble_instance_cb_fn(uint16_t instance);
+
+struct ble_instance_cb_register {
+    ble_addr_t addr;
+    ble_instance_cb_fn *cb;
+};
+
 #if CONFIG_ENABLE_ESP32_BLE_CONTROLLER
 void HandleIncomingBleConnection(Ble::BLEEndPoint * bleEP);
 
@@ -145,6 +152,7 @@ public:
 
     CHIP_ERROR ConfigureScanResponseData(ByteSpan data);
     void ClearScanResponseData(void);
+    void AwoxBleAdvertising(bool advertise);
 
 private:
     chip::Optional<chip::ByteSpan> mScanResponse;
@@ -187,6 +195,10 @@ private:
                          System::PacketBufferHandle pBuf) override;
     bool SendReadResponse(BLE_CONNECTION_OBJECT conId, BLE_READ_REQUEST_CONTEXT requestContext, const Ble::ChipBleUUID * svcId,
                           const Ble::ChipBleUUID * charId) override;
+    void ble_multi_adv_conf_set_addr(uint16_t instance, struct ble_gap_ext_adv_params *params,
+                            uint8_t *pattern, int size_pattern, int duration);
+    void ble_multi_adv_conf_set_addr_with_rsp(uint16_t instance, struct ble_gap_ext_adv_params *params,
+                            uint8_t *pattern, int size_pattern, uint8_t *pattern_rsp, int size_pattern_rsp, int duration);
 
     // ===== Members that implement virtual methods on BleApplicationDelegate.
 
@@ -300,6 +312,8 @@ private:
     void DeinitESPBleLayer(void);
     CHIP_ERROR ConfigureAdvertisingData(void);
     CHIP_ERROR StartAdvertising(void);
+    CHIP_ERROR StartMultiAdvertising(void);
+    CHIP_ERROR StartAdvertisingBleExt(void);
     void StartBleAdvTimeoutTimer(uint32_t aTimeoutInMs);
     void CancelBleAdvTimeoutTimer(void);
     static void BleAdvTimeoutHandler(System::Layer *, void *);

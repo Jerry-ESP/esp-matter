@@ -1,14 +1,14 @@
 /**
- * @file BleManager.hpp
+ * @file BleManager.h
  * @author AWOX
  * @brief Manager that handles the Bluetooth Low Energy Gap connection and entry point of our Bluetooth component
  *
  */
 
 #include "BleGatt.hpp"
-#include "BlePairingChr.hpp"
-#include "TargetConfig.hpp"
-#include "VirtualManager.hpp"
+#include "platform/ESP32_custom/BleManager/Characteristics/BlePairingChr.hpp"
+#include "TargetConfig/TargetConfig.hpp"
+#include "Manager/VirtualManager/VirtualManager.hpp"
 
 #pragma once
 
@@ -73,22 +73,7 @@ public:
     uint16_t getConnHandle(void) const;
     void getMacAddress(uint8_t* macAddr) const;
 
-protected:
-    // Members
-
-    // Functions
-    void managerTask();
-
-private:
-    // Members
-    /**
-     * @brief The class instance, the only one (singleton).
-     *
-     */
-    uint16_t _connHandle = 0xFFFF; /**< BLE connection handle */
-    uint8_t _ownAddrType; /**< Address Type */
-    uint8_t _macAddr[6]; /**< BLE mac address */
-    uint16_t _zbAddress = 0x0000; /**< Zigbee address */
+    static void bleGapOnSyncWrapper(void);
 
     // Functions
     /**
@@ -108,5 +93,23 @@ private:
     static void bleGapOnReset(int reason);
     void bleGapOnSync(void);
     static int bleGapEventWrapper(struct ble_gap_event* event, void* arg);
-    static void bleGapOnSyncWrapper(void);
+
+protected:
+    // Members
+
+    // Functions
+    void managerTask();
+
+private:
+    // Members
+    /**
+     * @brief The class instance, the only one (singleton).
+     *
+     */
+    uint16_t _connHandle = 0xFFFF; /**< BLE connection handle */
+    uint8_t _ownAddrType; /**< Address Type */
+    uint8_t _macAddr[6]; /**< BLE mac address */
+    uint16_t _zbAddress = 0x0000; /**< Zigbee address */
+
+    // static void bleGapOnSyncWrapper(void);
 };

@@ -12,8 +12,8 @@
 #include <algorithm>
 
 /* BLE */
-#include "BleGatt.hpp"
-#include "BleManager.hpp"
+#include "platform/ESP32_custom/BleManager/BleGatt.hpp"
+#include "platform/ESP32_custom/BleManager/BleManager.hpp"
 #include "BlePairingChr.hpp"
 #include "host/ble_hs.h"
 #include "services/gatt/ble_svc_gatt.h"
@@ -65,9 +65,9 @@ int BlePairingChr::gattPairingChrAccess(uint16_t connHandle, uint16_t attrHandle
     switch (ctxt->op) {
     case BLE_GATT_ACCESS_OP_READ_CHR:
         if (connHandle != BLE_HS_CONN_HANDLE_NONE) {
-            ESP_LOGD(TAG, "Characteristic read; connHandle=%d attrHandle=%d", connHandle, attrHandle);
+            ESP_LOGI(TAG, "Characteristic read; connHandle=%d attrHandle=%d", connHandle, attrHandle);
         } else {
-            ESP_LOGD(TAG, "Characteristic read by NimBLE stack; attrHandle=%d", attrHandle);
+            ESP_LOGI(TAG, "Characteristic read by NimBLE stack; attrHandle=%d", attrHandle);
         }
         blePairingRead(_gattPairingChr);
         result = os_mbuf_append(ctxt->om, _gattPairingChr, sizeof(_gattPairingChr));
@@ -78,12 +78,12 @@ int BlePairingChr::gattPairingChrAccess(uint16_t connHandle, uint16_t attrHandle
 
     case BLE_GATT_ACCESS_OP_WRITE_CHR:
         if (connHandle != BLE_HS_CONN_HANDLE_NONE) {
-            ESP_LOGD(TAG, "Characteristic write; connHandle=%d attrHandle=%d", connHandle, attrHandle);
+            ESP_LOGI(TAG, "Characteristic write; connHandle=%d attrHandle=%d", connHandle, attrHandle);
 
         } else {
-            ESP_LOGD(TAG, "Characteristic write by NimBLE stack; attrHandle=%d", attrHandle);
+            ESP_LOGI(TAG, "Characteristic write by NimBLE stack; attrHandle=%d", attrHandle);
         }
-        ESP_LOGD(TAG, "size %d", OS_MBUF_PKTLEN(ctxt->om));
+        ESP_LOGI(TAG, "size %d", OS_MBUF_PKTLEN(ctxt->om));
         result = BleGatt::getInstance()->gattSvrWrite(ctxt->om, sizeof(_gattPairingChr), sizeof(_gattPairingChr), _gattPairingChr, NULL);
         if (result == BLE_ERR_SUCCESS) {
             blePairingWrite(_gattPairingChr);
@@ -94,9 +94,9 @@ int BlePairingChr::gattPairingChrAccess(uint16_t connHandle, uint16_t attrHandle
 
     case BLE_GATT_ACCESS_OP_READ_DSC:
         if (connHandle != BLE_HS_CONN_HANDLE_NONE) {
-            ESP_LOGD(TAG, "Descriptor read; connHandle=%d attrHandle=%d", connHandle, attrHandle);
+            ESP_LOGI(TAG, "Descriptor read; connHandle=%d attrHandle=%d", connHandle, attrHandle);
         } else {
-            ESP_LOGD(TAG, "Descriptor read by NimBLE stack; attrHandle=%d", attrHandle);
+            ESP_LOGI(TAG, "Descriptor read by NimBLE stack; attrHandle=%d", attrHandle);
         }
         result = os_mbuf_append(ctxt->om, &_gattPairingDscVal, sizeof(_gattPairingDscVal));
         if (result != BLE_ERR_SUCCESS) {
@@ -137,7 +137,7 @@ void BlePairingChr::blePairingWrite(void* packet)
     uint8_t theResult = PAIR_ERROR_SUCCESS;
     blePairingCommand_t* thePacket = (blePairingCommand_t*)packet;
 
-    ESP_LOGD(TAG, "opCode=%d (pairing state = %d)", thePacket->packetInfo, _pairingState);
+    ESP_LOGI(TAG, "opCode=%d (pairing state = %d)", thePacket->packetInfo, _pairingState);
 
     switch (thePacket->packetInfo) {
     case BLE_PAIRING_NONCE:
@@ -149,7 +149,7 @@ void BlePairingChr::blePairingWrite(void* packet)
             uint8_t theDecryptedData[SIZE_CIPHER_EXTENDED];
             uint8_t theNamePasswordHash[SIZE_CIPHER_EXTENDED];
 
-            ESP_LOGD(TAG, "Getting nonce");
+            ESP_LOGI(TAG, "Getting nonce");
 
             memcpy(_pairingNonce, thePacket->pairingNonce, SIZE_NONCE);
 
@@ -160,18 +160,18 @@ void BlePairingChr::blePairingWrite(void* packet)
 
             /* Verifying the Nonce is well received */
             if (memcmp(theDecryptedData, theCipher, SIZE_CIPHER) != 0) {
-                ESP_LOGD(TAG, "  NamePassHash");
+                ESP_LOGI(TAG, "  NamePassHash");
                 ESP_LOG_BUFFER_HEX_LEVEL(TAG, (uint8_t*)theNamePasswordHash, SIZE_CIPHER_EXTENDED, ESP_LOG_DEBUG);
-                ESP_LOGD(TAG, " DecryptedData");
+                ESP_LOGI(TAG, " DecryptedData");
                 ESP_LOG_BUFFER_HEX_LEVEL(TAG, (uint8_t*)theDecryptedData, SIZE_CIPHER_EXTENDED, ESP_LOG_DEBUG);
-                ESP_LOGD(TAG, "       Cipher");
+                ESP_LOGI(TAG, "       Cipher");
                 ESP_LOG_BUFFER_HEX_LEVEL(TAG, (uint8_t*)theCipher, SIZE_CIPHER, ESP_LOG_DEBUG);
                 memset(_pairingNonce, 0, SIZE_NONCE_EXTENDED);
                 theResult = PAIR_ERROR_UNMATCHING_NONCE;
             } else {
                 _pairingState = PAIRING_STATE_NONCE_RECEIVED;
 
-                ESP_LOGD(TAG, "Nonce received (pairing state = %d)", _pairingState);
+                ESP_LOGI(TAG, "Nonce received (pairing state = %d)", _pairingState);
             }
         }
         break;
@@ -202,7 +202,7 @@ void BlePairingChr::blePairingWrite(void* packet)
         } else {
             /* Decrypt the mesh password received */
             aesDecryption(_sessionKey, thePacket->pairingPassword, _pairingPassword);
-            ESP_LOGD(TAG, "Pairing password received");
+            ESP_LOGI(TAG, "Pairing password received");
             ESP_LOG_BUFFER_HEX_LEVEL(TAG, _pairingPassword, SIZE_CIPHER_EXTENDED, ESP_LOG_DEBUG);
             _pairingState = PAIRING_STATE_SESSION_KEY_READ;
         }
@@ -229,6 +229,9 @@ void BlePairingChr::blePairingHash(uint8_t aData[SIZE_CIPHER_EXTENDED])
     const uint8_t* thePairingName = blePairingInfo.name;
     const uint8_t* thePairingPassword = blePairingInfo.password;
 
+    printf("thePairingName: %s\n", thePairingName);
+    printf("thePairingPassword: %s\n", thePairingPassword);
+
     if (memcmp(blePairingInfo.name, BLE_DEFAULT_DEVICE_NAME, DEVICE_NAME_SIZE) == 0) {
         thePairingPassword = bleDefaultPassword;
     }
@@ -252,7 +255,7 @@ void BlePairingChr::blePairingRead(uint8_t* packet)
 {
     if (_pairingState == PAIRING_STATE_NONCE_RECEIVED) {
         blePairingReadKey(packet);
-        ESP_LOGD(TAG, "Session key computed, random data read by phone");
+        ESP_LOGI(TAG, "Session key computed, random data read by phone");
     } else if (_pairingState == PAIRING_STATE_SESSION_KEY_READ) {
         packet[0] = BLE_PAIRING_READ_SESSION_KEY;
         ESP_LOGI(TAG, "Confirming reception of key");
@@ -278,7 +281,7 @@ void BlePairingChr::blePairingReadKey(uint8_t* packet)
     // Send the first 8 bytes to the phone
     packet[0] = BLE_PAIRING_READ_DEVICE_TOKEN;
     memcpy(packet + 1, theKey, SIZE_CIPHER);
-    ESP_LOGD(TAG, "  The Key");
+    ESP_LOGI(TAG, "  The Key");
     ESP_LOG_BUFFER_HEX_LEVEL(TAG, (uint8_t*)theKey, SIZE_CIPHER, ESP_LOG_DEBUG);
     // Calculate the session key
     blePairingHash(theData);
@@ -287,12 +290,12 @@ void BlePairingChr::blePairingReadKey(uint8_t* packet)
     memcpy(theKey, _pairingNonce, SIZE_NONCE);
     aesEncryption(theData, theKey, _sessionKey);
 
-    ESP_LOGD(TAG, "Computed session key");
-    ESP_LOGD(TAG, "  The Data");
+    ESP_LOGI(TAG, "Computed session key");
+    ESP_LOGI(TAG, "  The Data");
     ESP_LOG_BUFFER_HEX_LEVEL(TAG, (uint8_t*)theData, SIZE_CIPHER_EXTENDED, ESP_LOG_DEBUG);
-    ESP_LOGD(TAG, "  Nonce");
+    ESP_LOGI(TAG, "  Nonce");
     ESP_LOG_BUFFER_HEX_LEVEL(TAG, (uint8_t*)_pairingNonce, SIZE_CIPHER_EXTENDED, ESP_LOG_DEBUG);
-    ESP_LOGD(TAG, " SessionKey");
+    ESP_LOGI(TAG, " SessionKey");
     ESP_LOG_BUFFER_HEX_LEVEL(TAG, (uint8_t*)_sessionKey, SIZE_CIPHER_EXTENDED, ESP_LOG_DEBUG);
 
     _pairingState = PAIRING_STATE_SESSION_KEY_READ;
@@ -376,7 +379,7 @@ uint8_t BlePairingChr::bleDecryptIncommingCommand(bleCommandInfo_t* theData, uin
         // so we can use it as a buffer for decryption
         aesDecryption(_sessionKey, &theData->crc8, theDecryptedData);
         memcpy(&theData->crc8, theDecryptedData, theDataLength);
-        ESP_LOGD(TAG, "Full decrypted data (payloadlength=%d) (datalength=%d):", size, theDataLength);
+        ESP_LOGI(TAG, "Full decrypted data (payloadlength=%d) (datalength=%d):", size, theDataLength);
         ESP_LOG_BUFFER_HEX_LEVEL(TAG, &theData->packetInfo, size, ESP_LOG_DEBUG);
 
         if (theData->payloadLength > size - 3) {

@@ -45,7 +45,7 @@ void Driver::writeData(attributeData_t data)
 {
     switch (data.id) {
     case ATTRIBUTE_ID::TOUCHLINK_FACTORY_RESET:
-        // erase();
+        erase();
         // esp_restart(); // Restart the device, may be deleted when Matter is implemented
         product_factory_reset();
         break;

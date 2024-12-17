@@ -1,13 +1,12 @@
 /**
- * @file BleDataNotificationChr.hpp
+ * @file BleDataNotificationChr.h
  * @author AWOX
  * @brief Class to handle the Notification BLE characteristic
  *
  */
 
-#include "Api.hpp"
-#include "BleGatt.hpp"
-#include "BluetoothData.hpp"
+#include "platform/ESP32_custom/BleManager/BleGatt.hpp"
+#include "Data/BluetoothData.hpp"
 #include "nimble/ble.h"
 
 #pragma once
