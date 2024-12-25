@@ -6,3 +6,7 @@ dependencies:
       - if: "target in [esp32c2]"
 
   espressif/button: "=2.5.0"
+  esp_bsp_devkit:
+    version: "^1.0.0"
+  espressif/led_strip:
+    version: "^2.0.0"

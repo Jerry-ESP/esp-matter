@@ -47,19 +47,62 @@ constexpr const uint8_t kNamespaceSwitches = 43;
 constexpr const uint8_t kTagSwitchOn = 0;
 // Common Number Namespace: 7, tag 1 (One)
 constexpr const uint8_t kTagSwitchOff = 1;
+// Common Number Namespace: 7, tag 1 (One)
+constexpr const uint8_t kTagSwitchToggle = 2;
+// Common Number Namespace: 7, tag 1 (One)
+constexpr const uint8_t kTagSwitchUp = 3;
+// Common Number Namespace: 7, tag 1 (One)
+constexpr const uint8_t kTagSwitchDown = 4;
+// Common Number Namespace: 7, tag 1 (One)
+constexpr const uint8_t kTagSwitchNext = 5;
+// Common Number Namespace: 7, tag 1 (One)
+constexpr const uint8_t kTagSwitchPrevious = 6;
+// Common Number Namespace: 7, tag 1 (One)
+constexpr const uint8_t kTagSwitchOK = 7;
 
-constexpr const uint8_t kNamespacePosition = 8;
-// Common Position Namespace: 8, tag: 0 (Left)
-constexpr const uint8_t kTagPositionLeft = 0;
-// Common Position Namespace: 8, tag: 1 (Right)
-constexpr const uint8_t kTagPositionRight = 1;
+
+constexpr const uint8_t kNamespaceNumber = 7;
+// Common Number Namespace: 7, tag: 0 (zero)
+constexpr const uint8_t kTagNumberZero = 0;
+// Common Number Namespace: 7, tag: 1 (one)
+constexpr const uint8_t kTagNumberOne = 1;
+// Common Number Namespace: 7, tag: 1 (one)
+constexpr const uint8_t kTagNumberTwo = 2;
+// Common Number Namespace: 7, tag: 1 (one)
+constexpr const uint8_t kTagNumberThreee = 3;
+// Common Number Namespace: 7, tag: 1 (one)
+constexpr const uint8_t kTagNumberFour = 4;
+// Common Number Namespace: 7, tag: 1 (one)
+constexpr const uint8_t kTagNumberFive = 5;
+// Common Number Namespace: 7, tag: 1 (one)
+constexpr const uint8_t kTagNumberSix = 6;
+// Common Number Namespace: 7, tag: 1 (one)
+constexpr const uint8_t kTagNumberSeven = 7;
 
 const Descriptor::Structs::SemanticTagStruct::Type gEp1TagList[] = {
     {.namespaceID = kNamespaceSwitches, .tag = kTagSwitchOn},
-    {.namespaceID = kNamespacePosition, .tag = kTagPositionRight}};
+    {.namespaceID = kNamespaceNumber, .tag = kTagNumberZero}};
 const Descriptor::Structs::SemanticTagStruct::Type gEp2TagList[] = {
     {.namespaceID = kNamespaceSwitches, .tag = kTagSwitchOff},
-    {.namespaceID = kNamespacePosition, .tag = kTagPositionLeft}};
+    {.namespaceID = kNamespaceNumber, .tag = kTagNumberOne}};
+const Descriptor::Structs::SemanticTagStruct::Type gEp3TagList[] = {
+    {.namespaceID = kNamespaceSwitches, .tag = kTagSwitchToggle},
+    {.namespaceID = kNamespaceNumber, .tag = kTagNumberTwo}};
+const Descriptor::Structs::SemanticTagStruct::Type gEp4TagList[] = {
+    {.namespaceID = kNamespaceSwitches, .tag = kTagSwitchUp},
+    {.namespaceID = kNamespaceNumber, .tag = kTagNumberThreee}};
+const Descriptor::Structs::SemanticTagStruct::Type gEp5TagList[] = {
+    {.namespaceID = kNamespaceSwitches, .tag = kTagSwitchDown},
+    {.namespaceID = kNamespaceNumber, .tag = kTagNumberFour}};
+const Descriptor::Structs::SemanticTagStruct::Type gEp6TagList[] = {
+    {.namespaceID = kNamespaceSwitches, .tag = kTagSwitchNext},
+    {.namespaceID = kNamespaceNumber, .tag = kTagNumberFive}};
+const Descriptor::Structs::SemanticTagStruct::Type gEp7TagList[] = {
+    {.namespaceID = kNamespaceSwitches, .tag = kTagSwitchPrevious},
+    {.namespaceID = kNamespaceNumber, .tag = kTagNumberSix}};
+const Descriptor::Structs::SemanticTagStruct::Type gEp8TagList[] = {
+    {.namespaceID = kNamespaceSwitches, .tag = kTagSwitchOK},
+    {.namespaceID = kNamespaceNumber, .tag = kTagNumberSeven}};
 
 }
 
@@ -105,7 +148,23 @@ static esp_err_t app_identification_cb(identification::callback_type_t type, uin
                                        uint8_t effect_variant, void *priv_data)
 {
     ESP_LOGI(TAG, "Identification callback: type: %u, effect: %u, variant: %u", type, effect_id, effect_variant);
-    return ESP_OK;
+    esp_err_t err = ESP_OK;
+    switch (type) {
+        case identification::START:
+            app_led_blink_start();
+            break;
+
+        case identification::STOP:
+            app_led_blink_stop();
+            break;
+        default:
+            ESP_LOGE(TAG, "Identification type not handled");
+            err = ESP_FAIL;
+            break;
+    }
+
+    return err;
+
 }
 
 // This callback is called for every attribute update. The callback implementation shall
@@ -179,9 +238,11 @@ static esp_err_t create_button(struct gpio_button* button, node_t* node)
 
 #if CONFIG_GENERIC_SWITCH_TYPE_MOMENTARY
     cluster::switch_cluster::feature::momentary_switch::add(cluster);
-    cluster::switch_cluster::feature::action_switch::add(cluster);
+    //cluster::switch_cluster::feature::action_switch::add(cluster);
+    cluster::switch_cluster::feature::momentary_switch_release::add(cluster);
+    cluster::switch_cluster::feature::momentary_switch_long_press::add(cluster);
     cluster::switch_cluster::feature::momentary_switch_multi_press::config_t msm;
-    msm.multi_press_max = 5;
+    msm.multi_press_max = 2;
     cluster::switch_cluster::feature::momentary_switch_multi_press::add(cluster, &msm);
 #endif
 
@@ -197,6 +258,38 @@ int get_endpoint(gpio_button* button) {
     return -1;
 }
 
+static struct gpio_button button0 = {
+    .GPIO_PIN_VALUE = GPIO_NUM_4,
+};
+
+static struct gpio_button button1 = {
+    .GPIO_PIN_VALUE = GPIO_NUM_5,
+};
+
+static struct gpio_button button2 = {
+    .GPIO_PIN_VALUE = GPIO_NUM_6,
+};
+
+static struct gpio_button button3 = {
+    .GPIO_PIN_VALUE = GPIO_NUM_7,
+};
+
+static struct gpio_button button4 = {
+    .GPIO_PIN_VALUE = GPIO_NUM_8,
+};
+
+static struct gpio_button button5 = {
+    .GPIO_PIN_VALUE = GPIO_NUM_9,
+};
+
+static struct gpio_button button6 = {
+    .GPIO_PIN_VALUE = GPIO_NUM_10,
+};
+
+static struct gpio_button button7 = {
+    .GPIO_PIN_VALUE = GPIO_NUM_11,
+};
+
 extern "C" void app_main()
 {
     esp_err_t err = ESP_OK;
@@ -204,14 +297,32 @@ extern "C" void app_main()
     /* Initialize the ESP NVS layer */
     nvs_flash_init();
 
+    /* Initialize driver */
+    reset_rollback_button_init();
+
     /* Create a Matter node and add the mandatory Root Node device type on endpoint 0 */
     node::config_t node_config;
     node_t *node = node::create(&node_config, app_attribute_update_cb, app_identification_cb);
     ABORT_APP_ON_FAILURE(node != nullptr, ESP_LOGE(TAG, "Failed to create Matter node"));
 
+    endpoint_t *endpoint = endpoint::get(node, 0);
+    cluster_t *cluster = cluster::get(endpoint, BasicInformation::Id);
+
+    basic_information::attribute::create_serial_number(cluster, NULL, 0);
+
     /* Call for Boot button */
-    err = create_button(NULL, node);
+    err = create_button(&button0, node);
+    err |= create_button(&button1, node);
+    err |= create_button(&button2, node);
+    err |= create_button(&button3, node);
+    err |= create_button(&button4, node);
+    err |= create_button(&button5, node);
+    err |= create_button(&button6, node);
+    err |= create_button(&button7, node);
+
     ABORT_APP_ON_FAILURE(err == ESP_OK, ESP_LOGE(TAG, "Failed to create generic switch button"));
+
+    app_driver_light_init();
 
     /* Use the code snippet commented below to create more physical buttons. */
 
@@ -225,7 +336,7 @@ extern "C" void app_main()
     /* Set OpenThread platform config */
     esp_openthread_platform_config_t config = {
         .radio_config = ESP_OPENTHREAD_DEFAULT_RADIO_CONFIG(),
-        .host_config = ESP_OPENTHREAD_DEFAULT_HOST_CONFIG(),
+        .host_config = ESP_OPENTHREAD_DEFAULT_HOST_CONFIG(),SetTagList(2, chip::Span<const Descriptor::Structs::SemanticTagStruct::Type>(gEp2TagList));
         .port_config = ESP_OPENTHREAD_DEFAULT_PORT_CONFIG(),
     };
     set_openthread_platform_config(&config);
@@ -241,6 +352,12 @@ extern "C" void app_main()
 
     SetTagList(1, chip::Span<const Descriptor::Structs::SemanticTagStruct::Type>(gEp1TagList));
     SetTagList(2, chip::Span<const Descriptor::Structs::SemanticTagStruct::Type>(gEp2TagList));
+    SetTagList(3, chip::Span<const Descriptor::Structs::SemanticTagStruct::Type>(gEp3TagList));
+    SetTagList(4, chip::Span<const Descriptor::Structs::SemanticTagStruct::Type>(gEp4TagList));
+    SetTagList(5, chip::Span<const Descriptor::Structs::SemanticTagStruct::Type>(gEp5TagList));
+    SetTagList(6, chip::Span<const Descriptor::Structs::SemanticTagStruct::Type>(gEp6TagList));
+    SetTagList(7, chip::Span<const Descriptor::Structs::SemanticTagStruct::Type>(gEp7TagList));
+    SetTagList(8, chip::Span<const Descriptor::Structs::SemanticTagStruct::Type>(gEp8TagList));
 
 #if CONFIG_ENABLE_CHIP_SHELL
     esp_matter::console::diagnostics_register_commands();

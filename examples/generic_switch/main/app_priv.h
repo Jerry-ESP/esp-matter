@@ -42,6 +42,14 @@ typedef void *app_driver_handle_t;
  */
 app_driver_handle_t app_driver_button_init(gpio_button *button = NULL);
 
+void app_driver_light_init();
+
+void app_led_blink_start();
+
+void app_led_blink_stop();
+
+void reset_rollback_button_init();
+
 /** Driver Update
  *
  * This API should be called to update the driver for the attribute being updated.
