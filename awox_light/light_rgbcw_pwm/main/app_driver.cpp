@@ -115,7 +115,7 @@ static esp_err_t light_driver_set_colormode(lightDriverMode_t color_mode)
     esp_err_t err = ESP_OK;
     ESP_LOGI(TAG, "Set colormode %d", color_mode);
 
-    s_driver.setMode(color_mode);
+    //_driver.setMode(color_mode);
     return err;
 }
 
@@ -198,7 +198,7 @@ static void print_current_light_state()
 esp_err_t app_driver_attribute_update(app_driver_handle_t driver_handle, uint16_t endpoint_id, uint32_t cluster_id,
                                       uint32_t attribute_id, esp_matter_attr_val_t *val)
 {
-    product_print_mem();
+    //product_print_mem();
     esp_err_t err = ESP_OK;
     if (endpoint_id == light_endpoint_id) {
         if (cluster_id == OnOff::Id) {
@@ -232,12 +232,12 @@ esp_err_t app_driver_attribute_update(app_driver_handle_t driver_handle, uint16_
             } else if (attribute_id == ColorControl::Attributes::CurrentX::Id) {
                 light_current_state.current_x = val->val.u16;
                 if (light_current_state.on_off == true) {
-                    err = light_matter_set_current_xy(val->val.u16, light_current_state.current_y, light_current_state.level);
+                    //err = light_matter_set_current_xy(val->val.u16, light_current_state.current_y, light_current_state.level);
                 }
             } else if (attribute_id == ColorControl::Attributes::CurrentY::Id) {
                 light_current_state.current_y = val->val.u16;
                 if (light_current_state.on_off == true) {
-                    err = light_matter_set_current_xy(light_current_state.current_x, val->val.u16, light_current_state.level);
+                    //err = light_matter_set_current_xy(light_current_state.current_x, val->val.u16, light_current_state.level);
                 }
             } else if (attribute_id == ColorControl::Attributes::ColorMode::Id) {
                 light_current_state.color_mode = val->val.u8;
@@ -246,7 +246,7 @@ esp_err_t app_driver_attribute_update(app_driver_handle_t driver_handle, uint16_
                 }
             }
         }
-        print_current_light_state();
+        //print_current_light_state();
     }
     return err;
 }
@@ -297,7 +297,7 @@ esp_err_t app_driver_light_set_defaults(uint16_t endpoint_id)
     attribute::get_val(attribute, &val);
     start_up_onoff = val.val.u8;
 
-    print_current_light_state();
+    //print_current_light_state();
 
     /* setting brightness*/
     err |= light_matter_set_brightness(light_current_state.level);

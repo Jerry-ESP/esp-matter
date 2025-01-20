@@ -65,7 +65,6 @@ void RebootCounterManager::managerTask()
 {
     while (true) {
         ESP_LOGD(TAG, "Reboot stage : %d", static_cast<uint8_t>(stage));
-        ESP_LOGW(TAG, "Reboot stage : %d", static_cast<uint8_t>(stage));
         currentTime = nextStageTime;
         switch (stage) {
         case stateReboots_t::START:
@@ -82,7 +81,6 @@ void RebootCounterManager::managerTask()
             break;
         default:
             stageFinish();
-            ESP_LOGW(TAG, "Reboot stage : %d----do nothing-----------", static_cast<uint8_t>(stage));
             break;
         }
     }
@@ -97,7 +95,7 @@ void RebootCounterManager::stageStart()
 {
     stage = stateReboots_t::ON_TIME;
     nextStageTime = CONSECUTIVE_REBOOTS[static_cast<uint8_t>(std::floor(nbReboots * PADDING_2ND_COLUMN))];
-    ESP_LOGW(TAG, "stageStart--nbReboots %d---nextStageTime : %d", nbReboots, nextStageTime);
+    ESP_LOGE(TAG, "stageStart--nbReboots %d---nextStageTime : %d", nbReboots, nextStageTime);
     if (nextStageTime > 0) {
         resetCounterInFlash();
         setDelay();
@@ -112,7 +110,7 @@ void RebootCounterManager::stageStart()
 void RebootCounterManager::stageOnTime()
 {
     nextStageTime = CONSECUTIVE_REBOOTS[static_cast<uint8_t>(std::floor(nbReboots * PADDING_2ND_COLUMN) + 1)];
-    ESP_LOGW(TAG, "stageOnTime--nbReboots %d---nextStageTime : %d", nbReboots, nextStageTime);
+    ESP_LOGE(TAG, "stageOnTime--nbReboots %d---nextStageTime : %d", nbReboots, nextStageTime);
     if (nextStageTime < COUNTER_ON_TIME_POWER_CUT) {
         stage = stateReboots_t::OFF_TIME;
     } else {
@@ -130,7 +128,7 @@ void RebootCounterManager::stageOnTime()
  */
 void RebootCounterManager::stageOffTime()
 {
-    ESP_LOGW(TAG, "stageOffTime--nbReboots %d---nextStageTime : %d", nbReboots, nextStageTime);
+    ESP_LOGE(TAG, "stageOffTime--nbReboots %d---nextStageTime : %d", nbReboots, nextStageTime);
     triggerAction();
     if (currentTime < COUNTER_ON_TIME_POWER_CUT) {
         stage = stateReboots_t::ON_TIME_POWER_CUT;
@@ -147,8 +145,8 @@ void RebootCounterManager::stageOffTime()
  */
 void RebootCounterManager::stageFinish() const
 {
-    ESP_LOGW(TAG, "stageFinish--nbReboots %d---nextStageTime : %d", nbReboots, nextStageTime);
-    ESP_LOGW(TAG, "Remove this task as it is not necessary anymore (counter is reseted)");
+    ESP_LOGE(TAG, "stageFinish--nbReboots %d---nextStageTime : %d", nbReboots, nextStageTime);
+    ESP_LOGE(TAG, "Remove this task as it is not necessary anymore (counter is reseted)");
     vTaskDelete(nullptr);
 }
 
@@ -184,8 +182,9 @@ void RebootCounterManager::resetCounterInFlash()
 void RebootCounterManager::setDelay() const
 {
     ESP_LOGD(TAG, "Next stage is %d, at %ds", static_cast<uint8_t>(stage), nextStageTime);
-    ESP_LOGW(TAG, "Next stage is %d, at %ds------current time: %d", static_cast<uint8_t>(stage), nextStageTime, currentTime);
-    vTaskDelay(pdMS_TO_TICKS((nextStageTime - currentTime) * 1000));
+    ESP_LOGE(TAG, "Next stage is %d, at %ds------current time: %d", static_cast<uint8_t>(stage), nextStageTime, currentTime);
+    // vTaskDelay(pdMS_TO_TICKS((nextStageTime - currentTime) * 1000));
+    vTaskDelay(pdMS_TO_TICKS(5 * 1000));
 }
 
 /**

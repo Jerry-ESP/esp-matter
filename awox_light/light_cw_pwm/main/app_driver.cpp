@@ -141,7 +141,7 @@ static void print_current_light_state()
 esp_err_t app_driver_attribute_update(app_driver_handle_t driver_handle, uint16_t endpoint_id, uint32_t cluster_id,
                                       uint32_t attribute_id, esp_matter_attr_val_t *val)
 {
-    product_print_mem();
+    // product_print_mem();
     esp_err_t err = ESP_OK;
     if (endpoint_id == light_endpoint_id) {
         if (cluster_id == OnOff::Id) {

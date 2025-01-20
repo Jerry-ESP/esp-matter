@@ -293,7 +293,7 @@ typedef struct config {
     uint16_t cluster_revision;
     uint16_t identify_time;
     uint8_t identify_type;
-    config() : cluster_revision(4), identify_time(0), identify_type(0) {}
+    config() : cluster_revision(4), identify_time(0), identify_type(1) {}
 } config_t;
 
 cluster_t *create(endpoint_t *endpoint, config_t *config, uint8_t flags);

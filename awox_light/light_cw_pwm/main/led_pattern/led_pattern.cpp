@@ -148,6 +148,7 @@ esp_err_t led_pattern_blink_stop_restore(led_pattern_handle_t handle, bool resto
 
 esp_err_t led_pattern_blink_stop_with_power(led_pattern_handle_t handle, bool on_off)
 {
+    static uint8_t count = 0;
     if (!g_semaphore_handle) {
         ESP_LOGE(TAG, "Semaphore handle is null");
         return ESP_FAIL;
@@ -161,6 +162,11 @@ esp_err_t led_pattern_blink_stop_with_power(led_pattern_handle_t handle, bool on
             led_pattern_t *pattern = (led_pattern_t *)g_pattern_handle;
             pattern->end_pattern = true;
             while (pattern->end_pattern) {
+                count++;
+                if (count > 20) {
+                    count = 0;
+                    break;
+                }
                 ESP_LOGI(TAG, "Waiting for pattern to end");
                 vTaskDelay(pdMS_TO_TICKS(50));
             }
