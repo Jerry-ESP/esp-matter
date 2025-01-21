@@ -34,8 +34,12 @@ esp_err_t set_callback(callback_t callback)
 static esp_err_t execute_callback(callback_type_t type, uint16_t endpoint_id, uint8_t effect_id, uint8_t effect_variant)
 {
     if (identification_callback) {
+#ifdef CONFIG_ESP_MATTER_ENABLE_DATA_MODEL
         void *priv_data = endpoint::get_priv_data(endpoint_id);
         return identification_callback(type, endpoint_id, effect_id, effect_variant, priv_data);
+#else
+        return identification_callback(type, endpoint_id, effect_id, effect_variant, nullptr);
+#endif
     }
     return ESP_OK;
 }
@@ -64,7 +68,9 @@ esp_err_t init(uint16_t endpoint_id, uint8_t identify_type, uint8_t effect_ident
                                                        effect_cb, static_cast<chip::app::Clusters::Identify::EffectIdentifierEnum>(effect_identifier),
                                                        static_cast<chip::app::Clusters::Identify::EffectVariantEnum>(effect_variant));
     VerifyOrReturnError(identify, ESP_FAIL, ESP_LOGE(TAG, "Fail to create identify object"));
+#ifdef CONFIG_ESP_MATTER_ENABLE_DATA_MODEL
     endpoint::set_identify(endpoint_id, (void *)identify);
+#endif
     return ESP_OK;
 }
 

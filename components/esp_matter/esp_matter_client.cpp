@@ -25,10 +25,12 @@
 #include <app/MessageDef/StatusIB.h>
 #include <app/ReadClient.h>
 #include <app/ReadPrepareParams.h>
-#include <app/clusters/bindings/BindingManager.h>
 #include <core/Optional.h>
 #include <core/TLVReader.h>
 #include <core/TLVWriter.h>
+#ifdef CONFIG_ESP_MATTER_ENABLE_MATTER_SERVER
+#include <app/clusters/bindings/BindingManager.h>
+#endif
 
 #include "app/CommandPathParams.h"
 #include "app/CommandSender.h"
@@ -109,6 +111,7 @@ esp_err_t group_request_send(uint8_t fabric_index, request_handle_t *req_handle)
     return ESP_OK;
 }
 
+#ifdef CONFIG_ESP_MATTER_ENABLE_MATTER_SERVER
 static void esp_matter_command_client_binding_callback(const EmberBindingTableEntry &binding,
                                                        OperationalDeviceProxy *peer_device, void *context)
 {
@@ -199,6 +202,7 @@ void binding_init()
 {
     initialize_binding_manager = true;
 }
+#endif // CONFIG_ESP_MATTER_ENABLE_MATTER_SERVER
 
 namespace interaction {
 using chip::app::DataModel::EncodableToTLV;

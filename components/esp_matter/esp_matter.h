@@ -18,20 +18,24 @@
 This is a common include file which includes all the other esp_matter component files which would be required by the
 application.
 */
-
+#include <sdkconfig.h>
+#ifdef CONFIG_ESP_MATTER_ENABLE_MATTER_SERVER
+#ifdef CONFIG_ESP_MATTER_ENABLE_DATA_MODEL
 #include <esp_matter_attribute.h>
-#include <esp_matter_attribute_utils.h>
-#include <esp_matter_client.h>
 #include <esp_matter_cluster.h>
 #include <esp_matter_command.h>
-#include <esp_matter_core.h>
 #include <esp_matter_endpoint.h>
 #include <esp_matter_event.h>
 #include <esp_matter_feature.h>
-#include <esp_matter_identify.h>
-
-#include <app/util/att-storage.h>
+#include <esp_matter_data_model.h>
+#endif // CONFIG_ESP_MATTER_ENABLE_DATA_MODEL
 #include <app/server/Dnssd.h>
+#include <app/util/att-storage.h>
+#include <esp_matter_attribute_utils.h>
+#include <esp_matter_identify.h>
+#endif // CONFIG_ESP_MATTER_ENABLE_MATTER_SERVER
+#include <esp_matter_client.h>
+#include <esp_matter_core.h>
 #include <platform/CHIPDeviceEvent.h>
 #include <platform/CHIPDeviceLayer.h>
 

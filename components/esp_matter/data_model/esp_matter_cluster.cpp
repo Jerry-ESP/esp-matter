@@ -113,7 +113,6 @@ cluster_t *create_default_binding_cluster(endpoint_t *endpoint)
     return binding::create(endpoint, &config, CLUSTER_FLAG_SERVER);
 }
 
-#if CONFIG_ESP_MATTER_ENABLE_DATA_MODEL
 namespace descriptor {
 const function_generic_t *function_list = NULL;
 const int function_flags = CLUSTER_FLAG_NONE;
@@ -3817,8 +3816,6 @@ cluster_t *create(endpoint_t *endpoint, config_t *config, uint8_t flags, uint32_
 // namespace audio_output {
 //     // ToDo
 // } /* audio_output */
-
-#endif /* CONFIG_ESP_MATTER_ENABLE_DATA_MODEL */
 
 } /* cluster */
 } /* esp_matter */
