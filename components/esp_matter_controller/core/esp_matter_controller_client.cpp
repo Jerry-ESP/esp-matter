@@ -22,11 +22,11 @@
 
 #include <controller/CHIPDeviceControllerFactory.h>
 #include <controller/OperationalCredentialsDelegate.h>
+#include <controller_data_model_provider.h>
 #include <credentials/GroupDataProvider.h>
 #include <credentials/attestation_verifier/DefaultDeviceAttestationVerifier.h>
 #include <credentials/attestation_verifier/DeviceAttestationVerifier.h>
 #include <crypto/CHIPCryptoPAL.h>
-#include <controller_data_model_provider.h>
 #include <lib/core/CHIPError.h>
 #include <lib/core/DataModelTypes.h>
 #include <lib/support/CHIPMem.h>
@@ -42,6 +42,12 @@
 #if CONFIG_ENABLE_ESP32_BLE_CONTROLLER
 #include <platform/ESP32/BLEManagerImpl.h>
 #include <platform/internal/BLEManager.h>
+#endif
+
+#if CHIP_DEVICE_CONFIG_DYNAMIC_SERVER
+#include <app/clusters/ota-provider/ota-provider.h>
+#include <app/dynamic_server/AccessControl.h>
+#include <esp_matter_ota_provider.h>
 #endif
 
 #define TAG "MatterController"
@@ -84,6 +90,16 @@ esp_err_t matter_controller_client::init(NodeId node_id, FabricId fabric_id, uin
     ESP_RETURN_ON_FALSE(chip::Controller::DeviceControllerFactory::GetInstance().Init(factory_init_params) ==
                             CHIP_NO_ERROR,
                         ESP_FAIL, TAG, "Failed to initialize DeviceControllerFactory");
+#if CHIP_DEVICE_CONFIG_DYNAMIC_SERVER
+    auto system_state = chip::Controller::DeviceControllerFactory::GetInstance().GetSystemState();
+    auto &ota_provider = ota_provider::EspOtaProvider::GetInstance();
+    ESP_RETURN_ON_ERROR(
+        ota_provider.Init(true, system_state->SystemLayer(), system_state->ExchangeMgr(), system_state->Fabrics()), TAG,
+        "Failed to initialize OTA provider");
+    chip::app::Clusters::OTAProvider::SetDelegate(
+        0, reinterpret_cast<chip::app::Clusters::OTAProviderDelegate *>(&ota_provider));
+    chip::app::dynamic_server::InitAccessControl();
+#endif
     return ESP_OK;
 }
 
@@ -161,7 +177,8 @@ esp_err_t matter_controller_client::setup_commissioner()
     // m_icd_client_storage.UpdateFabricList(fabric_index);
 
 #if CHIP_DEVICE_CONFIG_ENABLE_COMMISSIONER_DISCOVERY
-    get_discovery_controller()->SetUserDirectedCommissioningServer(get_commissioner()->GetUserDirectedCommissioningServer());
+    get_discovery_controller()->SetUserDirectedCommissioningServer(
+        get_commissioner()->GetUserDirectedCommissioningServer());
     get_discovery_controller()->SetCommissionerCallback(&commissioner_callback);
 #endif
 

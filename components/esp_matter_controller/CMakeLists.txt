@@ -7,11 +7,12 @@ set(MATTER_SDK_PATH ${ESP_MATTER_PATH}/connectedhomeip/connectedhomeip)
 set(src_dirs_list )
 set(include_dirs_list )
 set(exclude_srcs_list )
-set(requires_list chip esp_matter esp_matter_console spiffs esp_http_client)
+set(requires_list chip esp_matter esp_matter_console spiffs esp_matter_ota_provider)
 if (CONFIG_ESP_MATTER_CONTROLLER_ENABLE)
     list(APPEND src_dirs_list "${CMAKE_CURRENT_SOURCE_DIR}/core"
                               "${CMAKE_CURRENT_SOURCE_DIR}/commands"
-                              "${MATTER_SDK_PATH}/zzz_generated/chip-tool/zap-generated/cluster/logging")
+                              "${MATTER_SDK_PATH}/zzz_generated/chip-tool/zap-generated/cluster/logging"
+                              "${CMAKE_CURRENT_SOURCE_DIR}/data_model_provider")
     list(APPEND include_dirs_list "${CMAKE_CURRENT_SOURCE_DIR}/core"
                                   "${CMAKE_CURRENT_SOURCE_DIR}/commands"
                                   "${MATTER_SDK_PATH}/zzz_generated/chip-tool"

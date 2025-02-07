@@ -21,6 +21,7 @@
 
 #include <app-common/zap-generated/cluster-enums.h>
 #include <lib/support/TypeTraits.h>
+#include <platform/ESP32/CHIPDevicePlatformConfig.h>
 
 namespace esp_matter {
 namespace cluster {

@@ -64,63 +64,53 @@ public:
 
     CHIP_ERROR Shutdown() override { return CHIP_NO_ERROR; }
 
-    ActionReturnStatus ReadAttribute(const ReadAttributeRequest &request, AttributeValueEncoder &encoder) override
-    {
-        return CHIP_NO_ERROR;
-    }
+    ActionReturnStatus ReadAttribute(const ReadAttributeRequest &request, AttributeValueEncoder &encoder) override;
 
-    ActionReturnStatus WriteAttribute(const WriteAttributeRequest &request, AttributeValueDecoder &decoder) override
-    {
-        return CHIP_NO_ERROR;
-    }
+    ActionReturnStatus WriteAttribute(const WriteAttributeRequest &request, AttributeValueDecoder &decoder) override;
 
     std::optional<ActionReturnStatus> Invoke(const InvokeRequest &request, TLVReader &input_arguments,
-                                             CommandHandler *handler) override
-    {
-        return std::nullopt;
-    }
+                                             CommandHandler *handler) override;
 
-    /// attribute tree iteration
-    EndpointEntry FirstEndpoint() override { return EndpointEntry::kInvalid; }
+    // metadata tree iteration
+    // The dynamic server has only endpoint 0
+    EndpointEntry FirstEndpoint() override;
     EndpointEntry NextEndpoint(chip::EndpointId before) override { return EndpointEntry::kInvalid; }
-    std::optional<EndpointInfo> GetEndpointInfo(chip::EndpointId endpoint) override { return std::nullopt; }
-    bool EndpointExists(chip::EndpointId endpoint) override { return false; }
+    std::optional<EndpointInfo> GetEndpointInfo(chip::EndpointId endpoint) override;
+    bool EndpointExists(chip::EndpointId endpoint) override { return endpoint == 0 ? true : false; }
 
+    // The dynamic server has only an OTA provider cluster server on endpoint 0 without descriptor cluster,
+    // so return empty device type for all the endpoints
     std::optional<DeviceTypeEntry> FirstDeviceType(chip::EndpointId endpoint) override { return std::nullopt; }
     std::optional<DeviceTypeEntry> NextDeviceType(chip::EndpointId endpoint, const DeviceTypeEntry &previous) override
     {
         return std::nullopt;
     }
 
+    // No semantic tag for all the endpoints
     std::optional<SemanticTag> GetFirstSemanticTag(chip::EndpointId endpoint) override { return std::nullopt; }
     std::optional<SemanticTag> GetNextSemanticTag(chip::EndpointId endpoint, const SemanticTag &previous) override
     {
         return std::nullopt;
     }
 
-    ClusterEntry FirstServerCluster(chip::EndpointId endpoint) override { return ClusterEntry::kInvalid; }
+    ClusterEntry FirstServerCluster(chip::EndpointId endpoint) override;
     ClusterEntry NextServerCluster(const ConcreteClusterPath &before) override { return ClusterEntry::kInvalid; }
-    std::optional<ClusterInfo> GetServerClusterInfo(const ConcreteClusterPath &path) override { return std::nullopt; }
+    std::optional<ClusterInfo> GetServerClusterInfo(const ConcreteClusterPath &path) override;
 
+    // No client cluster for all the endpoints
     ConcreteClusterPath FirstClientCluster(chip::EndpointId endpoint) override { return ConcreteClusterPath(); }
     ConcreteClusterPath NextClientCluster(const ConcreteClusterPath &before) override { return ConcreteClusterPath(); }
 
-    AttributeEntry FirstAttribute(const ConcreteClusterPath &cluster) override { return AttributeEntry::kInvalid; }
-    AttributeEntry NextAttribute(const ConcreteAttributePath &before) override { return AttributeEntry::kInvalid; }
-    std::optional<AttributeInfo> GetAttributeInfo(const ConcreteAttributePath &path) override { return std::nullopt; }
+    AttributeEntry FirstAttribute(const ConcreteClusterPath &cluster) override;
+    AttributeEntry NextAttribute(const ConcreteAttributePath &before) override;
+    std::optional<AttributeInfo> GetAttributeInfo(const ConcreteAttributePath &path) override;
 
-    CommandEntry FirstAcceptedCommand(const ConcreteClusterPath &cluster) override { return CommandEntry::kInvalid; }
-    CommandEntry NextAcceptedCommand(const ConcreteCommandPath &before) override { return CommandEntry::kInvalid; }
-    std::optional<CommandInfo> GetAcceptedCommandInfo(const ConcreteCommandPath &path) override { return std::nullopt; }
+    CommandEntry FirstAcceptedCommand(const ConcreteClusterPath &cluster) override;
+    CommandEntry NextAcceptedCommand(const ConcreteCommandPath &before) override;
+    std::optional<CommandInfo> GetAcceptedCommandInfo(const ConcreteCommandPath &path) override;
 
-    ConcreteCommandPath FirstGeneratedCommand(const ConcreteClusterPath &cluster) override
-    {
-        return ConcreteCommandPath();
-    }
-    ConcreteCommandPath NextGeneratedCommand(const ConcreteCommandPath &before) override
-    {
-        return ConcreteCommandPath();
-    }
+    ConcreteCommandPath FirstGeneratedCommand(const ConcreteClusterPath &cluster) override;
+    ConcreteCommandPath NextGeneratedCommand(const ConcreteCommandPath &before) override;
 
     void Temporary_ReportAttributeChanged(const AttributePathParams &path) override {}
 

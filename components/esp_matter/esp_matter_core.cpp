@@ -56,12 +56,11 @@ using chip::DeviceLayer::ThreadStackMgr;
 static const char *TAG = "esp_matter_core";
 bool esp_matter_started = false;
 
-#ifndef CONFIG_ESP_MATTER_ENABLE_MATTER_SERVER
+#if !defined(CONFIG_ESP_MATTER_ENABLE_MATTER_SERVER) && !defined(CONFIG_CHIP_DEVICE_ENABLE_DYNAMIC_SERVER)
 // If Matter Server is disabled, these functions are required by InteractionModelEngine but not linked
 // as they are defined in other files. They will be never used if server is not enable. Define empty
 // functions in esp_matter_core.cpp to make sure that they are linked
 // TODO: Use dynamic server defined in upstream repo
-void InitDataModelHandler() {}
 
 namespace chip {
 namespace app {
@@ -69,11 +68,6 @@ void DispatchSingleClusterCommand(const ConcreteCommandPath &command_path, TLVRe
                                   CommandHandler *command_obj) {}
 } // namespace app
 } // namespace chip
-
-bool emberAfContainsAttribute(chip::EndpointId endpoint, chip::ClusterId clusterId, chip::AttributeId attributeId)
-{
-    return false;
-}
 
 chip::Access::Privilege MatterGetAccessPrivilegeForReadAttribute(chip::ClusterId cluster, chip::AttributeId attribute)
 {
