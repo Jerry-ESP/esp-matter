@@ -1112,7 +1112,7 @@ For more info about the arguments, please check `here <https://github.com/espres
 
 Factory partition contains basic information like VID, PID, etc.
 
-By default, the CD(Certification Declaration) store in the factory partition, need to add the ``-cd`` option when generate the factory partiiton.
+By default, the CD(Certification Declaration) is stored in the factory partition and we need to add the ``-cd`` option when generating the factory partition.
 
 When enable ``CONFIG_ENABLE_SET_CERT_DECLARATION_API`` option, can set the CD from the API ``SetCertificationDeclaration()``,and can refer to the implementation in the `light example <https://gitlab.espressif.cn:6688/app-frameworks/esp-matter/-/tree/main/examples/light?ref_type=heads>`__.
 At this time, no need to add the ``-cd`` option when generate the factory partiiton.
