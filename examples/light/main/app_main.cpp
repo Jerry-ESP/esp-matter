@@ -24,6 +24,8 @@
 #include <app/server/CommissioningWindowManager.h>
 #include <app/server/Server.h>
 
+#include "esp_partition.h"
+
 static const char *TAG = "app_main";
 uint16_t light_endpoint_id = 0;
 
@@ -143,12 +145,43 @@ static esp_err_t app_attribute_update_cb(attribute::callback_type_t type, uint16
     return err;
 }
 
+void read_encrypted_flash()
+{
+    printf("read_encrypted_flash\n");
+    const esp_partition_t *partition = esp_partition_find_first(ESP_PARTITION_TYPE_ANY, ESP_PARTITION_SUBTYPE_ANY, "esp_secure_cert");
+    if (partition == NULL) {
+        ESP_LOGE(TAG, "Partition not found!");
+        return;
+    }
+
+    printf("address:0x%lx--size:%ld--lable:%s---enc:%d\n", partition->address, partition->size, partition->label, partition->encrypted);
+
+    uint8_t buffer[1024] = {0};
+    for (uint8_t i = 0; i < 8; i++) {
+        esp_err_t err = esp_partition_read(partition, 1024*i, buffer, sizeof(buffer));
+        if (err != ESP_OK) {
+            ESP_LOGE(TAG, "Failed to read partition: %s", esp_err_to_name(err));
+            return;
+        }
+        printf("\n\n%s\n\n", buffer);
+        for (uint16_t count = 0; count < 1024; count++) {
+            printf("%02x", buffer[count]);
+        }
+        printf("\n\n");
+    }
+
+    // ESP_LOGI(TAG, "Data read from encrypted flash: %s", buffer);
+}
+
+
 extern "C" void app_main()
 {
     esp_err_t err = ESP_OK;
 
     /* Initialize the ESP NVS layer */
     nvs_flash_init();
+
+    read_encrypted_flash();
 
     /* Initialize driver */
     app_driver_handle_t light_handle = app_driver_light_init();
