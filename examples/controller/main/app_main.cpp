@@ -31,7 +31,6 @@
 #include <app/server/Server.h>
 #include <credentials/FabricTable.h>
 
-
 #include <esp_heap_caps.h>
 
 #include <esp_matter_controller_cluster_command.h>
@@ -50,6 +49,14 @@
 #include <platform/ConnectivityManager.h>
 
 char dcl_rest_url[50];
+#ifdef CONFIG_CUSTOM_REVOKED_DAC_CHAIN_CHECK
+#include <esp_matter_da_revocation_delegate.h>
+#include <revocation_set/json_set_da_revocation_delegate.h>
+extern const uint8_t revocation_set_json_start[] asm("_binary_revocation_set_json_start");
+extern const uint8_t revocation_set_json_end[] asm("_binary_revocation_set_json_end");
+static chip::Credentials::json_set_da_revocation_delegate s_custom_delegate((const char *)revocation_set_json_start,
+                                                                            (const char *)revocation_set_json_end);
+#endif
 
 static const char *TAG = "app_main";
 uint16_t switch_endpoint_id = 0;
@@ -90,15 +97,8 @@ static bool manager_ip_is_set = false;
 
 static uint64_t random_nodeid = 1;
 
-static uint8_t dataset_data[] = {
-    0x0e, 0x08, 0x00, 0x00, 0x00, 0x00, 0x00, 0x01, 0x00, 0x00, 0x00, 0x03, 0x00, 0x00, 0x18, 0x35,
-    0x06, 0x00, 0x04, 0x00, 0x1f, 0xff, 0xe0, 0x02, 0x08, 0xde, 0xad, 0x00, 0xbe, 0xef, 0x00, 0xcd,
-    0xef, 0x07, 0x08, 0xfd, 0x00, 0x0d, 0xb8, 0x00, 0xa0, 0x00, 0x00, 0x05, 0x10, 0x00, 0x11, 0x22,
-    0x33, 0x44, 0x55, 0x66, 0x77, 0x88, 0x99, 0xaa, 0xbb, 0xcc, 0xdd, 0xcd, 0xef, 0x03, 0x0e, 0x4f,
-    0x70, 0x65, 0x6e, 0x54, 0x68, 0x72, 0x65, 0x61, 0x64, 0x2d, 0x45, 0x53, 0x50, 0x01, 0x02, 0xcd,
-    0xef, 0x04, 0x10, 0x10, 0x48, 0x10, 0xe2, 0x31, 0x51, 0x00, 0xaf, 0xd6, 0xbc, 0x92, 0x15, 0xa6,
-    0xbf, 0xac, 0x53, 0x0c, 0x04, 0x02, 0xa0, 0xf7, 0xf8
-};
+static uint8_t dataset_data[254] = {0x00};
+static uint8_t dataset_data_length = 0;
 
 typedef struct {
     char dac[1024];
@@ -151,6 +151,14 @@ void get_current_dataset()
 
     if (otDatasetGetActiveTlvs(esp_openthread_get_instance(), &dataset) == 0) {
         memcpy(dataset_data, dataset.mTlvs, dataset.mLength);
+        dataset_data_length = dataset.mLength;
+        printf("Get dataset success, use the default dataset instead.\n");
+        printf("len:%d--dataset:", dataset.mLength);
+        for (int i = 0; i < dataset.mLength; i++) {
+            printf("%02x", dataset.mTlvs[i]);
+        }
+        printf("\n");
+        return;
     }
 
     printf("Get dataset error, use the default dataset instead.\n");
@@ -171,7 +179,7 @@ void commissioning_failure_callback(chip::ScopedNodeId peer_id, CHIP_ERROR error
                                     std::optional<chip::Credentials::AttestationVerificationResult> addtional_err_info)
 {
     printf("Commissioning failure\n");
-    esp_restart();
+    // esp_restart();
 }
 
 static controller::pairing_command_callbacks_t s_pairing_callback{pase_callback, commissioning_success_callback,
@@ -315,11 +323,6 @@ esp_err_t pairing_api(uint64_t node_id, const char *ssid, const char *pass, cons
 
 esp_err_t pairing_thread_api(uint64_t node_id, uint8_t *dataset, uint8_t dataset_len, const char *payload)
 {
-    printf("len:%d--dataset:", dataset_len);
-    for (int i = 0; i < dataset_len; i++) {
-        printf("%02x", dataset[i]);
-    }
-    printf("\n");
     lock::chip_stack_lock(portMAX_DELAY);
     controller::pairing_command::get_instance().set_callbacks(s_pairing_callback);
     controller::pairing_code_thread(node_id, payload, dataset, dataset_len);
@@ -433,7 +436,7 @@ static void custom_ota_event_handler()
         pairing_api(random_nodeid, SSID, PASSPHRASE, s_end_device_data.qr_code);
 #else
         get_current_dataset();
-        pairing_thread_api(random_nodeid, dataset_data, sizeof(dataset_data), s_end_device_data.qr_code);
+        pairing_thread_api(random_nodeid, dataset_data, dataset_data_length, s_end_device_data.qr_code);
 #endif
         s_ongoing_commissioing_state_count=0;
         s_current_state = controller_status::kOngoingCommission;
@@ -444,7 +447,7 @@ static void custom_ota_event_handler()
         s_ongoing_commissioing_state_count++;
         if(s_ongoing_commissioing_state_count >24)
         {
-            esp_restart();
+            // esp_restart();
         }
         break;
     case kEndDeviceCommissioned: {
@@ -994,7 +997,7 @@ static void app_event_cb(const ChipDeviceEvent *event, intptr_t arg)
         if(s_current_state == controller_status::kOngoingCommission)
         {
             printf("Reboot due to BLE Connection closed failure\n");
-            esp_restart();
+            // esp_restart();
         }
     }
     break;
@@ -1003,7 +1006,7 @@ static void app_event_cb(const ChipDeviceEvent *event, intptr_t arg)
         if(s_current_state == controller_status::kOngoingCommission)
         {
             printf("Reboot due to fail safe timer expired\n");
-            esp_restart();
+            // esp_restart();
         }
 
     }
@@ -1063,6 +1066,9 @@ extern "C" void app_main()
 #if CONFIG_ESP_MATTER_COMMISSIONER_ENABLE
     esp_matter::lock::chip_stack_lock(portMAX_DELAY);
     esp_matter::controller::matter_controller_client::get_instance().init(112233, 1, 5580);
+#ifdef CONFIG_CUSTOM_REVOKED_DAC_CHAIN_CHECK
+    chip::Credentials::set_custom_da_revocation_delegate(&s_custom_delegate);
+#endif
     esp_matter::controller::matter_controller_client::get_instance().setup_commissioner();
     esp_matter::lock::chip_stack_unlock();
 #endif // CONFIG_ESP_MATTER_COMMISSIONER_ENABLE
