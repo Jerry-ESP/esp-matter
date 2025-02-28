@@ -14,8 +14,13 @@
 
 #pragma once
 #include <esp_matter_console.h>
+#include <lib/support/CHIPMem.h>
 
+using chip::Platform::ScopedMemoryBufferWithSize;
 namespace esp_matter {
+
+esp_err_t string_to_uint16_array(const char *str, ScopedMemoryBufferWithSize<uint16_t> &uint16_array);
+esp_err_t string_to_uint32_array(const char *str, ScopedMemoryBufferWithSize<uint32_t> &uint32_array);
 namespace console {
 
 esp_err_t controller_register_commands();

@@ -162,7 +162,7 @@ private:
 esp_err_t send_subscribe_attr_command(uint64_t node_id, ScopedMemoryBufferWithSize<uint16_t> &endpoint_ids,
                                       ScopedMemoryBufferWithSize<uint32_t> &cluster_ids,
                                       ScopedMemoryBufferWithSize<uint32_t> &attribute_ids, uint16_t min_interval,
-                                      uint16_t max_interval, bool auto_resubscribe = true);
+                                      uint16_t max_interval, attribute_report_cb_t attribute_cb, bool auto_resubscribe = true);
 
 /** Send subscribe command with multiple event paths
  *
