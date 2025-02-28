@@ -43,7 +43,7 @@ static constexpr char TAG[] = "ota_provider";
 #if CONFIG_ESP_MATTER_OTA_PROVIDER_DCL_MAINNET
 static constexpr char dcl_rest_url[] = "https://on.dcl.csa-iot.org/dcl/model/versions";
 #elif CONFIG_ESP_MATTER_OTA_PROVIDER_DCL_TESTNET
-static constexpr char dcl_rest_url[] = "http://192.168.0.161:8000/dcl/model/versions";
+static constexpr char dcl_rest_url[] = "http://192.168.50.239:8000/dcl/model/versions";
 #endif
 static constexpr size_t max_ota_candidate_count = CONFIG_ESP_MATTER_MAX_OTA_CANDIDATES_COUNT;
 

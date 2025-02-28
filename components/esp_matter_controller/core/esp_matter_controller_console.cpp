@@ -450,7 +450,7 @@ static esp_err_t controller_read_attr_handler(int argc, char **argv)
     ESP_RETURN_ON_ERROR(string_to_uint32_array(argv[2], cluster_ids), TAG, "Failed to parse cluster IDs");
     ESP_RETURN_ON_ERROR(string_to_uint32_array(argv[3], attribute_ids), TAG, "Failed to parse attribute IDs");
 
-    return controller::send_read_attr_command(node_id, endpoint_ids, cluster_ids, attribute_ids);
+    return controller::send_read_attr_command(node_id, endpoint_ids, cluster_ids, attribute_ids, nullptr);
 }
 
 static esp_err_t controller_write_attr_handler(int argc, char **argv)

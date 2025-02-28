@@ -157,7 +157,7 @@ void read_command::OnDone(ReadClient *apReadClient)
 
 esp_err_t send_read_attr_command(uint64_t node_id, ScopedMemoryBufferWithSize<uint16_t> &endpoint_ids,
                                  ScopedMemoryBufferWithSize<uint32_t> &cluster_ids,
-                                 ScopedMemoryBufferWithSize<uint32_t> &attribute_ids)
+                                 ScopedMemoryBufferWithSize<uint32_t> &attribute_ids, attribute_report_cb_t attribute_cb)
 {
     if (endpoint_ids.AllocatedSize() != cluster_ids.AllocatedSize() ||
         endpoint_ids.AllocatedSize() != attribute_ids.AllocatedSize()) {
@@ -178,7 +178,7 @@ esp_err_t send_read_attr_command(uint64_t node_id, ScopedMemoryBufferWithSize<ui
     }
 
     read_command *cmd = chip::Platform::New<read_command>(node_id, std::move(attr_paths), std::move(event_paths),
-                                                          nullptr, nullptr, nullptr);
+                                                          attribute_cb, nullptr, nullptr);
     if (!cmd) {
         ESP_LOGE(TAG, "Failed to alloc memory for read_command");
         return ESP_ERR_NO_MEM;
@@ -232,7 +232,7 @@ esp_err_t send_read_attr_command(uint64_t node_id, uint16_t endpoint_id, uint32_
         *cluster_ids.Get() = cluster_id;
         *attribute_ids.Get() = attribute_id;
     }
-    return send_read_attr_command(node_id, endpoint_ids, cluster_ids, attribute_ids);
+    return send_read_attr_command(node_id, endpoint_ids, cluster_ids, attribute_ids, nullptr);
 }
 
 esp_err_t send_read_event_command(uint64_t node_id, uint16_t endpoint_id, uint32_t cluster_id, uint32_t event_id)
