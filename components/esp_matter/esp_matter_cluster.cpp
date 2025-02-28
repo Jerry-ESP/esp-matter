@@ -754,6 +754,7 @@ cluster_t *create(endpoint_t *endpoint, config_t *config, uint8_t flags)
         attribute::create_wifi_version(cluster, nullable<uint8_t>());
         attribute::create_channel_number(cluster, nullable<uint16_t>());
         attribute::create_rssi(cluster, nullable<int8_t>());
+        attribute::create_current_max_rate(cluster, nullable<uint64_t>());
 
         /* Attributes not managed internally */
         if (config) {
@@ -761,6 +762,9 @@ cluster_t *create(endpoint_t *endpoint, config_t *config, uint8_t flags)
         } else {
             ESP_LOGE(TAG, "Config is NULL. Cannot add some attributes.");
         }
+
+        feature::packets_counts::add(cluster);
+        feature::error_counts::add(cluster);
     }
 
     return cluster;
@@ -2889,7 +2893,7 @@ cluster_t *create(endpoint_t *endpoint, config_t *config, uint8_t flags, uint32_
         }
     }
 
-    
+
     /* Features */
     if (features & feature::visual::get_id()) {
         feature::visual::add(cluster, &(config->visual));
@@ -3728,7 +3732,7 @@ cluster_t *create(endpoint_t *endpoint, config_t *config, uint8_t flags, uint32_
                 feature::dynamic_power_flow::add(cluster);
             }
         }
-    
+
     return cluster;
 }
 } /* power_topology */
@@ -4085,7 +4089,7 @@ cluster_t *create(endpoint_t *endpoint, config_t *config, uint8_t flags, uint32_
             (features & feature::forecast_adjustment::get_id()) ||
             (features & feature::constraint_based_adjustment::get_id())) &&
             !(features & feature::power_forecast_reporting::get_id())) {
-        
+
             feature::state_forecast_reporting::add(cluster);
         }
     }
