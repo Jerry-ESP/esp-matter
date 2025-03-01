@@ -55,7 +55,7 @@ using namespace esp_matter::console;
 #define PASSPHRASE "ESP3448India"
 #define MANAGER_PORT 8081
 #define NEW_SOFTWARE_VERSION 10010001
-#define NEW_SOFTWARE_VERSION_STRING "1.1.0-280"
+#define NEW_SOFTWARE_VERSION_STRING "1.1.0-282"
 
 #define MAC_ADDR_SIZE 6
 
@@ -105,6 +105,11 @@ enum controller_status {
 
 static controller_status s_current_state = controller_status::kBootUpDone;
 
+void pase_callback (CHIP_ERROR err)
+{
+    printf("Commissioning PASE Error Code: %d\n",err.GetValue());
+}
+
 void commissioning_success_callback(ScopedNodeId peer_id)
 {
     printf("Successful Commissioning for .\n");
@@ -117,7 +122,7 @@ void commissioning_failure_callback(ScopedNodeId peer_id, CHIP_ERROR error, chip
     printf("Commissioning failure\n");
 }
 
-static controller::pairing_command_callbacks_t s_pairing_callback{nullptr, commissioning_success_callback,
+static controller::pairing_command_callbacks_t s_pairing_callback{pase_callback, commissioning_success_callback,
                                                                   commissioning_failure_callback};
 
 static void get_mac_address(char *mac_addr)
@@ -182,6 +187,26 @@ static void app_event_cb(const ChipDeviceEvent *event, intptr_t arg)
             }
 #endif
         }
+        break;
+
+    case chip::DeviceLayer::DeviceEventType::kCHIPoBLEConnectionClosed:
+    {
+        if(s_current_state == controller_status::kOngoingCommission)
+        {
+            printf("Reboot due to BLE Connection closed failure\n");
+            esp_restart();
+        }
+    }
+    break;
+    case chip::DeviceLayer::DeviceEventType::kFailSafeTimerExpired:
+    {
+        if(s_current_state == controller_status::kOngoingCommission)
+        {
+            printf("Reboot due to fail safe timer expired\n");
+            esp_restart();
+        }
+
+    }
         break;
     default:
         break;
@@ -755,7 +780,7 @@ static esp_err_t controller_ready()
             if (PAI) {
                 printf("PAI:\n%s\n", PAI);
                 // strcpy(s_end_device_data.pai, PAI); // Todo:Use strncpy
-                snprintf(s_end_device_data.dac, sizeof(s_end_device_data.pai), "{\"0:STR\": \"%s\"}", PAI);
+                snprintf(s_end_device_data.pai, sizeof(s_end_device_data.pai), "{\"0:STR\": \"%s\"}", PAI);
                 ret = ESP_OK;
             } else
                 ret = ESP_FAIL;
@@ -763,9 +788,9 @@ static esp_err_t controller_ready()
         free(PAI);
     }
 
-    if (json_obj_get_strlen(&jctx, "mac", &str_length) == 0 && str_length != 0) {
+    if (json_obj_get_strlen(&jctx, "mac_address", &str_length) == 0 && str_length != 0) {
         char *mac_id = (char *)calloc(str_length + 1, sizeof(char));
-        if (json_obj_get_string(&jctx, "mac", mac_id, str_length + 1) == 0) {
+        if (json_obj_get_string(&jctx, "mac_address", mac_id, str_length + 1) == 0) {
             if (mac_id) {
                 printf("MAC:\n%s\n", mac_id);
                 strcpy(s_end_device_data.mac, mac_id); // Todo:Use strncpy
