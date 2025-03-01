@@ -53,10 +53,14 @@ using namespace esp_matter::console;
 #define PASSPHRASE "ESP3448India"
 #define MANAGER_PORT 8081
 #define NEW_SOFTWARE_VERSION 10010001
-#define NEW_SOFTWARE_VERSION_STRING "1.1.0-279"
+#define NEW_SOFTWARE_VERSION_STRING "1.1.0-280"
 
 #define MAC_ADDR_SIZE 6
 #define CONTROLLER_REGISTERED "Controller registered"
+
+#define http_payload_size 2048
+char *http_payload = NULL;
+
 // Register
 // Ready--polling repeat if 204
 // if 200 got QR --> operate on device
@@ -67,7 +71,7 @@ static char mac[18];
 typedef struct {
     char dac[1024];
     char pai[1024];
-    char node_id[12];
+    uint64_t node_id;
     char qr_code[32];
     char mac[18];
 } end_device_data_t;
@@ -95,8 +99,6 @@ enum controller_status {
     kOperationComplete,
 };
 
-// ESP_EVENT_DEFINE_BASE(CUSTOM_OTA_EVENT);
-// static esp_event_loop_handle_t custom_ota_event_loop;
 static controller_status s_current_state = controller_status::kBootUpDone;
 
 void commissioning_success_callback(ScopedNodeId peer_id)
@@ -154,18 +156,14 @@ static esp_err_t register_controller();
 static esp_err_t controller_complete();
 static esp_err_t controller_ready();
 
-static int got_ip_connectivity = 0;
-static int got_end_device_assigned = 0;
+
 static void app_event_cb(const ChipDeviceEvent *event, intptr_t arg)
 {
-    printf("Event Type: %d\n", event->Type);
     switch (event->Type) {
     case chip::DeviceLayer::DeviceEventType::PublicEventTypes::kInterfaceIpAddressChanged:
         ESP_LOGI(TAG, "Interface IP Address changed");
         if (s_current_state == controller_status::kBootUpDone)
             s_current_state = controller_status::kRegistrationPending;
-        // ESP_ERROR_CHECK(esp_event_post_to(custom_ota_event_loop, CUSTOM_OTA_EVENT,
-        //   controller_status::kRegistrationPending, NULL, 0, portMAX_DELAY));
         break;
     case chip::DeviceLayer::DeviceEventType::kESPSystemEvent:
         if (event->Platform.ESPSystemEvent.Base == IP_EVENT &&
@@ -212,7 +210,7 @@ void attr_read_cb(uint64_t remote_node_id, const chip::app::ConcreteDataAttribut
     else if (path.mClusterId == 0x28 && path.mAttributeId == 0xA) {
         chip::CharSpan value;
         chip::app::DataModel::Decode(*data, value);
-        printf("New Software Version String : %.*s\n", value.size(),value.data());
+        printf("Software Version String : %.*s\n", value.size(),value.data());
         if (strncmp(value.data(),NEW_SOFTWARE_VERSION_STRING,value.size())==0)
         {
             printf("New Software version found\n");
@@ -345,8 +343,7 @@ static void custom_ota_event_handler()
     } break;
     case kEndDeviceAssigned: {
         ESP_LOGI(TAG, "Event: End Device Assigned");
-        uint64_t node_id_64 = string_to_int64(s_end_device_data.node_id);
-        pairing_api(node_id_64, SSID, PASSPHRASE, s_end_device_data.qr_code);
+        pairing_api(s_end_device_data.node_id, SSID, PASSPHRASE, s_end_device_data.qr_code);
         s_current_state = controller_status::kOngoingCommission;
         // Block
     } break;
@@ -367,43 +364,37 @@ static void custom_ota_event_handler()
     //     break;
     case kOTAPending: {
         ESP_LOGI(TAG, "Event: OTA Pending");
-        uint64_t node_id_64 = string_to_int64(s_end_device_data.node_id);
         char cmd_data[] = "{\"0:U64\": 56026, \"1:U64\": 65521, \"2:U8\": 0, \"4:U16\": 0}";
-        invoke_cmd_api(node_id_64, 0x0, 0x2A, 0x0, cmd_data);
+        invoke_cmd_api(s_end_device_data.node_id, 0x0, 0x2A, 0x0, cmd_data);
         s_current_state = controller_status::kOTAOngoing;
     } break;
 
     case kOTAOngoing: {
         ESP_LOGI(TAG, "Event: OTA Ongoing");
         vTaskDelay(15000 / portMAX_DELAY);
-        uint64_t node_id_64 = string_to_int64(s_end_device_data.node_id);
-        read_attr_api(node_id_64, 0x0, 0x2A, 0x3);
+        read_attr_api(s_end_device_data.node_id, 0x0, 0x2A, 0x3);
 
     } break;
     case kOTAComplete: {
         ESP_LOGI(TAG, "Event: OTA Complete");
         vTaskDelay(7500 / portMAX_DELAY);
-        uint64_t node_id_64 = string_to_int64(s_end_device_data.node_id);
-        read_attr_api(node_id_64, 0x0, 0x28, 0xA);
+        read_attr_api(s_end_device_data.node_id, 0x0, 0x28, 0xA);
 
     } break;
     case kDACWritePending: {
         ESP_LOGI(TAG, "Event: DAC Write Pending");
-        uint64_t node_id_64 = string_to_int64(s_end_device_data.node_id);
-        read_attr_api(node_id_64, 0x0, 0x131BFC05, 0x0);
+        read_attr_api(s_end_device_data.node_id, 0x0, 0x131BFC05, 0x0);
     } break;
     case kDACWrite: {
         ESP_LOGI(TAG, "Event: DAC Write");
-        uint64_t node_id_64 = string_to_int64(s_end_device_data.node_id);
         printf("Sending DAC command data as : \n%s\n", s_end_device_data.dac);
-        invoke_cmd_api(node_id_64, 0x0, 0x131BFC05, 0x0, s_end_device_data.dac);
+        invoke_cmd_api(s_end_device_data.node_id, 0x0, 0x131BFC05, 0x0, s_end_device_data.dac);
         s_current_state = controller_status::kDACWriteDone;
     } break;
     case kDACWriteDone: {
         ESP_LOGI(TAG, "Event: DAC Write Done");
-        uint64_t node_id_64 = string_to_int64(s_end_device_data.node_id);
         vTaskDelay(3000 / portMAX_DELAY);
-        read_attr_api(node_id_64, 0x0, 0x131BFC05, 0x0);
+        read_attr_api(s_end_device_data.node_id, 0x0, 0x131BFC05, 0x0);
     } break;
     // case kPAIWritePending: {
     //     ESP_LOGI(TAG, "Event: PAI Write Pending");
@@ -412,22 +403,19 @@ static void custom_ota_event_handler()
     // } break;
     case kPAIWrite: {
         ESP_LOGI(TAG, "Event: PAI Write");
-        uint64_t node_id_64 = string_to_int64(s_end_device_data.node_id);
         printf("Sending PAI command data as : \n%s\n", s_end_device_data.pai);
-        invoke_cmd_api(node_id_64, 0x0, 0x131BFC05, 0x1, s_end_device_data.pai);
+        invoke_cmd_api(s_end_device_data.node_id, 0x0, 0x131BFC05, 0x1, s_end_device_data.pai);
         vTaskDelay(3000 / portMAX_DELAY);
         s_current_state = controller_status::kPAIWriteDone;
     } break;
     case kPAIWriteDone: {
         ESP_LOGI(TAG, "Event: PAI Write Done");
-        uint64_t node_id_64 = string_to_int64(s_end_device_data.node_id);
-        read_attr_api(node_id_64, 0x0, 0x131BFC05, 0x0);
+        read_attr_api(s_end_device_data.node_id, 0x0, 0x131BFC05, 0x0);
 
     } break;
     case kOperationComplete: {
         ESP_LOGI(TAG, "Event: Operation Complete");
-        uint64_t node_id_64 = string_to_int64(s_end_device_data.node_id);
-        invoke_cmd_api(node_id_64, 0x0, 0x131BFC05, 0x2, NULL);
+        invoke_cmd_api(s_end_device_data.node_id, 0x0, 0x131BFC05, 0x2, NULL);
         vTaskDelay(3000 / portMAX_DELAY);
         controller_complete();
         vTaskDelay(3000 / portMAX_DELAY);
@@ -439,11 +427,11 @@ static void custom_ota_event_handler()
     }
 }
 
-void my_task(void *pvParameter)
+void controller_task(void *pvParameter)
 {
     while (1) {
         custom_ota_event_handler();
-        printf("Hello from Task!\n");
+        printf("Controller Status Checking....\n");
         vTaskDelay(pdMS_TO_TICKS(2500)); // Delay for 1000 ms (1 second)
     }
 }
@@ -496,77 +484,23 @@ extern "C" void app_main()
     esp_matter::lock::chip_stack_unlock();
 #endif // CONFIG_ESP_MATTER_COMMISSIONER_ENABLE
 
-    const char pai[] =
-        "{\"0:STR\":\"-----BEGIN "
-        "CERTIFICATE-----"
-        "\nMIIBvDCCAWOgAwIBAgIIC6S3aD9evm4wCgYIKoZIzj0EAwIwNDEcMBoGA1UEAwwT\nRVNQIE1hdHRlciBQQUEgdGVzdDEUMBIGCisGAQQBgq"
-        "J8AgEMBDEzMUIwIBcNMjMw\nMzEwMDAwMDAwWhgPOTk5OTEyMzEyMzU5NTlaMCsxEzARBgNVBAMMCkVTUCBNYXR0\nZXIxFDASBgorBgEEAYKi"
-        "fAIBDAQxMzFCMFkwEwYHKoZIzj0CAQYIKoZIzj0DAQcD\nQgAEHQvGtYuLFltNTmaIaZu1VF4EmMX6ZOTzpyOd71iAARz8hkmo4zYf9AFqJoBj"
-        "\n/i0thZmJ7ZQitfi7H5cc4+B1CaNmMGQwEgYDVR0TAQH/BAgwBgEB/"
-        "wIBADAOBgNV\nHQ8BAf8EBAMCAQYwHQYDVR0OBBYEFBwfC8rTOwzd4FwtZYOIKdGaw95SMB8GA1Ud\nIwQYMBaAFBBXiQ7CHOd7WlZhCcoLOer"
-        "aCCdxMAoGCCqGSM49BAMCA0cAMEQCIC+x\nNht5SJsdcnsCgnBOXYBqloa5zyQnRHp+3zjKGWsYAiAqipiFgrSd6348eB9vM+"
-        "FQ\nojjYWhZ1AJuT2zZBXFP6Zg==\n-----END CERTIFICATE-----\"}";
+    http_payload = (char *)calloc(http_payload_size, sizeof(char));
 
-    // "-----BEGIN
-    // CERTIFICATE-----\nMIIBvDCCAWOgAwIBAgIIC6S3aD9evm4wCgYIKoZIzj0EAwIwNDEcMBoGA1UEAwwT\nRVNQIE1hdHRlciBQQUEgdGVzdDEUMBIGCisGAQQBgqJ8AgEMBDEzMUIwIBcNMjMw\nMzEwMDAwMDAwWhgPOTk5OTEyMzEyMzU5NTlaMCsxEzARBgNVBAMMCkVTUCBNYXR0\nZXIxFDASBgorBgEEAYKifAIBDAQxMzFCMFkwEwYHKoZIzj0CAQYIKoZIzj0DAQcD\nQgAEHQvGtYuLFltNTmaIaZu1VF4EmMX6ZOTzpyOd71iAARz8hkmo4zYf9AFqJoBj\n/i0thZmJ7ZQitfi7H5cc4+B1CaNmMGQwEgYDVR0TAQH/BAgwBgEB/wIBADAOBgNV\nHQ8BAf8EBAMCAQYwHQYDVR0OBBYEFBwfC8rTOwzd4FwtZYOIKdGaw95SMB8GA1Ud\nIwQYMBaAFBBXiQ7CHOd7WlZhCcoLOeraCCdxMAoGCCqGSM49BAMCA0cAMEQCIC+x\nNht5SJsdcnsCgnBOXYBqloa5zyQnRHp+3zjKGWsYAiAqipiFgrSd6348eB9vM+FQ\nojjYWhZ1AJuT2zZBXFP6Zg==\n-----END
-    // CERTIFICATE-----"
+    if(http_payload == NULL)
+    {
+        ESP_LOGE(TAG,"HTTP payload allocation failed");
+        return;
+    }
 
-    // while(1)
-    // {
-    //     vTaskDelay(5000/portTICK_PERIOD_MS);
-    //     lock::chip_stack_lock(portMAX_DELAY);
-
-    //     controller::send_invoke_cluster_command(0x1111,0x1 , 0x6, 0x2,NULL);
-
-    //     vTaskDelay(5000/portTICK_PERIOD_MS);
-
-    // controller::send_invoke_cluster_command(0x1111, 0x0, 0x131BFC01, 0x1, pai);
-    //     lock::chip_stack_unlock();
-    // }
-    // while (!got_ip_connectivity) {
-    //     vTaskDelay(2000 / portTICK_PERIOD_MS);
-    // }
-
-    // while (1) {
-    //     while (!got_end_device_assigned) {
-    //         printf("Waiting for end device assignment.\n");
-    //         controller_ready();
-    //         vTaskDelay(10000 / portTICK_PERIOD_MS);
-    //     }
-
-    //     vTaskDelay(20000 / portTICK_PERIOD_MS);
-    //     controller_complete(); // todo: device processing else keep sending device completed
-    //     vTaskDelay(15000 / portTICK_PERIOD_MS);
-    // }
-
-    // Event loop configuration
-    // esp_event_loop_args_t loop_args = {.queue_size = 5,
-    //                                    .task_name = "custom_ota_event_task", // Task name
-    //                                    .task_priority = uxTaskPriorityGet(NULL),
-    //                                    .task_stack_size = 4096,
-    //                                    .task_core_id = tskNO_AFFINITY};
-
-    // // Create event loop
-    // ESP_ERROR_CHECK(esp_event_loop_create(&loop_args, &custom_ota_event_loop));
-
-    // // Register custom event handler
-    // ESP_ERROR_CHECK(esp_event_handler_instance_register_with(custom_ota_event_loop, CUSTOM_OTA_EVENT,
-    // ESP_EVENT_ANY_ID,
-    //                                                          custom_ota_event_handler, NULL, NULL));
-
-    // Post a custom event
-    // ESP_ERROR_CHECK(esp_event_post_to(custom_ota_event_loop, CUSTOM_OTA_EVENT, 1, NULL, 0, portMAX_DELAY));
-
-    xTaskCreate(my_task, // Task function
-                "MyTask", // Name of the task
+    xTaskCreate(controller_task, // Task function
+                "Controllertask", // Name of the task
                 6144, // Stack size (in words, not bytes)
                 NULL, // Task parameters
                 5, // Task priority
                 NULL); // Task handle (optional)
 
-    ESP_LOGI(TAG, "Custom event loop initialized!");
+    ESP_LOGI(TAG, "Controller Status Check Task Created!");
 }
-// Todo: static allocation of http_payload
 
 static esp_err_t register_controller()
 {
@@ -575,16 +509,15 @@ static esp_err_t register_controller()
     char url[256] = {0};
     char post_data[256] = {0};
     char ip_addr[16];
-    char unique_id[20];
 
     int wlen = 0;
-    char *http_payload = NULL;
-    const size_t http_payload_size = 1024;
+    // char *http_payload = NULL;
+    // const size_t http_payload_size = 1024;
 
     const char *ip = MANAGER_IP;
     uint16_t port = MANAGER_PORT;
     const char *route = "/controller/register";
-    // const char* rm_cn = "12005107-034b-4139-a3be-a2623fa7128e";
+
     snprintf(url, sizeof(url), "%s:%d/%s", ip, port, route);
     ESP_LOGE(TAG, "url: %s", url);
 
@@ -631,7 +564,7 @@ static esp_err_t register_controller()
         goto cleanup;
     }
 
-    http_payload = (char *)calloc(http_payload_size, sizeof(char));
+    // http_payload = (char *)calloc(http_payload_size, sizeof(char));
 
     if (http_payload == NULL) {
         ESP_LOGE(TAG, "Failed to alloc memory for http_payload");
@@ -680,8 +613,7 @@ static esp_err_t register_controller()
             if (strcmp(message, CONTROLLER_REGISTERED) == 0) {
                 ESP_LOGW(TAG, "Controller Successfully Registered");
                 s_current_state = controller_status::kRegistered;
-                // ESP_ERROR_CHECK(esp_event_post_to(custom_ota_event_loop, CUSTOM_OTA_EVENT,
-                //   controller_status::kRegistered, NULL, 0, portMAX_DELAY));
+
             }
             ret = ESP_OK;
         }
@@ -693,9 +625,9 @@ close:
     esp_http_client_close(client);
 cleanup:
     esp_http_client_cleanup(client);
-    if (http_payload) {
-        free(http_payload);
-    }
+    // if (http_payload) {
+    //     free(http_payload);
+    // }
 
     return ret;
 }
@@ -708,8 +640,8 @@ static esp_err_t controller_ready()
 
     int wlen = 0;
     char post_data[256] = {0};
-    char *http_payload = NULL;
-    const size_t http_payload_size = 2048;
+    // char *http_payload = NULL;
+    // const size_t http_payload_size = 2048;
 
     const char *ip = MANAGER_IP;
     uint16_t port = MANAGER_PORT;
@@ -756,7 +688,7 @@ static esp_err_t controller_ready()
         goto cleanup;
     }
 
-    http_payload = (char *)calloc(http_payload_size, sizeof(char));
+    // http_payload = (char *)calloc(http_payload_size, sizeof(char));
 
     if (http_payload == NULL) {
         ESP_LOGE(TAG, "Failed to alloc memory for http_payload");
@@ -776,7 +708,6 @@ static esp_err_t controller_ready()
 
         printf("Got an end device to operate on\n");
 
-        got_end_device_assigned = 1;
 
     } else if (http_status_code == 204) {
         printf("Wait for end device to be assigned\n");
@@ -817,6 +748,7 @@ static esp_err_t controller_ready()
             snprintf(s_end_device_data.dac, sizeof(s_end_device_data.dac), "{\"0:STR\": \"%s\"}", DAC);
             ret = ESP_OK;
         }
+        free(DAC);
     }
 
     if (json_obj_get_strlen(&jctx, "pai", &str_length) == 0 && str_length != 0) {
@@ -830,18 +762,20 @@ static esp_err_t controller_ready()
             } else
                 ret = ESP_FAIL;
         }
+        free(PAI);
     }
 
     if (json_obj_get_strlen(&jctx, "mac", &str_length) == 0 && str_length != 0) {
-        char *mac = (char *)calloc(str_length + 1, sizeof(char));
-        if (json_obj_get_string(&jctx, "mac", mac, str_length + 1) == 0) {
-            if (mac) {
-                printf("MAC:\n%s\n", mac);
-                strcpy(s_end_device_data.mac, mac); // Todo:Use strncpy
+        char *mac_id = (char *)calloc(str_length + 1, sizeof(char));
+        if (json_obj_get_string(&jctx, "mac", mac_id, str_length + 1) == 0) {
+            if (mac_id) {
+                printf("MAC:\n%s\n", mac_id);
+                strcpy(s_end_device_data.mac, mac_id); // Todo:Use strncpy
                 ret = ESP_OK;
             } else
                 ret = ESP_FAIL;
         }
+        free(mac_id);
     }
 
     if (json_obj_get_strlen(&jctx, "qr_code_info", &str_length) == 0 && str_length != 0) {
@@ -854,6 +788,7 @@ static esp_err_t controller_ready()
             } else
                 ret = ESP_FAIL;
         }
+        free(QR_code);
     }
 
     if (json_obj_get_strlen(&jctx, "matter_node_id", &str_length) == 0 && str_length != 0) {
@@ -861,11 +796,13 @@ static esp_err_t controller_ready()
         if (json_obj_get_string(&jctx, "matter_node_id", Node_id, str_length + 1) == 0) {
             if (Node_id) {
                 printf("Node id:\n%s\n", Node_id);
-                strcpy(s_end_device_data.node_id, Node_id); // Todo:Use strncpy
+                s_end_device_data.node_id = string_to_int64(Node_id);
+                // strcpy(s_end_device_data.node_id, Node_id); // Todo:Use strncpy
                 ret = ESP_OK;
             } else
                 ret = ESP_FAIL;
         }
+        free(Node_id);
     }
 
     json_parse_end(&jctx);
@@ -876,9 +813,9 @@ close:
     esp_http_client_close(client);
 cleanup:
     esp_http_client_cleanup(client);
-    if (http_payload) {
-        free(http_payload);
-    }
+    // if (http_payload) {
+    //     free(http_payload);
+    // }
 
     return ret;
 }
@@ -891,8 +828,8 @@ static esp_err_t controller_complete()
     char post_data[256] = {0};
     int wlen = 0;
 
-    char *http_payload = NULL;
-    const size_t http_payload_size = 1024;
+    // char *http_payload = NULL;
+    // const size_t http_payload_size = 1024;
 
     const char *ip = MANAGER_IP;
     uint16_t port = MANAGER_PORT;
@@ -939,7 +876,7 @@ static esp_err_t controller_complete()
         goto cleanup;
     }
 
-    http_payload = (char *)calloc(http_payload_size, sizeof(char));
+    // http_payload = (char *)calloc(http_payload_size, sizeof(char));
 
     if (http_payload == NULL) {
         ESP_LOGE(TAG, "Failed to alloc memory for http_payload");
@@ -958,7 +895,6 @@ static esp_err_t controller_complete()
         http_payload[http_len] = 0;
 
         printf("Device operation completed marked on manager.\n");
-        got_end_device_assigned = 0;
 
     } else {
         http_len = esp_http_client_read_response(client, http_payload, http_payload_size - 1);
@@ -971,62 +907,14 @@ static esp_err_t controller_complete()
 
     // Parse the response payload
     ESP_LOGI(TAG, "HTTP response:%s\n", http_payload);
-    // if(json_parse_start(&jctx, http_payload, http_len) != 0)
-    // {
-    //     ESP_LOGE(TAG,"Failed to parse the HTTP response json on json_parse_start");
-    //     ret = ESP_FAIL;
-    //     goto close;
-    // }
-    // else
-    //     printf("json parse start successfull.\n");
-
-    // if (json_obj_get_strlen(&jctx, "mac", &str_length) == 0 && str_length !=0)
-    // {
-    //     mac = (char*) calloc(str_length+1,sizeof(char));
-    //     if(json_obj_get_string(&jctx, "mac", mac, str_length+1) == 0)
-    //     {
-    //         printf("MAC:\n%s\n",mac);
-    //         ret = ESP_OK;
-    //     }
-    // }
-
-    // if (json_obj_get_strlen(&jctx, "cn", &str_length) == 0 && str_length !=0)
-    // {
-    //     cn = (char*)calloc(str_length+1,sizeof(char));
-    //     if(json_obj_get_string(&jctx, "cn", cn, str_length+1) == 0)
-    //     {
-    //         if(cn)
-    //         {   printf("CN:\n%s\n",cn);
-    //             ret = ESP_OK;
-    //         }
-    //         else
-    //             ret = ESP_FAIL;
-    //     }
-    // }
-
-    // if (json_obj_get_strlen(&jctx, "cert", &str_length) == 0 && str_length !=0)
-    // {
-    //     cert = (char*) calloc(str_length+1,sizeof(char));
-    //     if(json_obj_get_string(&jctx, "cert", cert, str_length+1) == 0)
-    //     {
-    //         if(cert)
-    //         {   printf("CERT:\n%s\n",cert);
-    //             ret = ESP_OK;
-    //         }
-    //         else
-    //             ret = ESP_FAIL;
-    //     }
-    // }
-
-    // json_parse_end(&jctx);
 
 close:
     esp_http_client_close(client);
 cleanup:
     esp_http_client_cleanup(client);
-    if (http_payload) {
-        free(http_payload);
-    }
+    // if (http_payload) {
+    //     free(http_payload);
+    // }
 
     return ret;
 }
