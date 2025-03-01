@@ -52,15 +52,17 @@ using namespace esp_matter::console;
 #define SSID "ESP_TEST_2G"
 #define PASSPHRASE "ESP3448India"
 #define MANAGER_PORT 8081
-#define MAC_ADDR_SIZE 6
 #define NEW_SOFTWARE_VERSION 10010001
+#define NEW_SOFTWARE_VERSION_STRING "1.1.0-279"
+
+#define MAC_ADDR_SIZE 6
 #define CONTROLLER_REGISTERED "Controller registered"
 // Register
 // Ready--polling repeat if 204
 // if 200 got QR --> operate on device
 // operate --> commission, OTA, custom cluster
 // post success
-char mac[18];
+static char mac[18];
 
 typedef struct {
     char dac[1024];
@@ -189,25 +191,49 @@ void attr_read_cb(uint64_t remote_node_id, const chip::app::ConcreteDataAttribut
     // Todo:If OTA Status >90 state change to OTA Done kOTAComplete
     // If software version is NEW_SOFTWARE_VERSION - kDACWritePending
     ESP_LOGI(TAG, "Read attribute callback");
-    if (path.mClusterId == 0x2A && path.mAttributeId == 0x3)
-    {
+    if (path.mClusterId == 0x2A && path.mAttributeId == 0x3) {
         uint8_t value;
         chip::app::DataModel::Decode(*data, value);
-        printf("OTA Progress : %d\n",value);
-        if(value > 90)
-        {
+        printf("OTA Progress : %d\n", value);
+        if (value >= 96) {
             s_current_state = controller_status::kOTAComplete;
         }
     }
 
-    else if (path.mClusterId == 0x28 && path.mAttributeId == 0x9)
-    {
-        uint32_t value;
+    // else if (path.mClusterId == 0x28 && path.mAttributeId == 0x9) {
+    //     uint32_t value;
+    //     chip::app::DataModel::Decode(*data, value);
+    //     printf("New Software Version : %u\n", value);
+    //     if (value == NEW_SOFTWARE_VERSION) {
+    //         s_current_state = controller_status::kDACWritePending;
+    //     }
+    // }
+
+    else if (path.mClusterId == 0x28 && path.mAttributeId == 0xA) {
+        chip::CharSpan value;
         chip::app::DataModel::Decode(*data, value);
-        printf("New Software Version : %u\n",value);
-        if(value == NEW_SOFTWARE_VERSION)
+        printf("New Software Version String : %.*s\n", value.size(),value.data());
+        if (strncmp(value.data(),NEW_SOFTWARE_VERSION_STRING,value.size())==0)
         {
+            printf("New Software version found\n");
             s_current_state = controller_status::kDACWritePending;
+        }
+    }
+
+    else if (path.mClusterId == 0x131BFC05 && path.mAttributeId == 0x0) {
+        int8_t value;
+        chip::app::DataModel::Decode(*data, value);
+        printf("End Device Status Value : %d\n", value);
+        if ((s_current_state == controller_status::kDACWritePending) && (value == 1)) {
+            s_current_state = controller_status::kDACWrite;
+        }
+        else if ((s_current_state==controller_status::kDACWriteDone) && (value == 2))
+        {
+            s_current_state = controller_status::kPAIWrite;
+        }
+        else if ((s_current_state==controller_status::kPAIWriteDone) && (value == 3))
+        {
+            s_current_state = controller_status::kOperationComplete;
         }
     }
 
@@ -355,43 +381,60 @@ static void custom_ota_event_handler()
 
     } break;
     case kOTAComplete: {
-        vTaskDelay(3000 / portMAX_DELAY);
-        uint64_t node_id_64 = string_to_int64(s_end_device_data.node_id);
-        read_attr_api(node_id_64, 0x0, 0x28, 0x9);
-
         ESP_LOGI(TAG, "Event: OTA Complete");
+        vTaskDelay(7500 / portMAX_DELAY);
+        uint64_t node_id_64 = string_to_int64(s_end_device_data.node_id);
+        read_attr_api(node_id_64, 0x0, 0x28, 0xA);
+
     } break;
     case kDACWritePending: {
         ESP_LOGI(TAG, "Event: DAC Write Pending");
         uint64_t node_id_64 = string_to_int64(s_end_device_data.node_id);
-        char cmd_data[] = "{\"0:STR\": \"test-dac\"}";
-        invoke_cmd_api(node_id_64, 0x0, 0x131BFC05, 0x0, cmd_data);
-        vTaskDelay(3000 / portMAX_DELAY);
-        char cmd_data2[] = "{\"0:STR\": \"test-pai\"}";
-        invoke_cmd_api(node_id_64, 0x0, 0x131BFC05, 0x1, cmd_data2);
-        vTaskDelay(10000 / portMAX_DELAY);
-        invoke_cmd_api(node_id_64, 0x0, 0x131BFC05, 0x2, NULL);
+        read_attr_api(node_id_64, 0x0, 0x131BFC05, 0x0);
     } break;
-    case kDACWrite:
+    case kDACWrite: {
         ESP_LOGI(TAG, "Event: DAC Write");
-        break;
-    case kDACWriteDone:
+        uint64_t node_id_64 = string_to_int64(s_end_device_data.node_id);
+        printf("Sending DAC command data as : \n%s\n", s_end_device_data.dac);
+        invoke_cmd_api(node_id_64, 0x0, 0x131BFC05, 0x0, s_end_device_data.dac);
+        s_current_state = controller_status::kDACWriteDone;
+    } break;
+    case kDACWriteDone: {
         ESP_LOGI(TAG, "Event: DAC Write Done");
-        break;
-    case kPAIWritePending:
-        ESP_LOGI(TAG, "Event: PAI Write Pending");
-        break;
-    case kPAIWrite:
+        uint64_t node_id_64 = string_to_int64(s_end_device_data.node_id);
+        vTaskDelay(3000 / portMAX_DELAY);
+        read_attr_api(node_id_64, 0x0, 0x131BFC05, 0x0);
+    } break;
+    // case kPAIWritePending: {
+    //     ESP_LOGI(TAG, "Event: PAI Write Pending");
+    //     uint64_t node_id_64 = string_to_int64(s_end_device_data.node_id);
+    //     read_attr_api(node_id_64, 0x0, 0x131BFC05, 0x0);
+    // } break;
+    case kPAIWrite: {
         ESP_LOGI(TAG, "Event: PAI Write");
-        break;
-    case kPAIWriteDone:
+        uint64_t node_id_64 = string_to_int64(s_end_device_data.node_id);
+        printf("Sending PAI command data as : \n%s\n", s_end_device_data.pai);
+        invoke_cmd_api(node_id_64, 0x0, 0x131BFC05, 0x1, s_end_device_data.pai);
+        vTaskDelay(3000 / portMAX_DELAY);
+        s_current_state = controller_status::kPAIWriteDone;
+    } break;
+    case kPAIWriteDone: {
         ESP_LOGI(TAG, "Event: PAI Write Done");
-        break;
-    case kOperationComplete:
+        uint64_t node_id_64 = string_to_int64(s_end_device_data.node_id);
+        read_attr_api(node_id_64, 0x0, 0x131BFC05, 0x0);
+
+    } break;
+    case kOperationComplete: {
         ESP_LOGI(TAG, "Event: Operation Complete");
-        break;
+        uint64_t node_id_64 = string_to_int64(s_end_device_data.node_id);
+        invoke_cmd_api(node_id_64, 0x0, 0x131BFC05, 0x2, NULL);
+        vTaskDelay(3000 / portMAX_DELAY);
+        controller_complete();
+        vTaskDelay(3000 / portMAX_DELAY);
+        esp_restart();
+    } break;
     default:
-        ESP_LOGW(TAG, "Unknown event received");
+        ESP_LOGW(TAG, "Unknown event received : %d",s_current_state);
         break;
     }
 }
@@ -770,7 +813,8 @@ static esp_err_t controller_ready()
         char *DAC = (char *)calloc(str_length + 1, sizeof(char));
         if (json_obj_get_string(&jctx, "dac", DAC, str_length + 1) == 0) {
             printf("DAC:\n%s\n", DAC);
-            strcpy(s_end_device_data.dac, DAC); // Todo:Use strncpy 2. Remove calloc and put variable address
+            // strcpy(s_end_device_data.dac, DAC); // Todo:Use strncpy 2. Remove calloc and put variable address
+            snprintf(s_end_device_data.dac, sizeof(s_end_device_data.dac), "{\"0:STR\": \"%s\"}", DAC);
             ret = ESP_OK;
         }
     }
@@ -780,7 +824,8 @@ static esp_err_t controller_ready()
         if (json_obj_get_string(&jctx, "pai", PAI, str_length + 1) == 0) {
             if (PAI) {
                 printf("PAI:\n%s\n", PAI);
-                strcpy(s_end_device_data.pai, PAI); // Todo:Use strncpy
+                // strcpy(s_end_device_data.pai, PAI); // Todo:Use strncpy
+                snprintf(s_end_device_data.dac, sizeof(s_end_device_data.pai), "{\"0:STR\": \"%s\"}", PAI);
                 ret = ESP_OK;
             } else
                 ret = ESP_FAIL;
@@ -843,9 +888,9 @@ static esp_err_t controller_complete()
     printf("send complete status.\n");
     esp_err_t ret = ESP_OK;
     char url[256] = {0};
-
+    char post_data[256] = {0};
     int wlen = 0;
-    const char *post_data;
+
     char *http_payload = NULL;
     const size_t http_payload_size = 1024;
 
@@ -880,11 +925,8 @@ static esp_err_t controller_complete()
         goto cleanup;
     }
 
-    // const char *
-    post_data =
-        // "{\"field1\":\"value1\"}";
-
-        "{\"mac_address\": \"E86BEA46CDB8\",\"controller_id\": \"s3_ct_1\",\"status\": \"success\"}";
+    snprintf(post_data, sizeof(post_data),
+             "{\"mac_address\": \"%s\",\"controller_id\": \"%s\",\"status\": \"success\"}", s_end_device_data.mac, mac);
     // HTTP POST
     ret = esp_http_client_set_method(client, HTTP_METHOD_POST);
     if (ret != ESP_OK) {
@@ -988,3 +1030,20 @@ cleanup:
 
     return ret;
 }
+
+
+// matter esp controller pairing code-wifi
+
+// matter esp controller invoke-cmd 0x2 0x0 0x131BFC05 0x0 "{\"0:STR\": \"-----BEGIN CERTIFICATE-----\nMIIBvDCCAWOgAwIBAgIIC6S3aD9evm4wCgYIKoZIzj0EAwIwNDEcMBoGA1UEAwwT\nRVNQIE1hdHRlciBQQUEgdGVzdDEUMBIGCisGAQQBgqJ8AgEMBDEzMUIwIBcNMjMw\nMzEwMDAwMDAwWhgPOTk5OTEyMzEyMzU5NTlaMCsxEzARBgNVBAMMCkVTUCBNYXR0\nZXIxFDASBgorBgEEAYKifAIBDAQxMzFCMFkwEwYHKoZIzj0CAQYIKoZIzj0DAQcD\nQgAEHQvGtYuLFltNTmaIaZu1VF4EmMX6ZOTzpyOd71iAARz8hkmo4zYf9AFqJoBj\n/i0thZmJ7ZQitfi7H5cc4+B1CaNmMGQwEgYDVR0TAQH/BAgwBgEB/wIBADAOBgNV\nHQ8BAf8EBAMCAQYwHQYDVR0OBBYEFBwfC8rTOwzd4FwtZYOIKdGaw95SMB8GA1Ud\nIwQYMBaAFBBXiQ7CHOd7WlZhCcoLOeraCCdxMAoGCCqGSM49BAMCA0cAMEQCIC+x\nNht5SJsdcnsCgnBOXYBqloa5zyQnRHp+3zjKGWsYAiAqipiFgrSd6348eB9vM+FQ\nojjYWhZ1AJuT2zZBXFP6Zg==\n-----END CERTIFICATE-----\"}"
+
+// matter esp controller read-attr 0x2 0x0 0x28 0x9
+
+// matter esp controller read-attr 0x4 0x0 0x131BFC05 0x0
+
+// matter esp controller read-attr 0x4 0x0 0x28 0x9
+
+// matter esp controller read-attr 0x4 0x0 0x29 0xFFFA
+
+// matter esp controller pairing open-commissioning-window 0x4 0x0 0x29 0xFFF
+
+// matter esp controller invoke-cmd 0x4 0x0 0x131BFC05 0x0 "{\"0:STR\": \"test-dac\"}"
