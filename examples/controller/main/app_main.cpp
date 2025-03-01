@@ -29,6 +29,8 @@
 #include <app/server/Server.h>
 #include <credentials/FabricTable.h>
 
+#include <esp_heap_caps.h>
+
 #include <esp_matter_controller_cluster_command.h>
 #include <esp_matter_controller_pairing_command.h>
 #include <esp_matter_controller_read_command.h>
@@ -56,8 +58,10 @@ using namespace esp_matter::console;
 #define NEW_SOFTWARE_VERSION_STRING "1.1.0-280"
 
 #define MAC_ADDR_SIZE 6
-#define CONTROLLER_REGISTERED "Controller registered"
 
+#define CONTROLLER_REGISTER_ROUTE "/controller/register"
+#define CONTROLLER_REGISTERED "Controller registered"
+#define CONTROLLER_READY_ROUTE "/controller/ready"
 #define http_payload_size 2048
 char *http_payload = NULL;
 
@@ -131,7 +135,7 @@ static void get_mac_address(char *mac_addr)
     }
 }
 
-void print_ip_address(char *ip_addr)
+void get_ip_address(char *ip_addr)
 {
     esp_netif_ip_info_t ip_info;
     esp_netif_t *netif = esp_netif_get_handle_from_ifkey("WIFI_STA_DEF"); // Change as needed
@@ -155,7 +159,6 @@ void print_ip_address(char *ip_addr)
 static esp_err_t register_controller();
 static esp_err_t controller_complete();
 static esp_err_t controller_ready();
-
 
 static void app_event_cb(const ChipDeviceEvent *event, intptr_t arg)
 {
@@ -186,8 +189,6 @@ static void app_event_cb(const ChipDeviceEvent *event, intptr_t arg)
 }
 void attr_read_cb(uint64_t remote_node_id, const chip::app::ConcreteDataAttributePath &path, chip::TLV::TLVReader *data)
 {
-    // Todo:If OTA Status >90 state change to OTA Done kOTAComplete
-    // If software version is NEW_SOFTWARE_VERSION - kDACWritePending
     ESP_LOGI(TAG, "Read attribute callback");
     if (path.mClusterId == 0x2A && path.mAttributeId == 0x3) {
         uint8_t value;
@@ -210,10 +211,9 @@ void attr_read_cb(uint64_t remote_node_id, const chip::app::ConcreteDataAttribut
     else if (path.mClusterId == 0x28 && path.mAttributeId == 0xA) {
         chip::CharSpan value;
         chip::app::DataModel::Decode(*data, value);
-        printf("Software Version String : %.*s\n", value.size(),value.data());
-        if (strncmp(value.data(),NEW_SOFTWARE_VERSION_STRING,value.size())==0)
-        {
-            printf("New Software version found\n");
+        printf("Software Version String : %.*s\n", value.size(), value.data());
+        if (strncmp(value.data(), NEW_SOFTWARE_VERSION_STRING, value.size()) == 0) {
+            printf("New Software version string found\n");
             s_current_state = controller_status::kDACWritePending;
         }
     }
@@ -224,17 +224,27 @@ void attr_read_cb(uint64_t remote_node_id, const chip::app::ConcreteDataAttribut
         printf("End Device Status Value : %d\n", value);
         if ((s_current_state == controller_status::kDACWritePending) && (value == 1)) {
             s_current_state = controller_status::kDACWrite;
-        }
-        else if ((s_current_state==controller_status::kDACWriteDone) && (value == 2))
-        {
+        } else if ((s_current_state == controller_status::kDACWriteDone) && (value == 2)) {
             s_current_state = controller_status::kPAIWrite;
-        }
-        else if ((s_current_state==controller_status::kPAIWriteDone) && (value == 3))
-        {
+        } else if ((s_current_state == controller_status::kPAIWriteDone) && (value == 3)) {
             s_current_state = controller_status::kOperationComplete;
         }
     }
 
+    return;
+}
+
+void invoke_cb(void *context, const ConcreteCommandPath &cmdPath, const chip::app::StatusIB &status, TLVReader *reader)
+{
+    if (cmdPath.mClusterId == 0x2A && cmdPath.mCommandId == 0x0) {
+        printf("OTA provider announce Invoke cmd successfull\n");
+    } else if (cmdPath.mClusterId == 0x131BFC05 && cmdPath.mCommandId == 0x0) {
+        printf("DAC Write Invoke cmd successfull\n");
+    } else if (cmdPath.mClusterId == 0x131BFC05 && cmdPath.mCommandId == 0x1) {
+        printf("PAI Write Invoke cmd successfull\n");
+    } else if (cmdPath.mClusterId == 0x131BFC05 && cmdPath.mCommandId == 0x2) {
+        printf("OTA-->DAC-->PAI Complete Invoke cmd successfull\n");
+    }
     return;
 }
 
@@ -258,7 +268,8 @@ esp_err_t invoke_cmd_api(uint64_t destination_id, uint16_t endpoint_id, uint32_t
                          const char *command_data_field)
 {
     lock::chip_stack_lock(portMAX_DELAY);
-    controller::send_invoke_cluster_command(destination_id, endpoint_id, cluster_id, command_id, command_data_field);
+    controller::send_invoke_cluster_command(destination_id, endpoint_id, cluster_id, command_id, command_data_field,
+                                            chip::NullOptional, invoke_cb);
     lock::chip_stack_unlock();
 
     return ESP_OK;
@@ -325,8 +336,14 @@ esp_err_t subscribe_attr_api(uint64_t node_id, uint16_t endpoint_id, uint32_t cl
 static void custom_ota_event_handler()
 {
     // ESP_LOGI(TAG, "Custom Event Received: id=%ld", event_id);
+    ESP_LOGI(TAG, "Current Free Memory\t%d\t SPIRAM:%d\n",
+             heap_caps_get_free_size(MALLOC_CAP_8BIT) - heap_caps_get_free_size(MALLOC_CAP_SPIRAM),
+             heap_caps_get_free_size(MALLOC_CAP_SPIRAM));
 
     switch (s_current_state) {
+    case controller_status::kBootUpDone: {
+        // printf("No IP Connectivity yet\n");
+    } break;
     case controller_status::kRegistrationPending: {
         printf("Registering to manager\n");
         register_controller();
@@ -422,7 +439,7 @@ static void custom_ota_event_handler()
         esp_restart();
     } break;
     default:
-        ESP_LOGW(TAG, "Unknown event received : %d",s_current_state);
+        ESP_LOGW(TAG, "Unknown event received : %d", s_current_state);
         break;
     }
 }
@@ -431,8 +448,8 @@ void controller_task(void *pvParameter)
 {
     while (1) {
         custom_ota_event_handler();
-        printf("Controller Status Checking....\n");
-        vTaskDelay(pdMS_TO_TICKS(2500)); // Delay for 1000 ms (1 second)
+        // printf("Controller Status Checking....\n");
+        vTaskDelay(pdMS_TO_TICKS(2500)); // Delay for 2500 ms
     }
 }
 
@@ -486,9 +503,8 @@ extern "C" void app_main()
 
     http_payload = (char *)calloc(http_payload_size, sizeof(char));
 
-    if(http_payload == NULL)
-    {
-        ESP_LOGE(TAG,"HTTP payload allocation failed");
+    if (http_payload == NULL) {
+        ESP_LOGE(TAG, "HTTP payload allocation failed");
         return;
     }
 
@@ -496,7 +512,7 @@ extern "C" void app_main()
                 "Controllertask", // Name of the task
                 6144, // Stack size (in words, not bytes)
                 NULL, // Task parameters
-                5, // Task priority
+                5, // Task priority //Todo
                 NULL); // Task handle (optional)
 
     ESP_LOGI(TAG, "Controller Status Check Task Created!");
@@ -508,17 +524,11 @@ static esp_err_t register_controller()
     esp_err_t ret = ESP_OK;
     char url[256] = {0};
     char post_data[256] = {0};
-    char ip_addr[16];
+    char ip_addr[16] = {0};
 
     int wlen = 0;
-    // char *http_payload = NULL;
-    // const size_t http_payload_size = 1024;
 
-    const char *ip = MANAGER_IP;
-    uint16_t port = MANAGER_PORT;
-    const char *route = "/controller/register";
-
-    snprintf(url, sizeof(url), "%s:%d/%s", ip, port, route);
+    snprintf(url, sizeof(url), "%s:%d/%s", MANAGER_IP, MANAGER_PORT, CONTROLLER_REGISTER_ROUTE);
     ESP_LOGE(TAG, "url: %s", url);
 
     esp_http_client_config_t config = {
@@ -533,7 +543,7 @@ static esp_err_t register_controller()
     int str_length = 0;
 
     get_mac_address(mac);
-    print_ip_address(ip_addr);
+    get_ip_address(ip_addr);
 
     esp_http_client_handle_t client = esp_http_client_init(&config);
 
@@ -563,8 +573,6 @@ static esp_err_t register_controller()
         ESP_LOGE(TAG, "Failed to open HTTP connection");
         goto cleanup;
     }
-
-    // http_payload = (char *)calloc(http_payload_size, sizeof(char));
 
     if (http_payload == NULL) {
         ESP_LOGE(TAG, "Failed to alloc memory for http_payload");
@@ -613,10 +621,10 @@ static esp_err_t register_controller()
             if (strcmp(message, CONTROLLER_REGISTERED) == 0) {
                 ESP_LOGW(TAG, "Controller Successfully Registered");
                 s_current_state = controller_status::kRegistered;
-
             }
             ret = ESP_OK;
         }
+        free(message);
     }
 
     json_parse_end(&jctx);
@@ -625,9 +633,6 @@ close:
     esp_http_client_close(client);
 cleanup:
     esp_http_client_cleanup(client);
-    // if (http_payload) {
-    //     free(http_payload);
-    // }
 
     return ret;
 }
@@ -640,14 +645,8 @@ static esp_err_t controller_ready()
 
     int wlen = 0;
     char post_data[256] = {0};
-    // char *http_payload = NULL;
-    // const size_t http_payload_size = 2048;
 
-    const char *ip = MANAGER_IP;
-    uint16_t port = MANAGER_PORT;
-    const char *route = "/controller/ready";
-    // const char* rm_cn = "12005107-034b-4139-a3be-a2623fa7128e";
-    snprintf(url, sizeof(url), "%s:%d/%s", ip, port, route);
+    snprintf(url, sizeof(url), "%s:%d/%s", MANAGER_IP, MANAGER_PORT, CONTROLLER_READY_ROUTE);
     ESP_LOGE(TAG, "url: %s", url);
 
     esp_http_client_config_t config = {
@@ -708,7 +707,6 @@ static esp_err_t controller_ready()
 
         printf("Got an end device to operate on\n");
 
-
     } else if (http_status_code == 204) {
         printf("Wait for end device to be assigned\n");
         goto close;
@@ -730,7 +728,7 @@ static esp_err_t controller_ready()
     //     "mac_address" : "E86BEA46CDB8",
     //     "pai" : "pai_abc",
     //     "qr_code_info" : "MT:YFZ010QV17-QO209K00",
-    //     "matter_node_id" : "b3460846abb8963f44467a31d95f10b9"
+    //     "matter_node_id" : "1"
     // }
 
     if (json_parse_start(&jctx, http_payload, http_len) != 0) {
@@ -813,9 +811,6 @@ close:
     esp_http_client_close(client);
 cleanup:
     esp_http_client_cleanup(client);
-    // if (http_payload) {
-    //     free(http_payload);
-    // }
 
     return ret;
 }
@@ -828,8 +823,6 @@ static esp_err_t controller_complete()
     char post_data[256] = {0};
     int wlen = 0;
 
-    // char *http_payload = NULL;
-    // const size_t http_payload_size = 1024;
 
     const char *ip = MANAGER_IP;
     uint16_t port = MANAGER_PORT;
@@ -876,7 +869,6 @@ static esp_err_t controller_complete()
         goto cleanup;
     }
 
-    // http_payload = (char *)calloc(http_payload_size, sizeof(char));
 
     if (http_payload == NULL) {
         ESP_LOGE(TAG, "Failed to alloc memory for http_payload");
@@ -912,17 +904,15 @@ close:
     esp_http_client_close(client);
 cleanup:
     esp_http_client_cleanup(client);
-    // if (http_payload) {
-    //     free(http_payload);
-    // }
 
     return ret;
 }
 
-
 // matter esp controller pairing code-wifi
 
-// matter esp controller invoke-cmd 0x2 0x0 0x131BFC05 0x0 "{\"0:STR\": \"-----BEGIN CERTIFICATE-----\nMIIBvDCCAWOgAwIBAgIIC6S3aD9evm4wCgYIKoZIzj0EAwIwNDEcMBoGA1UEAwwT\nRVNQIE1hdHRlciBQQUEgdGVzdDEUMBIGCisGAQQBgqJ8AgEMBDEzMUIwIBcNMjMw\nMzEwMDAwMDAwWhgPOTk5OTEyMzEyMzU5NTlaMCsxEzARBgNVBAMMCkVTUCBNYXR0\nZXIxFDASBgorBgEEAYKifAIBDAQxMzFCMFkwEwYHKoZIzj0CAQYIKoZIzj0DAQcD\nQgAEHQvGtYuLFltNTmaIaZu1VF4EmMX6ZOTzpyOd71iAARz8hkmo4zYf9AFqJoBj\n/i0thZmJ7ZQitfi7H5cc4+B1CaNmMGQwEgYDVR0TAQH/BAgwBgEB/wIBADAOBgNV\nHQ8BAf8EBAMCAQYwHQYDVR0OBBYEFBwfC8rTOwzd4FwtZYOIKdGaw95SMB8GA1Ud\nIwQYMBaAFBBXiQ7CHOd7WlZhCcoLOeraCCdxMAoGCCqGSM49BAMCA0cAMEQCIC+x\nNht5SJsdcnsCgnBOXYBqloa5zyQnRHp+3zjKGWsYAiAqipiFgrSd6348eB9vM+FQ\nojjYWhZ1AJuT2zZBXFP6Zg==\n-----END CERTIFICATE-----\"}"
+// matter esp controller invoke-cmd 0x2 0x0 0x131BFC05 0x0 "{\"0:STR\": \"-----BEGIN
+// CERTIFICATE-----\nMIIBvDCCAWOgAwIBAgIIC6S3aD9evm4wCgYIKoZIzj0EAwIwNDEcMBoGA1UEAwwT\nRVNQIE1hdHRlciBQQUEgdGVzdDEUMBIGCisGAQQBgqJ8AgEMBDEzMUIwIBcNMjMw\nMzEwMDAwMDAwWhgPOTk5OTEyMzEyMzU5NTlaMCsxEzARBgNVBAMMCkVTUCBNYXR0\nZXIxFDASBgorBgEEAYKifAIBDAQxMzFCMFkwEwYHKoZIzj0CAQYIKoZIzj0DAQcD\nQgAEHQvGtYuLFltNTmaIaZu1VF4EmMX6ZOTzpyOd71iAARz8hkmo4zYf9AFqJoBj\n/i0thZmJ7ZQitfi7H5cc4+B1CaNmMGQwEgYDVR0TAQH/BAgwBgEB/wIBADAOBgNV\nHQ8BAf8EBAMCAQYwHQYDVR0OBBYEFBwfC8rTOwzd4FwtZYOIKdGaw95SMB8GA1Ud\nIwQYMBaAFBBXiQ7CHOd7WlZhCcoLOeraCCdxMAoGCCqGSM49BAMCA0cAMEQCIC+x\nNht5SJsdcnsCgnBOXYBqloa5zyQnRHp+3zjKGWsYAiAqipiFgrSd6348eB9vM+FQ\nojjYWhZ1AJuT2zZBXFP6Zg==\n-----END
+// CERTIFICATE-----\"}"
 
 // matter esp controller read-attr 0x2 0x0 0x28 0x9
 

@@ -104,7 +104,7 @@ private:
  */
 esp_err_t send_invoke_cluster_command(uint64_t destination_id, uint16_t endpoint_id, uint32_t cluster_id,
                                       uint32_t command_id, const char *command_data_field,
-                                      chip::Optional<uint16_t> timed_invoke_timeout_ms = chip::NullOptional);
+                                      chip::Optional<uint16_t> timed_invoke_timeout_ms = chip::NullOptional, custom_command_callback::on_success_callback_t on_success = nullptr);
 
 } // namespace controller
 } // namespace esp_matter
