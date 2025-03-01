@@ -109,11 +109,8 @@ void commissioning_failure_callback(ScopedNodeId peer_id, CHIP_ERROR error, chip
     printf("Commissioning failure\n");
 }
 
-static controller::pairing_command_callbacks_t s_pairing_callback{
-    nullptr,
-    commissioning_success_callback,
-    commissioning_failure_callback
-};
+static controller::pairing_command_callbacks_t s_pairing_callback{nullptr, commissioning_success_callback,
+                                                                  commissioning_failure_callback};
 
 static void get_mac_address(char *mac_addr)
 {
@@ -163,7 +160,7 @@ static void app_event_cb(const ChipDeviceEvent *event, intptr_t arg)
     switch (event->Type) {
     case chip::DeviceLayer::DeviceEventType::PublicEventTypes::kInterfaceIpAddressChanged:
         ESP_LOGI(TAG, "Interface IP Address changed");
-        if(s_current_state == controller_status::kBootUpDone)
+        if (s_current_state == controller_status::kBootUpDone)
             s_current_state = controller_status::kRegistrationPending;
         // ESP_ERROR_CHECK(esp_event_post_to(custom_ota_event_loop, CUSTOM_OTA_EVENT,
         //   controller_status::kRegistrationPending, NULL, 0, portMAX_DELAY));
@@ -187,14 +184,31 @@ static void app_event_cb(const ChipDeviceEvent *event, intptr_t arg)
         break;
     }
 }
-void attr_read_cb (uint64_t remote_node_id, const chip::app::ConcreteDataAttributePath &path,chip::TLV::TLVReader *data)
+void attr_read_cb(uint64_t remote_node_id, const chip::app::ConcreteDataAttributePath &path, chip::TLV::TLVReader *data)
 {
-    //Todo:If OTA Status >90 state change to OTA Done kOTAComplete
-    //If software version is NEW_SOFTWARE_VERSION - kDACWritePending
+    // Todo:If OTA Status >90 state change to OTA Done kOTAComplete
+    // If software version is NEW_SOFTWARE_VERSION - kDACWritePending
     ESP_LOGI(TAG, "Read attribute callback");
-    if (path.mClusterId == 0x2A && path.mAttributeId==0x3)
+    if (path.mClusterId == 0x2A && path.mAttributeId == 0x3)
     {
-        printf("OTA Progress\n");
+        uint8_t value;
+        chip::app::DataModel::Decode(*data, value);
+        printf("OTA Progress : %d\n",value);
+        if(value > 90)
+        {
+            s_current_state = controller_status::kOTAComplete;
+        }
+    }
+
+    else if (path.mClusterId == 0x28 && path.mAttributeId == 0x9)
+    {
+        uint32_t value;
+        chip::app::DataModel::Decode(*data, value);
+        printf("New Software Version : %u\n",value);
+        if(value == NEW_SOFTWARE_VERSION)
+        {
+            s_current_state = controller_status::kDACWritePending;
+        }
     }
 
     return;
@@ -292,17 +306,17 @@ static void custom_ota_event_handler()
     case controller_status::kRegistrationPending: {
         printf("Registering to manager\n");
         register_controller();
-    }
-    case kRegistered:
+    } break;
+    case kRegistered: {
         ESP_LOGW(TAG, "Event: Registered");
         s_current_state = controller_status::kReady;
-        break;
-    case kReady:
-        vTaskDelay(5000/portMAX_DELAY);
+    } break;
+    case kReady: {
+        vTaskDelay(5000 / portMAX_DELAY);
         memset((void *)&s_end_device_data, 0, sizeof(s_end_device_data));
         ESP_LOGI(TAG, "Event: Ready");
         controller_ready();
-        break;
+    } break;
     case kEndDeviceAssigned: {
         ESP_LOGI(TAG, "Event: End Device Assigned");
         uint64_t node_id_64 = string_to_int64(s_end_device_data.node_id);
@@ -313,13 +327,11 @@ static void custom_ota_event_handler()
     case kOngoingCommission:
         ESP_LOGI(TAG, "Event: Ongoing Commissioning");
         break;
-    case kEndDeviceCommissioned:
-    {
+    case kEndDeviceCommissioned: {
         ESP_LOGI(TAG, "Event: End Device Commissioned");
         s_current_state = controller_status::kOTAPending;
-        vTaskDelay(5000/portMAX_DELAY);
-    }
-        break;
+        vTaskDelay(5000 / portMAX_DELAY);
+    } break;
 
     // case kACLWritePending:
     //     ESP_LOGI(TAG, "Event: ACL Write Pending");
@@ -327,47 +339,39 @@ static void custom_ota_event_handler()
     // case kACLWriteDone:
     //     ESP_LOGI(TAG, "Event: ACL Write Done");
     //     break;
-    case kOTAPending:
-    {
+    case kOTAPending: {
         ESP_LOGI(TAG, "Event: OTA Pending");
         uint64_t node_id_64 = string_to_int64(s_end_device_data.node_id);
         char cmd_data[] = "{\"0:U64\": 56026, \"1:U64\": 65521, \"2:U8\": 0, \"4:U16\": 0}";
-        invoke_cmd_api(node_id_64,0x0,0x2A,0x0,cmd_data);
+        invoke_cmd_api(node_id_64, 0x0, 0x2A, 0x0, cmd_data);
         s_current_state = controller_status::kOTAOngoing;
-    }
-        break;
+    } break;
 
-    case kOTAOngoing:
-    {
+    case kOTAOngoing: {
         ESP_LOGI(TAG, "Event: OTA Ongoing");
-        vTaskDelay(15000/portMAX_DELAY);
+        vTaskDelay(15000 / portMAX_DELAY);
         uint64_t node_id_64 = string_to_int64(s_end_device_data.node_id);
-        read_attr_api(node_id_64,0x0,0x2A,0x3);
+        read_attr_api(node_id_64, 0x0, 0x2A, 0x3);
 
-    }
-        break;
-    case kOTAComplete:
-        {
-            vTaskDelay(3000/portMAX_DELAY);
-            uint64_t node_id_64 = string_to_int64(s_end_device_data.node_id);
-            read_attr_api(node_id_64,0x0,0x28,0x9);
+    } break;
+    case kOTAComplete: {
+        vTaskDelay(3000 / portMAX_DELAY);
+        uint64_t node_id_64 = string_to_int64(s_end_device_data.node_id);
+        read_attr_api(node_id_64, 0x0, 0x28, 0x9);
 
-            ESP_LOGI(TAG, "Event: OTA Complete");
-        }
-        break;
-    case kDACWritePending:
-    {
+        ESP_LOGI(TAG, "Event: OTA Complete");
+    } break;
+    case kDACWritePending: {
         ESP_LOGI(TAG, "Event: DAC Write Pending");
         uint64_t node_id_64 = string_to_int64(s_end_device_data.node_id);
         char cmd_data[] = "{\"0:STR\": \"test-dac\"}";
-        invoke_cmd_api(node_id_64,0x0,0x131BFC05,0x0,cmd_data);
-        vTaskDelay(3000/portMAX_DELAY);
+        invoke_cmd_api(node_id_64, 0x0, 0x131BFC05, 0x0, cmd_data);
+        vTaskDelay(3000 / portMAX_DELAY);
         char cmd_data2[] = "{\"0:STR\": \"test-pai\"}";
-        invoke_cmd_api(node_id_64,0x0,0x131BFC05,0x1,cmd_data2);
-        vTaskDelay(10000/portMAX_DELAY);
-        invoke_cmd_api(node_id_64,0x0,0x131BFC05,0x2,NULL);
-    }
-        break;
+        invoke_cmd_api(node_id_64, 0x0, 0x131BFC05, 0x1, cmd_data2);
+        vTaskDelay(10000 / portMAX_DELAY);
+        invoke_cmd_api(node_id_64, 0x0, 0x131BFC05, 0x2, NULL);
+    } break;
     case kDACWrite:
         ESP_LOGI(TAG, "Event: DAC Write");
         break;
