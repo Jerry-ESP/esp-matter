@@ -368,7 +368,6 @@ esp_err_t subscribe_attr_api(uint64_t node_id, uint16_t endpoint_id, uint32_t cl
 
 static void custom_ota_event_handler()
 {
-    get_manager_ip();
 
     // ESP_LOGI(TAG, "Custom Event Received: id=%ld", event_id);
     ESP_LOGI(TAG, "Current Free Memory\t%d\t SPIRAM:%d\n",
@@ -475,6 +474,8 @@ static void custom_ota_event_handler()
         vTaskDelay(3000 / portMAX_DELAY);
         controller_complete();
         vTaskDelay(3000 / portMAX_DELAY);
+        controller::unpair_device(s_end_device_data.node_id);
+        vTaskDelay(5000 / portMAX_DELAY);
         esp_restart();
     } break;
     default:
