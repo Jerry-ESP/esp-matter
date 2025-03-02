@@ -50,7 +50,7 @@ using namespace esp_matter::attribute;
 using namespace esp_matter::endpoint;
 using namespace esp_matter::console;
 
-#define MANAGER_IP "http://192.168.50.167"
+
 #define SSID "ESP_TEST_2G"
 #define PASSPHRASE "ESP3448India"
 #define MANAGER_PORT 8081
@@ -62,6 +62,7 @@ using namespace esp_matter::console;
 #define CONTROLLER_REGISTER_ROUTE "/controller/register"
 #define CONTROLLER_REGISTERED "Controller registered"
 #define CONTROLLER_READY_ROUTE "/controller/ready"
+#define CONTROLLER_COMPLETE_ROUTE "/device/status"
 #define http_payload_size 2048
 char *http_payload = NULL;
 
@@ -71,6 +72,11 @@ char *http_payload = NULL;
 // operate --> commission, OTA, custom cluster
 // post success
 static char mac[18];
+static char manager_ip[16];
+
+static char MANAGER_IP[24] = {0};
+
+static bool manager_ip_is_set = false;
 
 typedef struct {
     char dac[1024];
@@ -161,9 +167,11 @@ void get_ip_address(char *ip_addr)
     }
 }
 
+
 static esp_err_t register_controller();
 static esp_err_t controller_complete();
 static esp_err_t controller_ready();
+static esp_err_t get_manager_ip();
 
 static void app_event_cb(const ChipDeviceEvent *event, intptr_t arg)
 {
@@ -360,6 +368,8 @@ esp_err_t subscribe_attr_api(uint64_t node_id, uint16_t endpoint_id, uint32_t cl
 
 static void custom_ota_event_handler()
 {
+    get_manager_ip();
+
     // ESP_LOGI(TAG, "Custom Event Received: id=%ld", event_id);
     ESP_LOGI(TAG, "Current Free Memory\t%d\t SPIRAM:%d\n",
              heap_caps_get_free_size(MALLOC_CAP_8BIT) - heap_caps_get_free_size(MALLOC_CAP_SPIRAM),
@@ -370,8 +380,12 @@ static void custom_ota_event_handler()
         // printf("No IP Connectivity yet\n");
     } break;
     case controller_status::kRegistrationPending: {
-        printf("Registering to manager\n");
-        register_controller();
+        ESP_LOGW(TAG,"Event: Registration Pending\n");
+        esp_err_t err = get_manager_ip();
+        if(manager_ip_is_set)
+            register_controller();
+        else
+            ESP_LOGE(TAG,"Please set manager ip using \"matter esp manager set-ip <ip> \"command");
     } break;
     case kRegistered: {
         ESP_LOGW(TAG, "Event: Registered");
@@ -380,20 +394,20 @@ static void custom_ota_event_handler()
     case kReady: {
         vTaskDelay(5000 / portMAX_DELAY);
         memset((void *)&s_end_device_data, 0, sizeof(s_end_device_data));
-        ESP_LOGI(TAG, "Event: Ready");
+        ESP_LOGW(TAG, "Event: Ready");
         controller_ready();
     } break;
     case kEndDeviceAssigned: {
-        ESP_LOGI(TAG, "Event: End Device Assigned");
+        ESP_LOGW(TAG, "Event: End Device Assigned");
         pairing_api(s_end_device_data.node_id, SSID, PASSPHRASE, s_end_device_data.qr_code);
         s_current_state = controller_status::kOngoingCommission;
         // Block
     } break;
     case kOngoingCommission:
-        ESP_LOGI(TAG, "Event: Ongoing Commissioning");
+        ESP_LOGW(TAG, "Event: Ongoing Commissioning");
         break;
     case kEndDeviceCommissioned: {
-        ESP_LOGI(TAG, "Event: End Device Commissioned");
+        ESP_LOGW(TAG, "Event: End Device Commissioned");
         s_current_state = controller_status::kOTAPending;
         vTaskDelay(5000 / portMAX_DELAY);
     } break;
@@ -405,36 +419,36 @@ static void custom_ota_event_handler()
     //     ESP_LOGI(TAG, "Event: ACL Write Done");
     //     break;
     case kOTAPending: {
-        ESP_LOGI(TAG, "Event: OTA Pending");
+        ESP_LOGW(TAG, "Event: OTA Pending");
         char cmd_data[] = "{\"0:U64\": 56026, \"1:U64\": 65521, \"2:U8\": 0, \"4:U16\": 0}";
         invoke_cmd_api(s_end_device_data.node_id, 0x0, 0x2A, 0x0, cmd_data);
         s_current_state = controller_status::kOTAOngoing;
     } break;
 
     case kOTAOngoing: {
-        ESP_LOGI(TAG, "Event: OTA Ongoing");
+        ESP_LOGW(TAG, "Event: OTA Ongoing");
         vTaskDelay(15000 / portMAX_DELAY);
         read_attr_api(s_end_device_data.node_id, 0x0, 0x2A, 0x3);
 
     } break;
     case kOTAComplete: {
-        ESP_LOGI(TAG, "Event: OTA Complete");
+        ESP_LOGW(TAG, "Event: OTA Complete");
         vTaskDelay(7500 / portMAX_DELAY);
         read_attr_api(s_end_device_data.node_id, 0x0, 0x28, 0xA);
 
     } break;
     case kDACWritePending: {
-        ESP_LOGI(TAG, "Event: DAC Write Pending");
+        ESP_LOGW(TAG, "Event: DAC Write Pending");
         read_attr_api(s_end_device_data.node_id, 0x0, 0x131BFC05, 0x0);
     } break;
     case kDACWrite: {
-        ESP_LOGI(TAG, "Event: DAC Write");
+        ESP_LOGW(TAG, "Event: DAC Write");
         printf("Sending DAC command data as : \n%s\n", s_end_device_data.dac);
         invoke_cmd_api(s_end_device_data.node_id, 0x0, 0x131BFC05, 0x0, s_end_device_data.dac);
         s_current_state = controller_status::kDACWriteDone;
     } break;
     case kDACWriteDone: {
-        ESP_LOGI(TAG, "Event: DAC Write Done");
+        ESP_LOGW(TAG, "Event: DAC Write Done");
         vTaskDelay(3000 / portMAX_DELAY);
         read_attr_api(s_end_device_data.node_id, 0x0, 0x131BFC05, 0x0);
     } break;
@@ -444,19 +458,19 @@ static void custom_ota_event_handler()
     //     read_attr_api(node_id_64, 0x0, 0x131BFC05, 0x0);
     // } break;
     case kPAIWrite: {
-        ESP_LOGI(TAG, "Event: PAI Write");
+        ESP_LOGW(TAG, "Event: PAI Write");
         printf("Sending PAI command data as : \n%s\n", s_end_device_data.pai);
         invoke_cmd_api(s_end_device_data.node_id, 0x0, 0x131BFC05, 0x1, s_end_device_data.pai);
         vTaskDelay(3000 / portMAX_DELAY);
         s_current_state = controller_status::kPAIWriteDone;
     } break;
     case kPAIWriteDone: {
-        ESP_LOGI(TAG, "Event: PAI Write Done");
+        ESP_LOGW(TAG, "Event: PAI Write Done");
         read_attr_api(s_end_device_data.node_id, 0x0, 0x131BFC05, 0x0);
 
     } break;
     case kOperationComplete: {
-        ESP_LOGI(TAG, "Event: Operation Complete");
+        ESP_LOGW(TAG, "Event: Operation Complete");
         invoke_cmd_api(s_end_device_data.node_id, 0x0, 0x131BFC05, 0x2, NULL);
         vTaskDelay(3000 / portMAX_DELAY);
         controller_complete();
@@ -487,6 +501,7 @@ extern "C" void app_main()
 #if CONFIG_ENABLE_CHIP_SHELL
     esp_matter::console::diagnostics_register_commands();
     esp_matter::console::wifi_register_commands();
+    esp_matter::console::manager_register_commands();
     esp_matter::console::factoryreset_register_commands();
     esp_matter::console::init();
 #if CONFIG_ESP_MATTER_CONTROLLER_ENABLE
@@ -848,12 +863,7 @@ static esp_err_t controller_complete()
     char post_data[256] = {0};
     int wlen = 0;
 
-
-    const char *ip = MANAGER_IP;
-    uint16_t port = MANAGER_PORT;
-    const char *route = "/device/status";
-    // const char* rm_cn = "12005107-034b-4139-a3be-a2623fa7128e";
-    snprintf(url, sizeof(url), "%s:%d/%s", ip, port, route);
+    snprintf(url, sizeof(url), "%s:%d/%s", MANAGER_IP, MANAGER_PORT, CONTROLLER_COMPLETE_ROUTE);
     ESP_LOGE(TAG, "url: %s", url);
 
     esp_http_client_config_t config = {
@@ -932,6 +942,33 @@ cleanup:
 
     return ret;
 }
+
+static esp_err_t get_manager_ip()
+{
+    nvs_handle handle;
+    esp_err_t err;
+    if ((err = nvs_open("manager",NVS_READONLY, &handle)) != ESP_OK) {
+        ESP_LOGI(TAG, "Manager NVS open failed with error %d",err);
+        return err;
+    }
+    size_t required_size = 0;
+    if ((err = nvs_get_blob(handle, "manager_ip", NULL, &required_size)) != ESP_OK) {
+        ESP_LOGI(TAG, "Failed to read manager_ip with error %d size %d", err, required_size);
+        nvs_close(handle);
+        return err;
+    }
+    void *value = calloc(required_size + 1, 1); /* + 1 for NULL termination */
+    if (value) {
+        nvs_get_blob(handle, "manager_ip", value, &required_size);
+    }
+    nvs_close(handle);
+    ESP_LOGE(TAG,"\nManager-ip: %s\n",(char*)value);
+    snprintf(MANAGER_IP,sizeof(MANAGER_IP),"http://%s",(char*)value);
+    free(value);
+    manager_ip_is_set = true;
+    return err ;
+}
+
 
 // matter esp controller pairing code-wifi
 
