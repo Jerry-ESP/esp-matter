@@ -55,7 +55,7 @@ using namespace esp_matter::console;
 #define PASSPHRASE "ESP3448India"
 #define MANAGER_PORT 8081
 #define NEW_SOFTWARE_VERSION 10010001
-#define NEW_SOFTWARE_VERSION_STRING "1.1.0-282"
+#define NEW_SOFTWARE_VERSION_STRING "1.1.0-283"
 
 #define MAC_ADDR_SIZE 6
 
@@ -227,7 +227,7 @@ void attr_read_cb(uint64_t remote_node_id, const chip::app::ConcreteDataAttribut
         uint8_t value;
         chip::app::DataModel::Decode(*data, value);
         printf("OTA Progress : %d\n", value);
-        if (value >= 96) {
+        if (value >= 90) {
             s_current_state = controller_status::kOTAComplete;
         }
     }
@@ -391,7 +391,7 @@ static void custom_ota_event_handler()
         s_current_state = controller_status::kReady;
     } break;
     case kReady: {
-        vTaskDelay(5000 / portMAX_DELAY);
+        vTaskDelay(pdMS_TO_TICKS(5000));
         memset((void *)&s_end_device_data, 0, sizeof(s_end_device_data));
         ESP_LOGW(TAG, "Event: Ready");
         controller_ready();
@@ -408,7 +408,7 @@ static void custom_ota_event_handler()
     case kEndDeviceCommissioned: {
         ESP_LOGW(TAG, "Event: End Device Commissioned");
         s_current_state = controller_status::kOTAPending;
-        vTaskDelay(5000 / portMAX_DELAY);
+        vTaskDelay(pdMS_TO_TICKS(5000));
     } break;
 
     // case kACLWritePending:
@@ -426,13 +426,13 @@ static void custom_ota_event_handler()
 
     case kOTAOngoing: {
         ESP_LOGW(TAG, "Event: OTA Ongoing");
-        vTaskDelay(15000 / portMAX_DELAY);
+        vTaskDelay(pdMS_TO_TICKS(5000));
         read_attr_api(s_end_device_data.node_id, 0x0, 0x2A, 0x3);
 
     } break;
     case kOTAComplete: {
         ESP_LOGW(TAG, "Event: OTA Complete");
-        vTaskDelay(7500 / portMAX_DELAY);
+        vTaskDelay(pdMS_TO_TICKS(7500));
         read_attr_api(s_end_device_data.node_id, 0x0, 0x28, 0xA);
 
     } break;
@@ -448,7 +448,7 @@ static void custom_ota_event_handler()
     } break;
     case kDACWriteDone: {
         ESP_LOGW(TAG, "Event: DAC Write Done");
-        vTaskDelay(3000 / portMAX_DELAY);
+        vTaskDelay(pdMS_TO_TICKS(3000));
         read_attr_api(s_end_device_data.node_id, 0x0, 0x131BFC05, 0x0);
     } break;
     // case kPAIWritePending: {
@@ -460,7 +460,7 @@ static void custom_ota_event_handler()
         ESP_LOGW(TAG, "Event: PAI Write");
         printf("Sending PAI command data as : \n%s\n", s_end_device_data.pai);
         invoke_cmd_api(s_end_device_data.node_id, 0x0, 0x131BFC05, 0x1, s_end_device_data.pai);
-        vTaskDelay(3000 / portMAX_DELAY);
+        vTaskDelay(pdMS_TO_TICKS(3000));
         s_current_state = controller_status::kPAIWriteDone;
     } break;
     case kPAIWriteDone: {
@@ -471,11 +471,9 @@ static void custom_ota_event_handler()
     case kOperationComplete: {
         ESP_LOGW(TAG, "Event: Operation Complete");
         invoke_cmd_api(s_end_device_data.node_id, 0x0, 0x131BFC05, 0x2, NULL);
-        vTaskDelay(3000 / portMAX_DELAY);
+        vTaskDelay(pdMS_TO_TICKS(3000));
         controller_complete();
-        vTaskDelay(3000 / portMAX_DELAY);
-        controller::unpair_device(s_end_device_data.node_id);
-        vTaskDelay(5000 / portMAX_DELAY);
+        vTaskDelay(pdMS_TO_TICKS(3000));
         esp_restart();
     } break;
     default:
@@ -569,7 +567,7 @@ static esp_err_t register_controller()
 
     int wlen = 0;
 
-    snprintf(url, sizeof(url), "%s:%d/%s", MANAGER_IP, MANAGER_PORT, CONTROLLER_REGISTER_ROUTE);
+    snprintf(url, sizeof(url), "%s:%d%s", MANAGER_IP, MANAGER_PORT, CONTROLLER_REGISTER_ROUTE);
     ESP_LOGE(TAG, "url: %s", url);
 
     esp_http_client_config_t config = {
@@ -687,7 +685,7 @@ static esp_err_t controller_ready()
     int wlen = 0;
     char post_data[256] = {0};
 
-    snprintf(url, sizeof(url), "%s:%d/%s", MANAGER_IP, MANAGER_PORT, CONTROLLER_READY_ROUTE);
+    snprintf(url, sizeof(url), "%s:%d%s", MANAGER_IP, MANAGER_PORT, CONTROLLER_READY_ROUTE);
     ESP_LOGE(TAG, "url: %s", url);
 
     esp_http_client_config_t config = {
@@ -864,7 +862,7 @@ static esp_err_t controller_complete()
     char post_data[256] = {0};
     int wlen = 0;
 
-    snprintf(url, sizeof(url), "%s:%d/%s", MANAGER_IP, MANAGER_PORT, CONTROLLER_COMPLETE_ROUTE);
+    snprintf(url, sizeof(url), "%s:%d%s", MANAGER_IP, MANAGER_PORT, CONTROLLER_COMPLETE_ROUTE);
     ESP_LOGE(TAG, "url: %s", url);
 
     esp_http_client_config_t config = {
