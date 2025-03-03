@@ -431,7 +431,7 @@ static void custom_ota_event_handler()
         s_ongoing_commissioing_state_count++;
         if(s_ongoing_commissioing_state_count >24)
         {
-            s_current_state = controller_status::kEndDeviceAssigned;
+            esp_restart();
         }
         break;
     case kEndDeviceCommissioned: {
