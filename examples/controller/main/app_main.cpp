@@ -51,8 +51,8 @@ using namespace esp_matter::endpoint;
 using namespace esp_matter::console;
 
 
-#define SSID "ESP_TEST_2G"
-#define PASSPHRASE "ESP3448India"
+#define SSID "ESP_Factory"
+#define PASSPHRASE "Factory123"
 #define MANAGER_PORT 8081
 #define NEW_SOFTWARE_VERSION 10010001
 #define NEW_SOFTWARE_VERSION_STRING "1.1.0-283"
@@ -85,6 +85,11 @@ typedef struct {
     char qr_code[32];
     char mac[18];
 } end_device_data_t;
+
+static uint8_t s_ota_progress;
+static uint8_t s_ota_retry_count = 0;
+static uint8_t s_sw_v_fetch_count = 0;
+static uint8_t s_ongoing_commissioing_state_count=0;
 
 static end_device_data_t s_end_device_data;
 enum controller_status {
@@ -126,6 +131,7 @@ void commissioning_failure_callback(ScopedNodeId peer_id, CHIP_ERROR error, chip
                                     std::optional<chip::Credentials::AttestationVerificationResult> addtional_err_info)
 {
     printf("Commissioning failure\n");
+    esp_restart();
 }
 
 static controller::pairing_command_callbacks_t s_pairing_callback{pase_callback, commissioning_success_callback,
@@ -230,6 +236,17 @@ void attr_read_cb(uint64_t remote_node_id, const chip::app::ConcreteDataAttribut
         if (value >= 90) {
             s_current_state = controller_status::kOTAComplete;
         }
+        else if(value == s_ota_progress)
+        {
+            s_ota_retry_count++;
+
+            if(s_ota_retry_count > 3)
+            {
+                s_current_state = controller_status::kOTAPending;
+            }
+        }
+        s_ota_progress = value;
+
     }
 
     // else if (path.mClusterId == 0x28 && path.mAttributeId == 0x9) {
@@ -245,9 +262,15 @@ void attr_read_cb(uint64_t remote_node_id, const chip::app::ConcreteDataAttribut
         chip::CharSpan value;
         chip::app::DataModel::Decode(*data, value);
         printf("Software Version String : %.*s\n", value.size(), value.data());
+        s_sw_v_fetch_count++;
         if (strncmp(value.data(), NEW_SOFTWARE_VERSION_STRING, value.size()) == 0) {
             printf("New Software version string found\n");
+            s_sw_v_fetch_count = 0;
             s_current_state = controller_status::kDACWritePending;
+        }
+        if(s_sw_v_fetch_count>7)
+        {
+            s_current_state = controller_status::kOTAPending;
         }
     }
 
@@ -391,7 +414,7 @@ static void custom_ota_event_handler()
         s_current_state = controller_status::kReady;
     } break;
     case kReady: {
-        vTaskDelay(pdMS_TO_TICKS(5000));
+        // vTaskDelay(pdMS_TO_TICKS(5000));
         memset((void *)&s_end_device_data, 0, sizeof(s_end_device_data));
         ESP_LOGW(TAG, "Event: Ready");
         controller_ready();
@@ -399,11 +422,17 @@ static void custom_ota_event_handler()
     case kEndDeviceAssigned: {
         ESP_LOGW(TAG, "Event: End Device Assigned");
         pairing_api(s_end_device_data.node_id, SSID, PASSPHRASE, s_end_device_data.qr_code);
+        s_ongoing_commissioing_state_count=0;
         s_current_state = controller_status::kOngoingCommission;
         // Block
     } break;
     case kOngoingCommission:
         ESP_LOGW(TAG, "Event: Ongoing Commissioning");
+        s_ongoing_commissioing_state_count++;
+        if(s_ongoing_commissioing_state_count >24)
+        {
+            s_current_state = controller_status::kEndDeviceAssigned;
+        }
         break;
     case kEndDeviceCommissioned: {
         ESP_LOGW(TAG, "Event: End Device Commissioned");
@@ -421,6 +450,8 @@ static void custom_ota_event_handler()
         ESP_LOGW(TAG, "Event: OTA Pending");
         char cmd_data[] = "{\"0:U64\": 56026, \"1:U64\": 65521, \"2:U8\": 0, \"4:U16\": 0}";
         invoke_cmd_api(s_end_device_data.node_id, 0x0, 0x2A, 0x0, cmd_data);
+        s_ota_retry_count=0;
+        s_sw_v_fetch_count=0;
         s_current_state = controller_status::kOTAOngoing;
     } break;
 
@@ -431,7 +462,7 @@ static void custom_ota_event_handler()
 
     } break;
     case kOTAComplete: {
-        ESP_LOGW(TAG, "Event: OTA Complete");
+        ESP_LOGW(TAG, "Event: Approaching....OTA Complete");
         vTaskDelay(pdMS_TO_TICKS(7500));
         read_attr_api(s_end_device_data.node_id, 0x0, 0x28, 0xA);
 
