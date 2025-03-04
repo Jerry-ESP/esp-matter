@@ -80,6 +80,13 @@ static esp_err_t app_attribute_update_cb(callback_type_t type, uint16_t endpoint
     return err;
 }
 
+static esp_err_t app_identification_cb(identification::callback_type_t type, uint16_t endpoint_id, uint8_t effect_id,
+                                       uint8_t effect_variant, void *priv_data)
+{
+    ESP_LOGI(TAG, "Identification callback: type: %u, effect: %u, variant: %u", type, effect_id, effect_variant);
+    return ESP_OK;
+}
+
 extern "C" void app_main()
 {
     esp_err_t err = ESP_OK;
@@ -109,6 +116,9 @@ extern "C" void app_main()
     /* Matter start */
     err = esp_matter::start(app_event_cb);
     ABORT_APP_ON_FAILURE(err == ESP_OK, ESP_LOGE(TAG, "Failed to start Matter, err:%d", err));
+
+    //identification::set_callback(app_identification_cb);
+    //identification::init(light_endpoint_id, 1, 0, 0);
 
     /* Starting driver with default values */
     app_driver_light_set_defaults(light_endpoint_id);

@@ -302,6 +302,7 @@ static EmberAfAttributeMetadata *get_external_attribute_metadata(_attribute_t * 
     if (NULL == attribute || (attribute->flags & ATTRIBUTE_FLAG_MANAGED_INTERNALLY)) {
         return NULL;
     }
+    printf("%s---%d\n", __FUNCTION__, __LINE__);
     _cluster_t *cluster = (_cluster_t *)cluster::get(attribute->endpoint_id, attribute->cluster_id);
     if (NULL == cluster) {
         return NULL;
@@ -1050,6 +1051,7 @@ attribute_t *get(cluster_t *cluster, uint32_t attribute_id)
 
 attribute_t *get(uint16_t endpoint_id, uint32_t cluster_id, uint32_t attribute_id)
 {
+    printf("%s---%d\n", __FUNCTION__, __LINE__);
     cluster_t *cluster = cluster::get(endpoint_id, cluster_id);
     return get(cluster, attribute_id);
 }
@@ -1226,6 +1228,7 @@ esp_err_t set_override_callback(attribute_t *attribute, callback_t callback)
     ESP_RETURN_ON_FALSE(!(current_attribute->flags & ATTRIBUTE_FLAG_MANAGED_INTERNALLY), ESP_ERR_NOT_SUPPORTED, TAG,
                         "Attribute is not managed by esp matter data model");
 
+    printf("%s---%d\n", __FUNCTION__, __LINE__);
     cluster_t *cluster = cluster::get(current_attribute->endpoint_id, current_attribute->cluster_id);
 
     if (current_attribute->val.type == ESP_MATTER_VAL_TYPE_ARRAY ||
@@ -1554,6 +1557,8 @@ cluster_t *get(endpoint_t *endpoint, uint32_t cluster_id)
 
 cluster_t *get(uint16_t endpoint_id, uint32_t cluster_id)
 {
+    printf("%s---%d\n", __FUNCTION__, __LINE__);
+    printf("get cluster id: %lx\n", cluster_id);
     endpoint_t *endpoint = endpoint::get(endpoint_id);
     return get(endpoint, cluster_id);
 }
@@ -1911,6 +1916,7 @@ esp_err_t set_parent_endpoint(endpoint_t *endpoint, endpoint_t *parent_endpoint)
 
 void *get_priv_data(uint16_t endpoint_id)
 {
+    printf("%s---%d\n", __FUNCTION__, __LINE__);
     endpoint_t *endpoint = get(endpoint_id);
     VerifyOrReturnValue(endpoint, NULL, ESP_LOGE(TAG, "Endpoint not found"));
     _endpoint_t *current_endpoint = (_endpoint_t *)endpoint;
@@ -1919,6 +1925,7 @@ void *get_priv_data(uint16_t endpoint_id)
 
 esp_err_t set_priv_data(uint16_t endpoint_id, void *priv_data)
 {
+    printf("%s---%d\n", __FUNCTION__, __LINE__);
     endpoint_t *endpoint = get(endpoint_id);
     VerifyOrReturnError(endpoint, ESP_ERR_NOT_FOUND, ESP_LOGE(TAG, "Endpoint not found"));
     _endpoint_t *current_endpoint = (_endpoint_t *)endpoint;
