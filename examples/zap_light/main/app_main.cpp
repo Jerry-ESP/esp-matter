@@ -80,6 +80,13 @@ static esp_err_t app_attribute_update_cb(callback_type_t type, uint16_t endpoint
     return err;
 }
 
+static esp_err_t app_identification_cb(identification::callback_type_t type, uint16_t endpoint_id, uint8_t effect_id,
+                                       uint8_t effect_variant, void *priv_data)
+{
+    ESP_LOGI(TAG, "Identification callback: type: %u, effect: %u, variant: %u", type, effect_id, effect_variant);
+    return ESP_OK;
+}
+
 extern "C" void app_main()
 {
     esp_err_t err = ESP_OK;
@@ -95,6 +102,9 @@ extern "C" void app_main()
     /* Initialize matter callback */
     attribute::set_callback(app_attribute_update_cb);
     light_endpoint_id = 1; /* This is from zap-generated/endpoint_config.h */
+
+    identification::init(light_endpoint_id, 1, 0, 0);
+    identification::set_callback(app_identification_cb);
 
 #if CHIP_DEVICE_CONFIG_ENABLE_THREAD
     /* Set OpenThread platform config */
