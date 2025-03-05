@@ -49,6 +49,7 @@ static CommissionableDataProvider *s_custom_commissionable_data_provider = NULL;
 
 void set_custom_commissionable_data_provider(CommissionableDataProvider *provider)
 {
+    printf("%s----%d\n", __FUNCTION__, __LINE__);
     s_custom_commissionable_data_provider = provider;
 }
 #endif
@@ -92,10 +93,12 @@ DeviceAttestationCredentialsProvider *get_dac_provider(void)
 
 void setup_providers()
 {
+    printf("%s----%d\n", __FUNCTION__, __LINE__);
 #if CONFIG_FACTORY_COMMISSIONABLE_DATA_PROVIDER
     SetCommissionableDataProvider(&factory_data_provider);
 #elif CONFIG_CUSTOM_COMMISSIONABLE_DATA_PROVIDER
     if (s_custom_commissionable_data_provider) {
+        printf("%s----%d\n", __FUNCTION__, __LINE__);
         SetCommissionableDataProvider(s_custom_commissionable_data_provider);
     }
 #endif

@@ -22,16 +22,20 @@
 using namespace ::chip::DeviceLayer::Internal;
 using namespace ::chip;
 
+#define ReturnErrorCodeIf(A, B) if((A) != true) { return (B);}
+
 constexpr char *TAG = "custom_provider";
 
 CHIP_ERROR dynamic_commissionable_data_provider::GetSetupDiscriminator(uint16_t &setupDiscriminator)
 {
+    printf("%s----%d\n", __FUNCTION__, __LINE__);
     setupDiscriminator = CONFIG_DYNAMIC_PASSCODE_PROVIDER_DISCRIMINATOR;
     return CHIP_NO_ERROR;
 }
 
 CHIP_ERROR dynamic_commissionable_data_provider::GetSpake2pIterationCount(uint32_t &iterationCount)
 {
+    printf("%s----%d\n", __FUNCTION__, __LINE__);
     iterationCount = CONFIG_DYNAMIC_PASSCODE_PROVIDER_ITERATIONS;
     return CHIP_NO_ERROR;
 }
@@ -63,6 +67,7 @@ static bool is_valid_base64_str(const char *str)
 
 CHIP_ERROR dynamic_commissionable_data_provider::GetSpake2pSalt(MutableByteSpan &saltBuf)
 {
+    printf("%s----%d\n", __FUNCTION__, __LINE__);
     const char *saltB64 = CONFIG_DYNAMIC_PASSCODE_PROVIDER_SALT_BASE64;
     ReturnErrorCodeIf(!is_valid_base64_str(saltB64), CHIP_ERROR_INVALID_ARGUMENT);
     size_t saltB64Len = strlen(saltB64);
@@ -78,6 +83,7 @@ CHIP_ERROR dynamic_commissionable_data_provider::GetSpake2pSalt(MutableByteSpan 
 
 CHIP_ERROR dynamic_commissionable_data_provider::GetSpake2pVerifier(MutableByteSpan &verifierBuf, size_t &verifierLen)
 {
+    printf("%s----%d\n", __FUNCTION__, __LINE__);
     uint32_t setupPasscode = 0;
     uint32_t iterationCount = 0;
     uint8_t salt[Crypto::kSpake2p_Max_PBKDF_Salt_Length] = {0};
@@ -94,6 +100,7 @@ CHIP_ERROR dynamic_commissionable_data_provider::GetSpake2pVerifier(MutableByteS
 
 CHIP_ERROR dynamic_commissionable_data_provider::GetSetupPasscode(uint32_t &setupPasscode)
 {
+    printf("%s----%d\n", __FUNCTION__, __LINE__);
     if (mSetupPasscode == 0) {
         ReturnErrorOnFailure(GenerateRandomPasscode(mSetupPasscode));
     }
@@ -103,6 +110,7 @@ CHIP_ERROR dynamic_commissionable_data_provider::GetSetupPasscode(uint32_t &setu
 
 CHIP_ERROR dynamic_commissionable_data_provider::GenerateRandomPasscode(uint32_t &passcode)
 {
+    printf("%s----%d\n", __FUNCTION__, __LINE__);
     ReturnErrorOnFailure(chip::Crypto::DRBG_get_bytes(reinterpret_cast<uint8_t *>(&passcode), sizeof(passcode)));
     // Passcode MUST be 1 to 99999998
     passcode = (passcode % chip::kSetupPINCodeMaximumValue) + 1;
