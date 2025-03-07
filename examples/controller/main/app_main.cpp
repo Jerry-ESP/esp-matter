@@ -55,7 +55,7 @@ using namespace esp_matter::console;
 #define PASSPHRASE "Factory123"
 #define MANAGER_PORT 8081
 #define NEW_SOFTWARE_VERSION 10010001
-#define NEW_SOFTWARE_VERSION_STRING "1.1.0-288"
+#define NEW_SOFTWARE_VERSION_STRING "1.1.0-302"
 
 #define MAC_ADDR_SIZE 6
 
