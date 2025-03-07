@@ -87,6 +87,8 @@ static esp_err_t nvs_get_val(const char *nvs_namespace, const char *attribute_ke
                 {
                     val.val.b = (b_val != 0);
                 }
+
+                printf("nvs set attribute: %s bool: %d----state: %d\n", attribute_key, val.val.b, err);
                 break;
             }
 
@@ -216,6 +218,7 @@ static esp_err_t nvs_store_val(const char *nvs_namespace, const char *attribute_
             case ESP_MATTER_VAL_TYPE_BOOLEAN:
             {
                 err = nvs_set_u8(handle, attribute_key, val.val.b != 0);
+                printf("nvs set attribute: %s bool: %d----state: %d\n", attribute_key, val.val.b, err);
                 break;
             }
 
@@ -335,7 +338,7 @@ esp_err_t get_val_from_nvs(uint16_t endpoint_id, uint32_t cluster_id, uint32_t a
     char attribute_key[16] = {0};
     get_attribute_key(endpoint_id, cluster_id, attribute_id, attribute_key);
 
-    ESP_LOGD(TAG, "read attribute from nvs: endpoint_id-0x%" PRIx16 ", cluster_id-0x%" PRIx32 ","
+    ESP_LOGW(TAG, "read attribute from nvs: endpoint_id-0x%" PRIx16 ", cluster_id-0x%" PRIx32 ","
                   " attribute_id-0x%" PRIx32 "", endpoint_id, cluster_id, attribute_id);
     esp_err_t err = nvs_get_val(ESP_MATTER_KVS_NAMESPACE, attribute_key, val);
     if (err == ESP_ERR_NVS_NOT_FOUND) {
@@ -365,7 +368,7 @@ esp_err_t store_val_in_nvs(uint16_t endpoint_id, uint32_t cluster_id, uint32_t a
     /* Get attribute key */
     char attribute_key[16] = {0};
     get_attribute_key(endpoint_id, cluster_id, attribute_id, attribute_key);
-    ESP_LOGD(TAG, "Store attribute in nvs: endpoint_id-0x%" PRIx16 ", cluster_id-0x%" PRIx32 ", attribute_id-0x%" PRIx32 "",
+    ESP_LOGW(TAG, "Store attribute in nvs: endpoint_id-0x%" PRIx16 ", cluster_id-0x%" PRIx32 ", attribute_id-0x%" PRIx32 "",
              endpoint_id, cluster_id, attribute_id);
     return nvs_store_val(ESP_MATTER_KVS_NAMESPACE, attribute_key, val);
 }
