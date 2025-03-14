@@ -9,6 +9,7 @@
 #include <esp_err.h>
 #include <esp_log.h>
 #include <nvs_flash.h>
+#include <random>
 
 #include <esp_matter.h>
 #include <esp_matter_console.h>
@@ -54,8 +55,8 @@ using namespace esp_matter::console;
 #define SSID "ESP_Factory"
 #define PASSPHRASE "Factory123"
 #define MANAGER_PORT 8081
-#define NEW_SOFTWARE_VERSION 10010001
-#define NEW_SOFTWARE_VERSION_STRING "1.1.0-302"
+#define NEW_SOFTWARE_VERSION 10010000
+#define NEW_SOFTWARE_VERSION_STRING "1.1.0-660"
 
 #define MAC_ADDR_SIZE 6
 
@@ -77,6 +78,18 @@ static char manager_ip[16];
 static char MANAGER_IP[24] = {0};
 
 static bool manager_ip_is_set = false;
+
+static uint64_t random_nodeid = 1;
+
+static uint8_t dataset_data[] = {
+    0x0e, 0x08, 0x00, 0x00, 0x00, 0x00, 0x00, 0x01, 0x00, 0x00, 0x00, 0x03, 0x00, 0x00, 0x18, 0x35,
+    0x06, 0x00, 0x04, 0x00, 0x1f, 0xff, 0xe0, 0x02, 0x08, 0xde, 0xad, 0x00, 0xbe, 0xef, 0x00, 0xcd,
+    0xef, 0x07, 0x08, 0xfd, 0x00, 0x0d, 0xb8, 0x00, 0xa0, 0x00, 0x00, 0x05, 0x10, 0x00, 0x11, 0x22,
+    0x33, 0x44, 0x55, 0x66, 0x77, 0x88, 0x99, 0xaa, 0xbb, 0xcc, 0xdd, 0xcd, 0xef, 0x03, 0x0e, 0x4f,
+    0x70, 0x65, 0x6e, 0x54, 0x68, 0x72, 0x65, 0x61, 0x64, 0x2d, 0x45, 0x53, 0x50, 0x01, 0x02, 0xcd,
+    0xef, 0x04, 0x10, 0x10, 0x48, 0x10, 0xe2, 0x31, 0x51, 0x00, 0xaf, 0xd6, 0xbc, 0x92, 0x15, 0xa6,
+    0xbf, 0xac, 0x53, 0x0c, 0x04, 0x02, 0xa0, 0xf7, 0xf8
+};
 
 typedef struct {
     char dac[1024];
@@ -105,12 +118,12 @@ enum controller_status {
     kOTAPending,
     kOTAOngoing,
     kOTAComplete,
-    kDACWritePending,
-    kDACWrite,
-    kDACWriteDone,
-    kPAIWritePending,
-    kPAIWrite,
-    kPAIWriteDone,
+    // kDACWritePending,
+    // kDACWrite,
+    // kDACWriteDone,
+    // kPAIWritePending,
+    // kPAIWrite,
+    // kPAIWriteDone,
     kOperationComplete,
 };
 
@@ -208,7 +221,7 @@ static void app_event_cb(const ChipDeviceEvent *event, intptr_t arg)
         if(s_current_state == controller_status::kOngoingCommission)
         {
             printf("Reboot due to BLE Connection closed failure\n");
-            esp_restart();
+            // esp_restart();
         }
     }
     break;
@@ -222,6 +235,11 @@ static void app_event_cb(const ChipDeviceEvent *event, intptr_t arg)
 
     }
         break;
+    case chip::DeviceLayer::DeviceEventType::kCommissioningComplete:
+    {
+        printf("Commissioning completed\n");
+        s_current_state = kEndDeviceCommissioned;
+    }
     default:
         break;
     }
@@ -233,7 +251,7 @@ void attr_read_cb(uint64_t remote_node_id, const chip::app::ConcreteDataAttribut
         uint8_t value;
         chip::app::DataModel::Decode(*data, value);
         printf("OTA Progress : %d\n", value);
-        if (value >= 90) {
+        if (value >= 98) {
             s_current_state = controller_status::kOTAComplete;
         }
         else if(value == s_ota_progress)
@@ -266,26 +284,27 @@ void attr_read_cb(uint64_t remote_node_id, const chip::app::ConcreteDataAttribut
         if (strncmp(value.data(), NEW_SOFTWARE_VERSION_STRING, value.size()) == 0) {
             printf("New Software version string found\n");
             s_sw_v_fetch_count = 0;
-            s_current_state = controller_status::kDACWritePending;
+            //s_current_state = controller_status::kDACWritePending;
+            s_current_state = controller_status::kOperationComplete;
         }
-        if(s_sw_v_fetch_count>7)
+        if(s_sw_v_fetch_count>14)
         {
             s_current_state = controller_status::kOTAPending;
         }
     }
 
-    else if (path.mClusterId == 0x131BFC05 && path.mAttributeId == 0x0) {
-        int8_t value;
-        chip::app::DataModel::Decode(*data, value);
-        printf("End Device Status Value : %d\n", value);
-        if ((s_current_state == controller_status::kDACWritePending) && (value == 1)) {
-            s_current_state = controller_status::kDACWrite;
-        } else if ((s_current_state == controller_status::kDACWriteDone) && (value == 2)) {
-            s_current_state = controller_status::kPAIWrite;
-        } else if ((s_current_state == controller_status::kPAIWriteDone) && (value == 3)) {
-            s_current_state = controller_status::kOperationComplete;
-        }
-    }
+    // else if (path.mClusterId == 0x131BFC05 && path.mAttributeId == 0x0) {
+        // int8_t value;
+        // chip::app::DataModel::Decode(*data, value);
+        // printf("End Device Status Value : %d\n", value);
+        // if ((s_current_state == controller_status::kDACWritePending) && (value == 1)) {
+        //     s_current_state = controller_status::kDACWrite;
+        // } else if ((s_current_state == controller_status::kDACWriteDone) && (value == 2)) {
+        //     s_current_state = controller_status::kPAIWrite;
+        // } else if ((s_current_state == controller_status::kPAIWriteDone) && (value == 3)) {
+        //     s_current_state = controller_status::kOperationComplete;
+        // }
+    // }
 
     return;
 }
@@ -315,6 +334,21 @@ esp_err_t pairing_api(uint64_t node_id, const char *ssid, const char *pass, cons
     lock::chip_stack_lock(portMAX_DELAY);
     controller::pairing_command::get_instance().set_callbacks(s_pairing_callback);
     controller::pairing_code_wifi(node_id, ssid, pass, payload);
+    lock::chip_stack_unlock();
+
+    return ESP_OK;
+}
+
+esp_err_t pairing_thread_api(uint64_t node_id, uint8_t *dataset, uint8_t dataset_len, const char *payload)
+{
+    printf("len:%d--dataset:", dataset_len);
+    for (int i = 0; i < dataset_len; i++) {
+        printf("%02x", dataset[i]);
+    }
+    printf("\n");
+    lock::chip_stack_lock(portMAX_DELAY);
+    controller::pairing_command::get_instance().set_callbacks(s_pairing_callback);
+    controller::pairing_code_thread(node_id, payload, dataset, dataset_len);
     lock::chip_stack_unlock();
 
     return ESP_OK;
@@ -421,7 +455,11 @@ static void custom_ota_event_handler()
     } break;
     case kEndDeviceAssigned: {
         ESP_LOGW(TAG, "Event: End Device Assigned");
-        pairing_api(s_end_device_data.node_id, SSID, PASSPHRASE, s_end_device_data.qr_code);
+#if 0
+        pairing_api(random_nodeid, SSID, PASSPHRASE, s_end_device_data.qr_code);
+#else
+        pairing_thread_api(random_nodeid, dataset_data, sizeof(dataset_data), s_end_device_data.qr_code);
+#endif
         s_ongoing_commissioing_state_count=0;
         s_current_state = controller_status::kOngoingCommission;
         // Block
@@ -449,7 +487,7 @@ static void custom_ota_event_handler()
     case kOTAPending: {
         ESP_LOGW(TAG, "Event: OTA Pending");
         char cmd_data[] = "{\"0:U64\": 56026, \"1:U64\": 65521, \"2:U8\": 0, \"4:U16\": 0}";
-        invoke_cmd_api(s_end_device_data.node_id, 0x0, 0x2A, 0x0, cmd_data);
+        invoke_cmd_api(random_nodeid, 0x0, 0x2A, 0x0, cmd_data);
         s_ota_retry_count=0;
         s_sw_v_fetch_count=0;
         s_current_state = controller_status::kOTAOngoing;
@@ -458,50 +496,53 @@ static void custom_ota_event_handler()
     case kOTAOngoing: {
         ESP_LOGW(TAG, "Event: OTA Ongoing");
         vTaskDelay(pdMS_TO_TICKS(5000));
-        read_attr_api(s_end_device_data.node_id, 0x0, 0x2A, 0x3);
+        read_attr_api(random_nodeid, 0x0, 0x2A, 0x3);
 
     } break;
     case kOTAComplete: {
         ESP_LOGW(TAG, "Event: Approaching....OTA Complete");
         vTaskDelay(pdMS_TO_TICKS(7500));
-        read_attr_api(s_end_device_data.node_id, 0x0, 0x28, 0xA);
+        read_attr_api(random_nodeid, 0x0, 0x28, 0xA);
 
     } break;
-    case kDACWritePending: {
-        ESP_LOGW(TAG, "Event: DAC Write Pending");
-        read_attr_api(s_end_device_data.node_id, 0x0, 0x131BFC05, 0x0);
-    } break;
-    case kDACWrite: {
-        ESP_LOGW(TAG, "Event: DAC Write");
-        printf("Sending DAC command data as : \n%s\n", s_end_device_data.dac);
-        invoke_cmd_api(s_end_device_data.node_id, 0x0, 0x131BFC05, 0x0, s_end_device_data.dac);
-        s_current_state = controller_status::kDACWriteDone;
-    } break;
-    case kDACWriteDone: {
-        ESP_LOGW(TAG, "Event: DAC Write Done");
-        vTaskDelay(pdMS_TO_TICKS(3000));
-        read_attr_api(s_end_device_data.node_id, 0x0, 0x131BFC05, 0x0);
-    } break;
+    // case kDACWritePending: {
+    //     ESP_LOGW(TAG, "Event: DAC Write Pending");
+    //     read_attr_api(random_nodeid, 0x0, 0x131BFC05, 0x0);
+    // } break;
+    // case kDACWrite: {
+    //     ESP_LOGW(TAG, "Event: DAC Write");
+    //     printf("Sending DAC command data as : \n%s\n", s_end_device_data.dac);
+    //     invoke_cmd_api(random_nodeid, 0x0, 0x131BFC05, 0x0, s_end_device_data.dac);
+    //     s_current_state = controller_status::kDACWriteDone;
+    // } break;
+    // case kDACWriteDone: {
+    //     ESP_LOGW(TAG, "Event: DAC Write Done");
+    //     vTaskDelay(pdMS_TO_TICKS(3000));
+    //     read_attr_api(random_nodeid, 0x0, 0x131BFC05, 0x0);
+    // } break;
     // case kPAIWritePending: {
     //     ESP_LOGI(TAG, "Event: PAI Write Pending");
-    //     uint64_t node_id_64 = string_to_int64(s_end_device_data.node_id);
+    //     uint64_t node_id_64 = string_to_int64(random_nodeid);
     //     read_attr_api(node_id_64, 0x0, 0x131BFC05, 0x0);
     // } break;
-    case kPAIWrite: {
-        ESP_LOGW(TAG, "Event: PAI Write");
-        printf("Sending PAI command data as : \n%s\n", s_end_device_data.pai);
-        invoke_cmd_api(s_end_device_data.node_id, 0x0, 0x131BFC05, 0x1, s_end_device_data.pai);
-        vTaskDelay(pdMS_TO_TICKS(3000));
-        s_current_state = controller_status::kPAIWriteDone;
-    } break;
-    case kPAIWriteDone: {
-        ESP_LOGW(TAG, "Event: PAI Write Done");
-        read_attr_api(s_end_device_data.node_id, 0x0, 0x131BFC05, 0x0);
+    // case kPAIWrite: {
+    //     ESP_LOGW(TAG, "Event: PAI Write");
+    //     printf("Sending PAI command data as : \n%s\n", s_end_device_data.pai);
+    //     invoke_cmd_api(random_nodeid, 0x0, 0x131BFC05, 0x1, s_end_device_data.pai);
+    //     vTaskDelay(pdMS_TO_TICKS(3000));
+    //     s_current_state = controller_status::kPAIWriteDone;
+    // } break;
+    // case kPAIWriteDone: {
+    //     ESP_LOGW(TAG, "Event: PAI Write Done");
+    //     read_attr_api(random_nodeid, 0x0, 0x131BFC05, 0x0);
 
-    } break;
+    // } break;
     case kOperationComplete: {
         ESP_LOGW(TAG, "Event: Operation Complete");
-        invoke_cmd_api(s_end_device_data.node_id, 0x0, 0x131BFC05, 0x2, NULL);
+        // invoke_cmd_api(random_nodeid, 0x0, 0x131BFC05, 0x2, NULL);
+        lock::chip_stack_lock(portMAX_DELAY);
+        controller::unpair_device(random_nodeid);
+        lock::chip_stack_unlock();
         vTaskDelay(pdMS_TO_TICKS(3000));
         controller_complete();
         vTaskDelay(pdMS_TO_TICKS(3000));
@@ -525,6 +566,18 @@ void controller_task(void *pvParameter)
 extern "C" void app_main()
 {
     esp_err_t err = ESP_OK;
+
+    // Function to generate a random number in a specified range
+    static std::random_device rd;
+    static std::mt19937 gen(rd()); // Random engine, initialized only once
+
+    // Create a uniform distribution for the range [lower_bound, upper_bound]
+    std::uniform_int_distribution<> dist(1, 1000000);
+
+    // Generate and return a random number within the specified range
+    random_nodeid = dist(gen);
+
+    printf("random_nodeid: %lld\n", random_nodeid);
 
     /* Initialize the ESP NVS layer */
     nvs_flash_init();
@@ -864,8 +917,8 @@ static esp_err_t controller_ready()
         if (json_obj_get_string(&jctx, "matter_node_id", Node_id, str_length + 1) == 0) {
             if (Node_id) {
                 printf("Node id:\n%s\n", Node_id);
-                s_end_device_data.node_id = string_to_int64(Node_id);
-                // strcpy(s_end_device_data.node_id, Node_id); // Todo:Use strncpy
+                //random_nodeid = string_to_int64(Node_id);
+                // strcpy(random_nodeid, Node_id); // Todo:Use strncpy
                 ret = ESP_OK;
             } else
                 ret = ESP_FAIL;
