@@ -19,12 +19,14 @@
 #include <esp_wifi.h>
 #endif // CONFIG_ENABLE_WIFI_AP || CONFIG_ENABLE_WIFI_STATION
 #include <string.h>
+#include <nvs_flash.h>
 
 namespace esp_matter {
 namespace console {
 #if CONFIG_ENABLE_WIFI_AP || CONFIG_ENABLE_WIFI_STATION
 static const char *TAG = "esp_matter_console_wifi";
 static engine wifi_console;
+static engine manager_console;
 
 static esp_err_t wifi_connect_handler(int argc, char *argv[])
 {
@@ -40,6 +42,45 @@ static esp_err_t wifi_connect_handler(int argc, char *argv[])
     ESP_RETURN_ON_ERROR(esp_wifi_start(), TAG, "Failed to start WiFi");
     ESP_RETURN_ON_ERROR(esp_wifi_connect(), TAG, "Failed to connect WiFi");
     return ESP_OK;
+}
+
+static esp_err_t manager_set_ip_handler(int argc, char *argv[])
+{
+    ESP_RETURN_ON_FALSE(argc == 1, ESP_ERR_INVALID_ARG, TAG, "Incorrect arguments");
+    char new_manager_ip[16];  // Adjust size as needed
+    strncpy(new_manager_ip, argv[0], sizeof(new_manager_ip) - 1);
+    new_manager_ip[sizeof(new_manager_ip) - 1] = '\0';  // Null-terminate
+
+    nvs_handle_t handle = 0;
+    esp_err_t err = nvs_open("manager", NVS_READWRITE, &handle);
+    if (err != ESP_OK) {
+        ESP_LOGE(TAG, "Error opening NVS: %d", err);
+        return err;
+    }
+    err = nvs_set_blob(handle, "manager_ip",new_manager_ip, sizeof(new_manager_ip));
+
+    ESP_LOGI(TAG,"\nwriting Manager-IP: \n%s\n",new_manager_ip);
+
+    nvs_commit(handle);
+
+    if(err==ESP_OK)
+        ESP_LOGI(TAG,"\nnew_manager_ip write success.\n");
+    else
+        ESP_LOGE(TAG,"\nnew_manager_ip write failure. %d\n",err);
+
+    nvs_close(handle);
+
+    return ESP_OK;
+
+}
+
+static esp_err_t manager_dispatch(int argc, char *argv[])
+{
+    if (argc <= 0) {
+        manager_console.for_each_command(print_description, NULL);
+        return ESP_OK;
+    }
+    return manager_console.exec_command(argc, argv);
 }
 
 static esp_err_t wifi_dispatch(int argc, char *argv[])
@@ -75,5 +116,30 @@ esp_err_t wifi_register_commands()
     return ESP_OK;
 #endif // CONFIG_ENABLE_WIFI_AP || CONFIG_ENABLE_WIFI_STATION
 }
+
+esp_err_t manager_register_commands()
+{
+#if CONFIG_ENABLE_WIFI_AP || CONFIG_ENABLE_WIFI_STATION
+    static const command_t command = {
+        .name = "manager",
+        .description = "Manager commands. Usage: matter esp manager <manager_command>.",
+        .handler = manager_dispatch,
+    };
+
+    static const command_t manager_commands[] = {
+        {
+            .name = "set-ip",
+            .description = "Connect to Manager. Usage: matter esp manager set-ip <ip-of-manager-machine>.",
+            .handler = manager_set_ip_handler,
+        },
+    };
+    manager_console.register_commands(manager_commands, sizeof(manager_commands) / sizeof(command_t));
+
+    return add_commands(&command, 1);
+#else
+    return ESP_OK;
+#endif // CONFIG_ENABLE_WIFI_AP || CONFIG_ENABLE_WIFI_STATION
+}
+
 } // namespace console
 } // namespace esp_matter

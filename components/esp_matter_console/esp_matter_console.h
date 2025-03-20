@@ -137,6 +137,15 @@ esp_err_t diagnostics_register_commands();
  */
 esp_err_t wifi_register_commands();
 
+/** Add Manager Commands
+ *
+ * Adds the default Manager commands.
+ *
+ * @return ESP_OK on success.
+ * @return error in case of failure.
+ */
+esp_err_t manager_register_commands();
+
 /** Add Thread Cli Commands
  *
  * Adds the default Thread Cli commands.

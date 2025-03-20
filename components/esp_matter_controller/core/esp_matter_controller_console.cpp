@@ -32,7 +32,7 @@
 #include <lib/shell/commands/Help.h>
 #include <lib/shell/streamer.h>
 #include <lib/support/CHIPArgParser.hpp>
-#include <lib/support/CHIPMem.h>
+// #include <lib/support/CHIPMem.h>
 #include <lib/support/CodeUtils.h>
 #include <platform/CHIPDeviceLayer.h>
 #include <protocols/secure_channel/RendezvousParameters.h>
@@ -61,7 +61,7 @@ static size_t get_array_size(const char *str)
     return ret;
 }
 
-static esp_err_t string_to_uint32_array(const char *str, ScopedMemoryBufferWithSize<uint32_t> &uint32_array)
+esp_err_t string_to_uint32_array(const char *str, ScopedMemoryBufferWithSize<uint32_t> &uint32_array)
 {
     size_t array_len = get_array_size(str);
     if (array_len == 0) {
@@ -454,7 +454,7 @@ static esp_err_t controller_read_attr_handler(int argc, char **argv)
     ESP_RETURN_ON_ERROR(string_to_uint32_array(argv[2], cluster_ids), TAG, "Failed to parse cluster IDs");
     ESP_RETURN_ON_ERROR(string_to_uint32_array(argv[3], attribute_ids), TAG, "Failed to parse attribute IDs");
 
-    return controller::send_read_attr_command(node_id, endpoint_ids, cluster_ids, attribute_ids);
+    return controller::send_read_attr_command(node_id, endpoint_ids, cluster_ids, attribute_ids, nullptr);
 }
 
 static esp_err_t controller_write_attr_handler(int argc, char **argv)
@@ -528,7 +528,7 @@ static esp_err_t controller_subscribe_attr_handler(int argc, char **argv)
     }
 
     return controller::send_subscribe_attr_command(node_id, endpoint_ids, cluster_ids, attribute_ids, min_interval,
-                                                   max_interval, keep_subscription, auto_resubscribe);
+                                                   max_interval, nullptr, keep_subscription, auto_resubscribe);
 }
 
 static esp_err_t controller_subscribe_event_handler(int argc, char **argv)

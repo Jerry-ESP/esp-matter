@@ -246,10 +246,10 @@ esp_err_t cluster_command::send_command()
 
 esp_err_t send_invoke_cluster_command(uint64_t destination_id, uint16_t endpoint_id, uint32_t cluster_id,
                                       uint32_t command_id, const char *command_data_field,
-                                      chip::Optional<uint16_t> timed_invoke_timeout_ms)
+                                      chip::Optional<uint16_t> timed_invoke_timeout_ms, custom_command_callback::on_success_callback_t on_success)
 {
     cluster_command *cmd = chip::Platform::New<cluster_command>(destination_id, endpoint_id, cluster_id, command_id,
-                                                                command_data_field, timed_invoke_timeout_ms);
+                                                                command_data_field, timed_invoke_timeout_ms, on_success);
     if (!cmd) {
         ESP_LOGE(TAG, "Failed to alloc memory for cluster_command");
         return ESP_ERR_NO_MEM;

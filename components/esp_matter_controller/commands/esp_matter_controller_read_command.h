@@ -135,7 +135,7 @@ private:
  */
 esp_err_t send_read_attr_command(uint64_t node_id, ScopedMemoryBufferWithSize<uint16_t> &endpoint_ids,
                                  ScopedMemoryBufferWithSize<uint32_t> &cluster_ids,
-                                 ScopedMemoryBufferWithSize<uint32_t> &attribute_ids);
+                                 ScopedMemoryBufferWithSize<uint32_t> &attribute_ids, attribute_report_cb_t attribute_cb);
 
 /** Send read command with multiple event paths
  *

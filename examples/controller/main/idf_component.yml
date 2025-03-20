@@ -1,0 +1,3 @@
+dependencies:
+  espressif/esp_diag_data_store:
+    override_path: ${RMAKER_PATH}/components/esp-insights/components/esp_diag_data_store

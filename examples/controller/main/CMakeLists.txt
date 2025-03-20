@@ -1,6 +1,7 @@
 idf_component_register(SRC_DIRS          "."
                        INCLUDE_DIRS      "."
                        PRIV_INCLUDE_DIRS  "." "${ESP_MATTER_PATH}/examples/common/utils"
+                       REQUIRES nvs_flash esp_matter esp_matter_controller json_parser esp_http_client
                        LDFRAGMENTS "linker.lf")
 
 if(CONFIG_SPIFFS_ATTESTATION_TRUST_STORE)

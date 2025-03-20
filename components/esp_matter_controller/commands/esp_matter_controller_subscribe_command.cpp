@@ -184,7 +184,7 @@ void subscribe_command::OnDone(ReadClient *apReadClient)
 esp_err_t send_subscribe_attr_command(uint64_t node_id, ScopedMemoryBufferWithSize<uint16_t> &endpoint_ids,
                                       ScopedMemoryBufferWithSize<uint32_t> &cluster_ids,
                                       ScopedMemoryBufferWithSize<uint32_t> &attribute_ids, uint16_t min_interval,
-                                      uint16_t max_interval, bool auto_resubscribe, bool keep_subscription)
+                                      uint16_t max_interval, attribute_report_cb_t attribute_cb, bool auto_resubscribe, bool keep_subscription)
 {
     if (endpoint_ids.AllocatedSize() != cluster_ids.AllocatedSize() ||
         endpoint_ids.AllocatedSize() != attribute_ids.AllocatedSize()) {
@@ -205,7 +205,7 @@ esp_err_t send_subscribe_attr_command(uint64_t node_id, ScopedMemoryBufferWithSi
     }
 
     subscribe_command *cmd = chip::Platform::New<subscribe_command>(
-        node_id, std::move(attr_paths), std::move(event_paths), min_interval, max_interval, auto_resubscribe, nullptr,
+        node_id, std::move(attr_paths), std::move(event_paths), min_interval, max_interval, auto_resubscribe, attribute_cb,
         nullptr, nullptr, nullptr, keep_subscription);
     if (!cmd) {
         ESP_LOGE(TAG, "Failed to alloc memory for subscribe_command");
@@ -260,7 +260,7 @@ esp_err_t send_subscribe_attr_command(uint64_t node_id, uint16_t endpoint_id, ui
     if (!(endpoint_ids.Get() && cluster_ids.Get() && attribute_ids.Get())) {
         return ESP_ERR_NO_MEM;
     }
-    return send_subscribe_attr_command(node_id, endpoint_ids, cluster_ids, attribute_ids, min_interval, max_interval,
+    return send_subscribe_attr_command(node_id, endpoint_ids, cluster_ids, attribute_ids, min_interval, max_interval, nullptr,
                                        auto_resubscribe, keep_subscription);
 }
 

@@ -30,6 +30,8 @@
 namespace esp_matter {
 namespace ota_provider {
 
+extern char dcl_rest_url[50];
+
 class EspOtaProvider : public chip::app::Clusters::OTAProviderDelegate {
 public:
     using OTAQueryStatus = chip::app::Clusters::OtaSoftwareUpdateProvider::OTAQueryStatus;
