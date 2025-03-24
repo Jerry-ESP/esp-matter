@@ -1101,6 +1101,128 @@ esp_err_t add(cluster_t *cluster)
 } /* feature */
 } /* air_quality */
 
+namespace concentration_measurement {
+namespace feature {
+
+namespace numeric_measurement {
+
+uint32_t get_id()
+{
+    return (uint32_t)0x1;
+}
+
+esp_err_t add(cluster_t *cluster)
+{
+    VerifyOrReturnError(cluster, ESP_ERR_INVALID_ARG, ESP_LOGE(TAG, "Cluster cannot be NULL"));
+    update_feature_map(cluster, get_id());
+
+    attribute::create(cluster, 0x00, ATTRIBUTE_FLAG_NONE, esp_matter_nullable_float(NULL));
+    attribute::create(cluster, 0x01, ATTRIBUTE_FLAG_NONE, esp_matter_nullable_float(NULL));
+    attribute::create(cluster, 0x02, ATTRIBUTE_FLAG_NONE, esp_matter_nullable_float(NULL));
+    attribute::create(cluster, 0x08, ATTRIBUTE_FLAG_NONE, esp_matter_enum8(0));
+
+    return ESP_OK;
+}
+
+} /* numeric_measurement */
+
+namespace level_indication {
+
+uint32_t get_id()
+{
+    return (uint32_t)0x2;
+}
+
+esp_err_t add(cluster_t *cluster)
+{
+    VerifyOrReturnError(cluster, ESP_ERR_INVALID_ARG, ESP_LOGE(TAG, "Cluster cannot be NULL"));
+    update_feature_map(cluster, get_id());
+
+    attribute::create(cluster, 0x0A, ATTRIBUTE_FLAG_NONE, esp_matter_enum8(0));
+
+    return ESP_OK;
+}
+
+} /* level_indication */
+
+namespace medium_level {
+
+uint32_t get_id()
+{
+    return (uint32_t)0x4;
+}
+
+esp_err_t add(cluster_t *cluster)
+{
+    VerifyOrReturnError(cluster, ESP_ERR_INVALID_ARG, ESP_LOGE(TAG, "Cluster cannot be NULL"));
+    update_feature_map(cluster, get_id());
+
+    return ESP_OK;
+}
+
+} /* medium_level */
+
+namespace critical_level {
+
+uint32_t get_id()
+{
+    return (uint32_t)0x8;
+
+}
+
+esp_err_t add(cluster_t *cluster)
+{
+    VerifyOrReturnError(cluster, ESP_ERR_INVALID_ARG, ESP_LOGE(TAG, "Cluster cannot be NULL"));
+    update_feature_map(cluster, get_id());
+
+    return ESP_OK;
+}
+
+} /* critical_level */
+
+namespace peak_measurement {
+
+uint32_t get_id()
+{
+    return (uint32_t)0x10;
+}
+
+esp_err_t add(cluster_t *cluster)
+{
+    VerifyOrReturnError(cluster, ESP_ERR_INVALID_ARG, ESP_LOGE(TAG, "Cluster cannot be NULL"));
+    update_feature_map(cluster, get_id());
+
+    attribute::create(cluster, 0x03, ATTRIBUTE_FLAG_NONE, esp_matter_nullable_float(NULL));
+    attribute::create(cluster, 0x04, ATTRIBUTE_FLAG_NONE, esp_matter_uint32(0));
+
+    return ESP_OK;
+}
+
+} /* peak_measurement */
+
+namespace average_measurement {
+
+uint32_t get_id()
+{
+    return (uint32_t)0x20;
+}
+
+esp_err_t add(cluster_t *cluster)
+{
+    VerifyOrReturnError(cluster, ESP_ERR_INVALID_ARG, ESP_LOGE(TAG, "Cluster cannot be NULL"));
+    update_feature_map(cluster, get_id());
+
+    attribute::create(cluster, 0x05, ATTRIBUTE_FLAG_NONE, esp_matter_nullable_float(NULL));
+    attribute::create(cluster, 0x06, ATTRIBUTE_FLAG_NONE, esp_matter_uint32(0));
+
+    return ESP_OK;
+}
+
+} /* average_measurement */
+
+} /* feature */
+} /* concentration_measurement */
+
 namespace carbon_monoxide_concentration_measurement {
 namespace feature {
 

@@ -680,6 +680,50 @@ esp_err_t add(cluster_t *cluster);
 } /* feature */
 } /* air_quality */
 
+namespace concentration_measurement {
+namespace feature {
+
+namespace numeric_measurement {
+uint32_t get_id();
+esp_err_t add(cluster_t *cluster);
+
+} /* numeric_measurement */
+
+namespace level_indication {
+uint32_t get_id();
+esp_err_t add(cluster_t *cluster);
+
+} /* level_indication */
+
+namespace medium_level {
+
+uint32_t get_id();
+esp_err_t add(cluster_t *cluster);
+
+} /* medium_level */
+
+namespace critical_level {
+
+uint32_t get_id();
+esp_err_t add(cluster_t *cluster);
+
+} /* critical_level */
+
+namespace peak_measurement {
+uint32_t get_id();
+esp_err_t add(cluster_t *cluster);
+
+} /* peak_measurement */
+
+namespace average_measurement {
+uint32_t get_id();
+esp_err_t add(cluster_t *cluster);
+
+} /* average_measurement */
+
+} /* feature */
+} /* concentration_measurement */
+
 namespace carbon_monoxide_concentration_measurement {
 namespace feature {
 

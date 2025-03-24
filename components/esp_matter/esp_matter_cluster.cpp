@@ -1478,7 +1478,7 @@ cluster_t *create(endpoint_t *endpoint, config_t *config, uint8_t flags)
 namespace concentration_measurement {
 
 template <typename T>
-static cluster_t *create(endpoint_t *endpoint, T *config, uint8_t flags, uint32_t cluster_id, uint32_t cluster_revision,
+static cluster_t *create(endpoint_t *endpoint, T *config, uint8_t flags, uint32_t cluster_id, uint32_t cluster_revision, uint32_t features,
                          const function_generic_t *function_list=NULL, const int function_flags=CLUSTER_FLAG_NONE)
 {
     cluster_t *cluster = cluster::create(endpoint, cluster_id, flags);
@@ -1502,6 +1502,33 @@ static cluster_t *create(endpoint_t *endpoint, T *config, uint8_t flags, uint32_
         create_default_binding_cluster(endpoint);
     }
 
+    /* Features */
+    if (!(features & (feature::numeric_measurement::get_id() | feature::level_indication::get_id()))) {
+        ESP_LOGE(TAG, "Cluster shall support at least one of MEA or LEV features.");
+    }
+    if (features & feature::numeric_measurement::get_id()) {
+        feature::numeric_measurement::add(cluster);
+    }
+    if (features & feature::level_indication::get_id()) {
+        feature::level_indication::add(cluster);
+    }
+    if (features & feature::level_indication::get_id()) {
+        if (features & feature::medium_level::get_id()) {
+            feature::medium_level::add(cluster);
+        }
+        if (features & feature::critical_level::get_id()) {
+            feature::critical_level::add(cluster);
+        }
+    }
+    if (features & feature::numeric_measurement::get_id()) {
+        if (features & feature::peak_measurement::get_id()) {
+            feature::peak_measurement::add(cluster);
+        }
+        if (features & feature::average_measurement::get_id()) {
+            feature::average_measurement::add(cluster);
+        }
+    }
+
     return cluster;
 }
 
@@ -1509,99 +1536,120 @@ static cluster_t *create(endpoint_t *endpoint, T *config, uint8_t flags, uint32_
 
 namespace  carbon_monoxide_concentration_measurement {
 
-cluster_t *create(endpoint_t *endpoint, config_t *config, uint8_t flags)
+cluster_t *create(endpoint_t *endpoint, config_t *config, uint8_t flags, uint32_t features)
 {
-    return concentration_measurement::create<config_t>(endpoint, config, flags,
-                                                       CarbonMonoxideConcentrationMeasurement::Id, cluster_revision);
+    cluster_t *cluster = concentration_measurement::create<config_t>(endpoint, config, flags,
+                                                                     CarbonMonoxideConcentrationMeasurement::Id, cluster_revision, features);
+
+    return cluster;
 }
 
 } /* carbon_monoxide_concentration_measurement */
 
 namespace  carbon_dioxide_concentration_measurement {
 
-cluster_t *create(endpoint_t *endpoint, config_t *config, uint8_t flags)
+cluster_t *create(endpoint_t *endpoint, config_t *config, uint8_t flags, uint32_t features)
 {
-    return concentration_measurement::create<config_t>(endpoint, config, flags,
-                                                       CarbonDioxideConcentrationMeasurement::Id, cluster_revision);
+    cluster_t *cluster = concentration_measurement::create<config_t>(endpoint, config, flags,
+                                                                     CarbonDioxideConcentrationMeasurement::Id, cluster_revision, features);
+
+    return cluster;
 }
 
 } /* carbon_dioxide_concentration_measurement */
 
 namespace  nitrogen_dioxide_concentration_measurement {
 
-cluster_t *create(endpoint_t *endpoint, config_t *config, uint8_t flags)
+cluster_t *create(endpoint_t *endpoint, config_t *config, uint8_t flags, uint32_t features)
 {
-    return concentration_measurement::create<config_t>(endpoint, config, flags,
-                                                       NitrogenDioxideConcentrationMeasurement::Id, cluster_revision);
+    cluster_t *cluster = concentration_measurement::create<config_t>(endpoint, config, flags,
+                                                                     NitrogenDioxideConcentrationMeasurement::Id, cluster_revision, features);
+
+    return cluster;
 }
 
 } /* nitrogen_dioxide_concentration_measurement */
 
 namespace  ozone_concentration_measurement {
 
-cluster_t *create(endpoint_t *endpoint, config_t *config, uint8_t flags)
+cluster_t *create(endpoint_t *endpoint, config_t *config, uint8_t flags, uint32_t features)
 {
-    return concentration_measurement::create<config_t>(endpoint, config, flags,
-                                                       OzoneConcentrationMeasurement::Id, cluster_revision);
+    cluster_t *cluster = concentration_measurement::create<config_t>(endpoint, config, flags,
+                                                                     OzoneConcentrationMeasurement::Id, cluster_revision, features);
+
+    return cluster;
 }
 
 } /* ozone_concentration_measurement */
 
 namespace  formaldehyde_concentration_measurement {
 
-cluster_t *create(endpoint_t *endpoint, config_t *config, uint8_t flags)
+cluster_t *create(endpoint_t *endpoint, config_t *config, uint8_t flags, uint32_t features)
 {
-    return concentration_measurement::create<config_t>(endpoint, config, flags,
-                                                       FormaldehydeConcentrationMeasurement::Id, cluster_revision);
+    cluster_t *cluster = concentration_measurement::create<config_t>(endpoint, config, flags,
+                                                                     FormaldehydeConcentrationMeasurement::Id, cluster_revision, features);
+
+    return cluster;
 }
 
 } /* formaldehyde_concentration_measurement */
 
 namespace  pm1_concentration_measurement {
 
-cluster_t *create(endpoint_t *endpoint, config_t *config, uint8_t flags)
+cluster_t *create(endpoint_t *endpoint, config_t *config, uint8_t flags, uint32_t features)
 {
-    return concentration_measurement::create<config_t>(endpoint, config, flags,
-                                                       Pm1ConcentrationMeasurement::Id, cluster_revision);
+    cluster_t *cluster = concentration_measurement::create<config_t>(endpoint, config, flags,
+                                                                     Pm1ConcentrationMeasurement::Id, cluster_revision, features);
+
+    return cluster;
 }
 
 } /* pm1_concentration_measurement */
 
 namespace  pm25_concentration_measurement {
 
-cluster_t *create(endpoint_t *endpoint, config_t *config, uint8_t flags)
+cluster_t *create(endpoint_t *endpoint, config_t *config, uint8_t flags, uint32_t features)
 {
-    return concentration_measurement::create<config_t>(endpoint, config, flags,
-                                                       Pm25ConcentrationMeasurement::Id, cluster_revision);
+    cluster_t *cluster = concentration_measurement::create<config_t>(endpoint, config, flags,
+                                                                     Pm25ConcentrationMeasurement::Id, cluster_revision, features);
+
+    return cluster;
 }
 
 } /* pm25_concentration_measurement */
 
 namespace  pm10_concentration_measurement {
 
-cluster_t *create(endpoint_t *endpoint, config_t *config, uint8_t flags)
+cluster_t *create(endpoint_t *endpoint, config_t *config, uint8_t flags, uint32_t features)
 {
-    return concentration_measurement::create<config_t>(endpoint, config, flags,
-                                                       Pm10ConcentrationMeasurement::Id, cluster_revision);
+    cluster_t *cluster = concentration_measurement::create<config_t>(endpoint, config, flags,
+                                                                     Pm10ConcentrationMeasurement::Id, cluster_revision, features);
+
+    return cluster;
 }
 
 } /* pm10_concentration_measurement */
 
 namespace  radon_concentration_measurement {
 
-cluster_t *create(endpoint_t *endpoint, config_t *config, uint8_t flags)
+cluster_t *create(endpoint_t *endpoint, config_t *config, uint8_t flags, uint32_t features)
 {
-    return concentration_measurement::create<config_t>(endpoint, config, flags,
-                                                       RadonConcentrationMeasurement::Id, cluster_revision);
+    cluster_t *cluster = concentration_measurement::create<config_t>(endpoint, config, flags,
+                                                                     RadonConcentrationMeasurement::Id, cluster_revision, features);
+
+    return cluster;
 }
 
 } /* radon_concentration_measurement */
 
 namespace  total_volatile_organic_compounds_concentration_measurement {
 
-cluster_t *create(endpoint_t *endpoint, config_t *config, uint8_t flags)
+cluster_t *create(endpoint_t *endpoint, config_t *config, uint8_t flags, uint32_t features)
 {
-    return concentration_measurement::create<config_t>(endpoint, config, flags, TotalVolatileOrganicCompoundsConcentrationMeasurement::Id, cluster_revision);
+    cluster_t *cluster = concentration_measurement::create<config_t>(endpoint, config, flags,
+                                                                     TotalVolatileOrganicCompoundsConcentrationMeasurement::Id, cluster_revision, features);
+
+    return cluster;
 }
 
 } /* total_volatile_organic_compounds_concentration_measurement */
