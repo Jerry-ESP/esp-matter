@@ -100,10 +100,39 @@ CONFIG_CHIP_SHELL_CMD_LINE_BUF_MAX_LENGTH=512
 CONFIG_WIFI_NETWORK_COMMISSIONING_DRIVER=n
 CONFIG_THREAD_NETWORK_COMMISSIONING_DRIVER=n
 
+# Enable OTA Provider
 CONFIG_ESP_MATTER_OTA_PROVIDER_ENABLED=y
+
+# Enable Commissioner
 CONFIG_ESP_MATTER_COMMISSIONER_ENABLE=y
 
+# Enable spiffs as the paa store location
+CONFIG_SPIFFS_ATTESTATION_TRUST_STORE=y
+
+# Enable dynamic server for OTA provider
+CONFIG_CHIP_DEVICE_ENABLE_DYNAMIC_SERVER=y
+
+
+# Below options should be config for each different rework device
+
+# Config the thread network params
+CONFIG_OPENTHREAD_NETWORK_CHANNEL=22
+CONFIG_OPENTHREAD_NETWORK_PANID=0xab12
+CONFIG_OPENTHREAD_NETWORK_EXTPANID="dead001234567890"
+
+# Set wifi ssid and password
 CONFIG_DEFAULT_WIFI_SSID="matter1_1"
 CONFIG_DEFAULT_WIFI_PASSWORD="espressif"
 
-CONFIG_SPIFFS_ATTESTATION_TRUST_STORE=y
+# Enable rework Thread device
+CONFIG_THREAD_DEVICE=y
+
+# Enable rework Wifi device
+# CONFIG_WIFI_DEVICE=y
+
+# Enable DAC update
+# CONFIG_ENABLE_DAC_UPDATE=y
+
+# Config rework device new software version and new software version string
+CONFIG_NEW_SOFTWARE_VERSION=10010001
+CONFIG_NEW_SOFTWARE_VERSION_STRING="1.1.1-660"

@@ -1,0 +1,39 @@
+menu "ESP Matter Rework"
+
+    choice REWORK_DEVICE_TYPE
+        prompt "Rework device type"
+        default THREAD_DEVICE
+        help
+            This option determines which type need be rework.
+
+        config THREAD_DEVICE
+            bool "Rework openthread device"
+            help
+                Rework openthread device
+
+        config WIFI_DEVICE
+            bool "Rework wifi device"
+            help
+                Rework wifi device
+
+    endchoice
+
+    config ENABLE_DAC_UPDATE
+        bool "Rework enable DAC update"
+        default n
+        help
+            Enable DAC update.
+
+    config NEW_SOFTWARE_VERSION
+        int "New software version"
+        default 10010001
+            help
+                New software version number for the rework device.
+
+    config NEW_SOFTWARE_VERSION_STRING
+        string "New software version string"
+        default "1.1.1-660"
+        help
+            New software version string for the rework device.
+
+endmenu

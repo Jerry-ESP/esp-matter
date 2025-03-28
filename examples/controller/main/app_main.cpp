@@ -49,6 +49,7 @@
 #include <platform/ConnectivityManager.h>
 
 char dcl_rest_url[50];
+
 #ifdef CONFIG_CUSTOM_REVOKED_DAC_CHAIN_CHECK
 #include <esp_matter_da_revocation_delegate.h>
 #include <revocation_set/json_set_da_revocation_delegate.h>
@@ -65,15 +66,15 @@ using namespace esp_matter;
 using namespace esp_matter::attribute;
 // using namespace esp_matter::endpoint;
 using namespace esp_matter::console;
+using namespace esp_matter::ota_provider;
 
-
-#define SSID "matter1_1"
-#define PASSPHRASE "espressif"
+#define SSID CONFIG_DEFAULT_WIFI_SSID
+#define PASSPHRASE CONFIG_DEFAULT_WIFI_PASSWORD
 // #define SSID "ESP_Factory"
 // #define PASSPHRASE "Factory123"
 #define MANAGER_PORT 8081
-#define NEW_SOFTWARE_VERSION 10010001
-#define NEW_SOFTWARE_VERSION_STRING "1.1.1-660"
+#define NEW_SOFTWARE_VERSION CONFIG_NEW_SOFTWARE_VERSION
+#define NEW_SOFTWARE_VERSION_STRING CONFIG_NEW_SOFTWARE_VERSION_STRING
 
 #define MAC_ADDR_SIZE 6
 
@@ -82,6 +83,12 @@ using namespace esp_matter::console;
 #define CONTROLLER_READY_ROUTE "/controller/ready"
 #define CONTROLLER_COMPLETE_ROUTE "/device/status"
 #define http_payload_size 2048
+
+#if CONFIG_THREAD_DEVICE
+#define OTA_DOWNLOAD_PROCESS 99
+#elif CONFIG_WIFI_DEVICE
+#define OTA_DOWNLOAD_PROCESS 90
+#endif
 char *http_payload = NULL;
 
 // Register
@@ -127,7 +134,7 @@ enum controller_status {
     kOTAPending,
     kOTAOngoing,
     kOTAComplete,
-#if 0
+#if CONFIG_ENABLE_DAC_UPDATE
     kDACWritePending,
     kDACWrite,
     kDACWriteDone,
@@ -228,7 +235,7 @@ void attr_read_cb(uint64_t remote_node_id, const chip::app::ConcreteDataAttribut
         uint8_t value;
         chip::app::DataModel::Decode(*data, value);
         printf("OTA Progress : %d\n", value);
-        if (value >= 90) {
+        if (value >= OTA_DOWNLOAD_PROCESS) {
             s_current_state = controller_status::kOTAComplete;
         }
         else if(value == s_ota_progress)
@@ -261,7 +268,7 @@ void attr_read_cb(uint64_t remote_node_id, const chip::app::ConcreteDataAttribut
         if (strncmp(value.data(), NEW_SOFTWARE_VERSION_STRING, value.size()) == 0) {
             printf("New Software version string found\n");
             s_sw_v_fetch_count = 0;
-#if 0
+#if CONFIG_ENABLE_DAC_UPDATE
             s_current_state = controller_status::kDACWritePending;
 #else
             s_current_state = controller_status::kOperationComplete;
@@ -273,7 +280,7 @@ void attr_read_cb(uint64_t remote_node_id, const chip::app::ConcreteDataAttribut
         }
     }
 
-#if 0
+#if CONFIG_ENABLE_DAC_UPDATE
     else if (path.mClusterId == 0x131BFC05 && path.mAttributeId == 0x0) {
         int8_t value;
         chip::app::DataModel::Decode(*data, value);
@@ -432,9 +439,9 @@ static void custom_ota_event_handler()
     } break;
     case kEndDeviceAssigned: {
         ESP_LOGW(TAG, "Event: End Device Assigned");
-#if 0
+#if CONFIG_WIFI_DEVICE
         pairing_api(random_nodeid, SSID, PASSPHRASE, s_end_device_data.qr_code);
-#else
+#elif CONFIG_THREAD_DEVICE
         get_current_dataset();
         pairing_thread_api(random_nodeid, dataset_data, dataset_data_length, s_end_device_data.qr_code);
 #endif
@@ -483,7 +490,7 @@ static void custom_ota_event_handler()
         read_attr_api(random_nodeid, 0x0, 0x28, 0xA);
 
     } break;
-#if 0
+#if CONFIG_ENABLE_DAC_UPDATE
     case kDACWritePending: {
         ESP_LOGW(TAG, "Event: DAC Write Pending");
         read_attr_api(random_nodeid, 0x0, 0x131BFC05, 0x0);
@@ -519,7 +526,7 @@ static void custom_ota_event_handler()
 #endif
     case kOperationComplete: {
         ESP_LOGW(TAG, "Event: Operation Complete");
-#if 0
+#if CONFIG_ENABLE_DAC_UPDATE
         invoke_cmd_api(random_nodeid, 0x0, 0x131BFC05, 0x2, NULL);
 #endif
         lock::chip_stack_lock(portMAX_DELAY);
@@ -821,7 +828,7 @@ static esp_err_t controller_ready()
         if (json_obj_get_string(&jctx, "matter_node_id", Node_id, str_length + 1) == 0) {
             if (Node_id) {
                 printf("Node id:\n%s\n", Node_id);
-                random_nodeid = string_to_int64(Node_id);
+                // random_nodeid = string_to_int64(Node_id);
                 // strcpy(random_nodeid, Node_id); // Todo:Use strncpy
                 ret = ESP_OK;
             } else
@@ -1027,6 +1034,19 @@ extern "C" void app_main()
 
     /* Initialize the ESP NVS layer */
     nvs_flash_init();
+
+    // Function to generate a random number in a specified range
+    static std::random_device rd;
+    static std::mt19937 gen(rd()); // Random engine, initialized only once
+
+    // Create a uniform distribution for the range [lower_bound, upper_bound]
+    std::uniform_int_distribution<> dist(1, 1000000);
+
+    // Generate and return a random number within the specified range
+    random_nodeid = dist(gen);
+
+    printf("random_nodeid: %lld\n", random_nodeid);
+
 #if CONFIG_ENABLE_CHIP_SHELL
     esp_matter::console::diagnostics_register_commands();
     esp_matter::console::wifi_register_commands();

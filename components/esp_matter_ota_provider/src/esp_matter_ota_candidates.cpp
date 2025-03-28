@@ -128,6 +128,7 @@ static esp_err_t _query_software_version_array(const uint16_t vendor_id, const u
     ;
     char url[100];
     snprintf(url, sizeof(url), "%s/%d/%d", dcl_rest_url, vendor_id, product_id);
+    printf("%s---%s\n", __FUNCTION__, url);
     esp_http_client_config_t config = {
         .url = url,
         // .transport_type = HTTP_TRANSPORT_OVER_SSL,
@@ -222,6 +223,7 @@ static esp_err_t _query_ota_candidate(model_version_t *model, uint32_t new_softw
     esp_err_t ret = ESP_OK;
     char url[128];
     snprintf(url, sizeof(url), "%s/%d/%d/%ld", dcl_rest_url, model->vendor_id, model->product_id, new_software_version);
+    printf("%s---%s\n", __FUNCTION__, url);
     esp_http_client_config_t config = {
         .url = url,
         // .transport_type = HTTP_TRANSPORT_OVER_SSL,

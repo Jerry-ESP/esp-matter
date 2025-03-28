@@ -27,10 +27,10 @@
 
 #define SOFTWARE_VERSION_STR_MAX_LEN 64
 
+extern char dcl_rest_url[50];
+
 namespace esp_matter {
 namespace ota_provider {
-
-extern char dcl_rest_url[50];
 
 class EspOtaProvider : public chip::app::Clusters::OTAProviderDelegate {
 public:
