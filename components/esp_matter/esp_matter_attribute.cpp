@@ -841,6 +841,12 @@ attribute_t *create_mesh_local_prefix(cluster_t *cluster, uint8_t *value, uint16
                                          ATTRIBUTE_FLAG_MANAGED_INTERNALLY | ATTRIBUTE_FLAG_NULLABLE, esp_matter_octet_str(value, length));
 }
 
+attribute_t *create_overrun_count(cluster_t *cluster, uint64_t value)
+{
+    return esp_matter::attribute::create(cluster, ThreadNetworkDiagnostics::Attributes::OverrunCount::Id,
+					                     ATTRIBUTE_FLAG_MANAGED_INTERNALLY, esp_matter_uint64(value));
+}
+
 attribute_t *create_neighbor_table(cluster_t *cluster, uint8_t *value, uint16_t length, uint16_t count)
 {
     return esp_matter::attribute::create(cluster, ThreadNetworkDiagnostics::Attributes::NeighborTable::Id,
@@ -881,6 +887,276 @@ attribute_t *create_leader_router_id(cluster_t *cluster, nullable<uint8_t> value
 {
     return esp_matter::attribute::create(cluster, ThreadNetworkDiagnostics::Attributes::LeaderRouterId::Id,
                                          ATTRIBUTE_FLAG_MANAGED_INTERNALLY | ATTRIBUTE_FLAG_NULLABLE, esp_matter_nullable_uint8(value));
+}
+
+attribute_t *create_detached_role_count(cluster_t *cluster, uint16_t value)
+{
+    return esp_matter::attribute::create(cluster, ThreadNetworkDiagnostics::Attributes::DetachedRoleCount::Id,
+					                     ATTRIBUTE_FLAG_MANAGED_INTERNALLY, esp_matter_uint16(value));
+}
+
+attribute_t *create_child_role_count(cluster_t *cluster, uint16_t value)
+{
+    return esp_matter::attribute::create(cluster, ThreadNetworkDiagnostics::Attributes::ChildRoleCount::Id,
+					                     ATTRIBUTE_FLAG_MANAGED_INTERNALLY, esp_matter_uint16(value));
+}
+
+attribute_t *create_router_role_count(cluster_t *cluster, uint16_t value)
+{
+    return esp_matter::attribute::create(cluster, ThreadNetworkDiagnostics::Attributes::RouterRoleCount::Id,
+					                     ATTRIBUTE_FLAG_MANAGED_INTERNALLY, esp_matter_uint16(value));
+}
+
+attribute_t *create_leader_role_count(cluster_t *cluster, uint16_t value)
+{
+    return esp_matter::attribute::create(cluster, ThreadNetworkDiagnostics::Attributes::LeaderRoleCount::Id,
+					                     ATTRIBUTE_FLAG_MANAGED_INTERNALLY, esp_matter_uint16(value));
+}
+
+attribute_t *create_attach_attempt_count(cluster_t *cluster, uint16_t value)
+{
+    return esp_matter::attribute::create(cluster, ThreadNetworkDiagnostics::Attributes::AttachAttemptCount::Id,
+					                     ATTRIBUTE_FLAG_MANAGED_INTERNALLY, esp_matter_uint16(value));
+}
+
+attribute_t *create_partition_id_change_count(cluster_t *cluster, uint16_t value)
+{
+    return esp_matter::attribute::create(cluster, ThreadNetworkDiagnostics::Attributes::PartitionIdChangeCount::Id,
+					                     ATTRIBUTE_FLAG_MANAGED_INTERNALLY, esp_matter_uint16(value));
+}
+
+attribute_t *create_better_partition_attach_attempt_count(cluster_t *cluster, uint16_t value)
+{
+    return esp_matter::attribute::create(cluster, ThreadNetworkDiagnostics::Attributes::BetterPartitionAttachAttemptCount::Id,
+					                     ATTRIBUTE_FLAG_MANAGED_INTERNALLY, esp_matter_uint16(value));
+}
+
+attribute_t *create_parent_change_count(cluster_t *cluster, uint16_t value)
+{
+    return esp_matter::attribute::create(cluster, ThreadNetworkDiagnostics::Attributes::ParentChangeCount::Id,
+					                     ATTRIBUTE_FLAG_MANAGED_INTERNALLY, esp_matter_uint16(value));
+}
+
+attribute_t *create_tx_total_count(cluster_t *cluster, uint32_t value)
+{
+    return esp_matter::attribute::create(cluster, ThreadNetworkDiagnostics::Attributes::TxTotalCount::Id,
+					                     ATTRIBUTE_FLAG_MANAGED_INTERNALLY, esp_matter_uint32(value));
+}
+
+attribute_t *create_tx_unicast_count(cluster_t *cluster, uint32_t value)
+{
+    return esp_matter::attribute::create(cluster, ThreadNetworkDiagnostics::Attributes::TxUnicastCount::Id,
+					                     ATTRIBUTE_FLAG_MANAGED_INTERNALLY, esp_matter_uint32(value));
+}
+
+attribute_t *create_tx_broadcast_count(cluster_t *cluster, uint32_t value)
+{
+    return esp_matter::attribute::create(cluster, ThreadNetworkDiagnostics::Attributes::TxBroadcastCount::Id,
+					                     ATTRIBUTE_FLAG_MANAGED_INTERNALLY, esp_matter_uint32(value));
+}
+
+attribute_t *create_tx_ack_requested_count(cluster_t *cluster, uint32_t value)
+{
+    return esp_matter::attribute::create(cluster, ThreadNetworkDiagnostics::Attributes::TxAckRequestedCount::Id,
+					                     ATTRIBUTE_FLAG_MANAGED_INTERNALLY, esp_matter_uint32(value));
+}
+
+attribute_t *create_tx_acked_count(cluster_t *cluster, uint32_t value)
+{
+    return esp_matter::attribute::create(cluster, ThreadNetworkDiagnostics::Attributes::TxAckedCount::Id,
+					                     ATTRIBUTE_FLAG_MANAGED_INTERNALLY, esp_matter_uint32(value));
+}
+
+attribute_t *create_tx_no_ack_requested_count(cluster_t *cluster, uint32_t value)
+{
+    return esp_matter::attribute::create(cluster, ThreadNetworkDiagnostics::Attributes::TxNoAckRequestedCount::Id,
+					                     ATTRIBUTE_FLAG_MANAGED_INTERNALLY, esp_matter_uint32(value));
+}
+
+attribute_t *create_tx_data_count(cluster_t *cluster, uint32_t value)
+{
+    return esp_matter::attribute::create(cluster, ThreadNetworkDiagnostics::Attributes::TxDataCount::Id,
+					                     ATTRIBUTE_FLAG_MANAGED_INTERNALLY, esp_matter_uint32(value));
+}
+
+attribute_t *create_tx_data_poll_count(cluster_t *cluster, uint32_t value)
+{
+    return esp_matter::attribute::create(cluster, ThreadNetworkDiagnostics::Attributes::TxDataPollCount::Id,
+					                     ATTRIBUTE_FLAG_MANAGED_INTERNALLY, esp_matter_uint32(value));
+}
+
+attribute_t *create_tx_beacon_count(cluster_t *cluster, uint32_t value)
+{
+    return esp_matter::attribute::create(cluster, ThreadNetworkDiagnostics::Attributes::TxBeaconCount::Id,
+					                     ATTRIBUTE_FLAG_MANAGED_INTERNALLY, esp_matter_uint32(value));
+}
+
+attribute_t *create_tx_beacon_request_count(cluster_t *cluster, uint32_t value)
+{
+    return esp_matter::attribute::create(cluster, ThreadNetworkDiagnostics::Attributes::TxBeaconRequestCount::Id,
+					                     ATTRIBUTE_FLAG_MANAGED_INTERNALLY, esp_matter_uint32(value));
+}
+
+attribute_t *create_tx_other_count(cluster_t *cluster, uint32_t value)
+{
+    return esp_matter::attribute::create(cluster, ThreadNetworkDiagnostics::Attributes::TxOtherCount::Id,
+					                     ATTRIBUTE_FLAG_MANAGED_INTERNALLY, esp_matter_uint32(value));
+}
+
+attribute_t *create_tx_retry_count(cluster_t *cluster, uint32_t value)
+{
+    return esp_matter::attribute::create(cluster, ThreadNetworkDiagnostics::Attributes::TxRetryCount::Id,
+					                     ATTRIBUTE_FLAG_MANAGED_INTERNALLY, esp_matter_uint32(value));
+}
+
+attribute_t *create_tx_direct_max_retry_expiry_count(cluster_t *cluster, uint32_t value)
+{
+    return esp_matter::attribute::create(cluster, ThreadNetworkDiagnostics::Attributes::TxDirectMaxRetryExpiryCount::Id,
+					                     ATTRIBUTE_FLAG_MANAGED_INTERNALLY, esp_matter_uint32(value));
+}
+
+attribute_t *create_tx_indirect_max_retry_expiry_count(cluster_t *cluster, uint32_t value)
+{
+    return esp_matter::attribute::create(cluster, ThreadNetworkDiagnostics::Attributes::TxIndirectMaxRetryExpiryCount::Id,
+					                     ATTRIBUTE_FLAG_MANAGED_INTERNALLY, esp_matter_uint32(value));
+}
+
+attribute_t *create_tx_err_cca_count(cluster_t *cluster, uint32_t value)
+{
+    return esp_matter::attribute::create(cluster, ThreadNetworkDiagnostics::Attributes::TxErrCcaCount::Id,
+					                     ATTRIBUTE_FLAG_MANAGED_INTERNALLY, esp_matter_uint32(value));
+}
+
+attribute_t *create_tx_err_abort_count(cluster_t *cluster, uint32_t value)
+{
+    return esp_matter::attribute::create(cluster, ThreadNetworkDiagnostics::Attributes::TxErrAbortCount::Id,
+					                     ATTRIBUTE_FLAG_MANAGED_INTERNALLY, esp_matter_uint32(value));
+}
+
+attribute_t *create_tx_err_busy_channel_count(cluster_t *cluster, uint32_t value)
+{
+    return esp_matter::attribute::create(cluster, ThreadNetworkDiagnostics::Attributes::TxErrBusyChannelCount::Id,
+					                     ATTRIBUTE_FLAG_MANAGED_INTERNALLY, esp_matter_uint32(value));
+}
+
+attribute_t *create_rx_total_count(cluster_t *cluster, uint32_t value)
+{
+    return esp_matter::attribute::create(cluster, ThreadNetworkDiagnostics::Attributes::RxTotalCount::Id,
+					                     ATTRIBUTE_FLAG_MANAGED_INTERNALLY, esp_matter_uint32(value));
+}
+
+attribute_t *create_rx_unicast_count(cluster_t *cluster, uint32_t value)
+{
+    return esp_matter::attribute::create(cluster, ThreadNetworkDiagnostics::Attributes::RxUnicastCount::Id,
+					                     ATTRIBUTE_FLAG_MANAGED_INTERNALLY, esp_matter_uint32(value));
+}
+
+attribute_t *create_rx_broadcast_count(cluster_t *cluster, uint32_t value)
+{
+    return esp_matter::attribute::create(cluster, ThreadNetworkDiagnostics::Attributes::RxBroadcastCount::Id,
+					                     ATTRIBUTE_FLAG_MANAGED_INTERNALLY, esp_matter_uint32(value));
+}
+
+attribute_t *create_rx_data_count(cluster_t *cluster, uint32_t value)
+{
+    return esp_matter::attribute::create(cluster, ThreadNetworkDiagnostics::Attributes::RxDataCount::Id,
+					                     ATTRIBUTE_FLAG_MANAGED_INTERNALLY, esp_matter_uint32(value));
+}
+
+attribute_t *create_rx_data_poll_count(cluster_t *cluster, uint32_t value)
+{
+    return esp_matter::attribute::create(cluster, ThreadNetworkDiagnostics::Attributes::RxDataPollCount::Id,
+					                     ATTRIBUTE_FLAG_MANAGED_INTERNALLY, esp_matter_uint32(value));
+}
+
+attribute_t *create_rx_beacon_count(cluster_t *cluster, uint32_t value)
+{
+    return esp_matter::attribute::create(cluster, ThreadNetworkDiagnostics::Attributes::RxBeaconCount::Id,
+					                     ATTRIBUTE_FLAG_MANAGED_INTERNALLY, esp_matter_uint32(value));
+}
+
+attribute_t *create_rx_beacon_request_count(cluster_t *cluster, uint32_t value)
+{
+    return esp_matter::attribute::create(cluster, ThreadNetworkDiagnostics::Attributes::RxBeaconRequestCount::Id,
+					                     ATTRIBUTE_FLAG_MANAGED_INTERNALLY, esp_matter_uint32(value));
+}
+
+attribute_t *create_rx_other_count(cluster_t *cluster, uint32_t value)
+{
+    return esp_matter::attribute::create(cluster, ThreadNetworkDiagnostics::Attributes::RxOtherCount::Id,
+					                     ATTRIBUTE_FLAG_MANAGED_INTERNALLY, esp_matter_uint32(value));
+}
+
+attribute_t *create_rx_address_filtered_count(cluster_t *cluster, uint32_t value)
+{
+    return esp_matter::attribute::create(cluster, ThreadNetworkDiagnostics::Attributes::RxAddressFilteredCount::Id,
+					                     ATTRIBUTE_FLAG_MANAGED_INTERNALLY, esp_matter_uint32(value));
+}
+
+attribute_t *create_rx_dest_addr_filtered_count(cluster_t *cluster, uint32_t value)
+{
+    return esp_matter::attribute::create(cluster, ThreadNetworkDiagnostics::Attributes::RxDestAddrFilteredCount::Id,
+					                     ATTRIBUTE_FLAG_MANAGED_INTERNALLY, esp_matter_uint32(value));
+}
+
+attribute_t *create_rx_duplicated_count(cluster_t *cluster, uint32_t value)
+{
+    return esp_matter::attribute::create(cluster, ThreadNetworkDiagnostics::Attributes::RxDuplicatedCount::Id,
+					                     ATTRIBUTE_FLAG_MANAGED_INTERNALLY, esp_matter_uint32(value));
+}
+
+attribute_t *create_rx_err_no_frame_count(cluster_t *cluster, uint32_t value)
+{
+    return esp_matter::attribute::create(cluster, ThreadNetworkDiagnostics::Attributes::RxErrNoFrameCount::Id,
+					                     ATTRIBUTE_FLAG_MANAGED_INTERNALLY, esp_matter_uint32(value));
+}
+
+attribute_t *create_rx_err_unknown_neighbor_count(cluster_t *cluster, uint32_t value)
+{
+    return esp_matter::attribute::create(cluster, ThreadNetworkDiagnostics::Attributes::RxErrUnknownNeighborCount::Id,
+					                     ATTRIBUTE_FLAG_MANAGED_INTERNALLY, esp_matter_uint32(value));
+}
+
+attribute_t *create_rx_err_invalid_src_addr_count(cluster_t *cluster, uint32_t value)
+{
+    return esp_matter::attribute::create(cluster, ThreadNetworkDiagnostics::Attributes::RxErrInvalidSrcAddrCount::Id,
+					                     ATTRIBUTE_FLAG_MANAGED_INTERNALLY, esp_matter_uint32(value));
+}
+
+attribute_t *create_rx_err_sec_count(cluster_t *cluster, uint32_t value)
+{
+    return esp_matter::attribute::create(cluster, ThreadNetworkDiagnostics::Attributes::RxErrSecCount::Id,
+					                     ATTRIBUTE_FLAG_MANAGED_INTERNALLY, esp_matter_uint32(value));
+}
+
+attribute_t *create_rx_err_fcs_count(cluster_t *cluster, uint32_t value)
+{
+    return esp_matter::attribute::create(cluster, ThreadNetworkDiagnostics::Attributes::RxErrFcsCount::Id,
+					                     ATTRIBUTE_FLAG_MANAGED_INTERNALLY, esp_matter_uint32(value));
+}
+
+attribute_t *create_rx_err_other_count(cluster_t *cluster, uint32_t value)
+{
+    return esp_matter::attribute::create(cluster, ThreadNetworkDiagnostics::Attributes::RxErrOtherCount::Id,
+					                     ATTRIBUTE_FLAG_MANAGED_INTERNALLY, esp_matter_uint32(value));
+}
+
+attribute_t *create_active_time_stamp(cluster_t *cluster, nullable<uint64_t> value)
+{
+    return esp_matter::attribute::create(cluster, ThreadNetworkDiagnostics::Attributes::ActiveTimestamp::Id,
+                                         ATTRIBUTE_FLAG_NULLABLE, esp_matter_nullable_uint64(value));
+}
+
+attribute_t *create_pending_time_stamp(cluster_t *cluster, nullable<uint64_t> value)
+{
+    return esp_matter::attribute::create(cluster, ThreadNetworkDiagnostics::Attributes::PendingTimestamp::Id,
+                                         ATTRIBUTE_FLAG_NULLABLE, esp_matter_nullable_uint64(value));
+}
+
+attribute_t *create_delay(cluster_t *cluster, nullable<uint32_t> value)
+{
+    return esp_matter::attribute::create(cluster, ThreadNetworkDiagnostics::Attributes::Delay::Id,
+                                         ATTRIBUTE_FLAG_NULLABLE, esp_matter_nullable_uint32(value));
 }
 
 attribute_t *create_security_policy(cluster_t *cluster, uint8_t *value, uint16_t length, uint16_t count)
