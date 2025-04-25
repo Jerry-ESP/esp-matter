@@ -20,6 +20,7 @@
 #if CHIP_DEVICE_CONFIG_ENABLE_THREAD
 #include <platform/ESP32/OpenthreadLauncher.h>
 #endif
+#include <app/util/attribute-storage.h>
 
 #include <app/server/CommissioningWindowManager.h>
 #include <app/server/Server.h>
@@ -41,6 +42,78 @@ extern const char decryption_key_end[] asm("_binary_esp_image_encryption_key_pem
 static const char *s_decryption_key = decryption_key_start;
 static const uint16_t s_decryption_key_len = decryption_key_end - decryption_key_start;
 #endif // CONFIG_ENABLE_ENCRYPTED_OTA
+
+namespace {
+// Please refer to https://github.com/CHIP-Specifications/connectedhomeip-spec/blob/master/src/namespaces
+constexpr const uint8_t kNamespaceSwitches = 0x43;
+// Common Number Namespace: 7, tag 0 (Zero)
+constexpr const uint8_t kTagSwitchOn = 0;
+// Common Number Namespace: 7, tag 1 (One)
+constexpr const uint8_t kTagSwitchOff = 1;
+// Common Number Namespace: 7, tag 1 (One)
+constexpr const uint8_t kTagSwitchToggle = 2;
+// Common Number Namespace: 7, tag 1 (One)
+constexpr const uint8_t kTagSwitchUp = 3;
+// Common Number Namespace: 7, tag 1 (One)
+constexpr const uint8_t kTagSwitchDown = 4;
+// Common Number Namespace: 7, tag 1 (One)
+constexpr const uint8_t kTagSwitchNext = 5;
+// Common Number Namespace: 7, tag 1 (One)
+constexpr const uint8_t kTagSwitchPrevious = 6;
+// Common Number Namespace: 7, tag 1 (One)
+constexpr const uint8_t kTagSwitchOK = 7;
+
+
+constexpr const uint8_t kNamespaceNumber = 7;
+// Common Number Namespace: 7, tag: 0 (zero)
+constexpr const uint8_t kTagNumberZero = 0;
+// Common Number Namespace: 7, tag: 1 (one)
+constexpr const uint8_t kTagNumberOne = 1;
+// Common Number Namespace: 7, tag: 1 (one)
+constexpr const uint8_t kTagNumberTwo = 2;
+// Common Number Namespace: 7, tag: 1 (one)
+constexpr const uint8_t kTagNumberThreee = 3;
+// Common Number Namespace: 7, tag: 1 (one)
+constexpr const uint8_t kTagNumberFour = 4;
+// Common Number Namespace: 7, tag: 1 (one)
+constexpr const uint8_t kTagNumberFive = 5;
+// Common Number Namespace: 7, tag: 1 (one)
+constexpr const uint8_t kTagNumberSix = 6;
+// Common Number Namespace: 7, tag: 1 (one)
+constexpr const uint8_t kTagNumberSeven = 7;
+
+const Descriptor::Structs::SemanticTagStruct::Type gEp1TagList[] = {
+    {.namespaceID = kNamespaceNumber, .tag = 0}};
+const Descriptor::Structs::SemanticTagStruct::Type gEp2TagList[] = {
+    {.namespaceID = kNamespaceNumber, .tag = 1}};
+const Descriptor::Structs::SemanticTagStruct::Type gEp3TagList[] = {
+    {.namespaceID = kNamespaceNumber, .tag = 2}};
+const Descriptor::Structs::SemanticTagStruct::Type gEp4TagList[] = {
+    {.namespaceID = kNamespaceNumber, .tag = 3}};
+const Descriptor::Structs::SemanticTagStruct::Type gEp5TagList[] = {
+    {.namespaceID = kNamespaceNumber, .tag = 4}};
+const Descriptor::Structs::SemanticTagStruct::Type gEp6TagList[] = {
+    {.namespaceID = kNamespaceNumber, .tag = 5}};
+const Descriptor::Structs::SemanticTagStruct::Type gEp7TagList[] = {
+    {.namespaceID = kNamespaceNumber, .tag = 6}};
+const Descriptor::Structs::SemanticTagStruct::Type gEp8TagList[] = {
+    {.namespaceID = kNamespaceNumber, .tag = 7}};
+const Descriptor::Structs::SemanticTagStruct::Type gEp9TagList[] = {
+    {.namespaceID = kNamespaceNumber, .tag = 8}};
+const Descriptor::Structs::SemanticTagStruct::Type gEp10TagList[] = {
+    {.namespaceID = kNamespaceNumber, .tag = 9}};
+
+}
+
+static void memory_profiler_dump_heap_stat()
+{
+    printf("========== HEAP-DUMP-START ==========\n");
+    printf("\tDescription\tInternal\n");
+    printf("Current Free Memory\t%d\n", heap_caps_get_free_size(MALLOC_CAP_8BIT));
+    printf("Largest Free Block\t%d\n", heap_caps_get_largest_free_block(MALLOC_CAP_8BIT | MALLOC_CAP_INTERNAL));
+    printf("Min. Ever Free Size\t%d\n", heap_caps_get_minimum_free_size(MALLOC_CAP_8BIT | MALLOC_CAP_INTERNAL));
+    printf("========== HEAP-DUMP-END ==========\n");
+}
 
 static void app_event_cb(const ChipDeviceEvent *event, intptr_t arg)
 {
@@ -171,6 +244,8 @@ static esp_err_t app_attribute_update_cb(attribute::callback_type_t type, uint16
 {
     esp_err_t err = ESP_OK;
 
+    memory_profiler_dump_heap_stat();
+
     if (type == PRE_UPDATE) {
         /* Driver update */
         app_driver_handle_t driver_handle = (app_driver_handle_t)priv_data;
@@ -191,7 +266,7 @@ extern "C" void app_main()
     app_driver_handle_t light_handle = app_driver_light_init();
     app_driver_handle_t button_handle = app_driver_button_init();
     reset_rollback_button_init();
-    //app_reset_button_register(button_handle);
+    app_reset_button_register(button_handle);
 
     /* Create a Matter node and add the mandatory Root Node device type on endpoint 0 */
     node::config_t node_config;
@@ -200,43 +275,23 @@ extern "C" void app_main()
     node_t *node = node::create(&node_config, app_attribute_update_cb, app_identification_cb);
     ABORT_APP_ON_FAILURE(node != nullptr, ESP_LOGE(TAG, "Failed to create Matter node"));
 
-    extended_color_light::config_t light_config;
-    light_config.on_off.on_off = DEFAULT_POWER;
-    light_config.on_off.lighting.start_up_on_off = nullptr;
-    light_config.level_control.current_level = DEFAULT_BRIGHTNESS;
-    light_config.level_control.on_level = DEFAULT_BRIGHTNESS;
-    light_config.level_control.lighting.start_up_current_level = DEFAULT_BRIGHTNESS;
-    light_config.color_control.color_mode = (uint8_t)ColorControl::ColorMode::kColorTemperature;
-    light_config.color_control.enhanced_color_mode = (uint8_t)ColorControl::ColorMode::kColorTemperature;
-    light_config.color_control.color_temperature.startup_color_temperature_mireds = nullptr;
+    dimmable_plugin_unit::config_t plug_config;
+    plug_config.on_off.on_off = DEFAULT_POWER;
+    plug_config.on_off.lighting.start_up_on_off = nullptr;
 
     // endpoint handles can be used to add/modify clusters.
-    endpoint_t *endpoint = extended_color_light::create(node, &light_config, ENDPOINT_FLAG_NONE, light_handle);
-    ABORT_APP_ON_FAILURE(endpoint != nullptr, ESP_LOGE(TAG, "Failed to create extended color light endpoint"));
+    endpoint_t *endpoint;
+    cluster_t* descriptor;
 
-    cluster::color_control::feature::hue_saturation::config_t hs_config;
-    cluster_t *color_cluster = cluster::get(endpoint, ColorControl::Id);
-    cluster::color_control::feature::hue_saturation::add(color_cluster, &hs_config);
+    for (uint8_t i = 1; i < 11; i++) {
+        endpoint = dimmable_plugin_unit::create(node, &plug_config, ENDPOINT_FLAG_NONE, light_handle);
+        ABORT_APP_ON_FAILURE(endpoint != nullptr, ESP_LOGE(TAG, "Failed to create plug %d endpoint", i));
+        descriptor = cluster::get(endpoint,Descriptor::Id);
+        cluster::descriptor::feature::taglist::add(descriptor);
+    }
 
-    light_endpoint_id = endpoint::get_id(endpoint);
+    light_endpoint_id = 1;
     ESP_LOGI(TAG, "Light created with endpoint_id %d", light_endpoint_id);
-
-    /* Mark deferred persistence for some attributes that might be changed rapidly */
-    cluster_t *level_control_cluster = cluster::get(endpoint, LevelControl::Id);
-    attribute_t *current_level_attribute = attribute::get(level_control_cluster, LevelControl::Attributes::CurrentLevel::Id);
-    attribute::set_deferred_persistence(current_level_attribute);
-
-    cluster_t *color_control_cluster = cluster::get(endpoint, ColorControl::Id);
-    attribute_t *current_x_attribute = attribute::get(color_control_cluster, ColorControl::Attributes::CurrentX::Id);
-    attribute::set_deferred_persistence(current_x_attribute);
-    attribute_t *current_y_attribute = attribute::get(color_control_cluster, ColorControl::Attributes::CurrentY::Id);
-    attribute::set_deferred_persistence(current_y_attribute);
-    attribute_t *color_temp_attribute = attribute::get(color_control_cluster, ColorControl::Attributes::ColorTemperatureMireds::Id);
-    attribute::set_deferred_persistence(color_temp_attribute);
-    attribute_t *current_hue_attribute = attribute::get(color_control_cluster, ColorControl::Attributes::CurrentHue::Id);
-    attribute::set_deferred_persistence(current_hue_attribute);
-    attribute_t *current_saturation_attribute = attribute::get(color_control_cluster, ColorControl::Attributes::CurrentSaturation::Id);
-    attribute::set_deferred_persistence(current_saturation_attribute);
 
 #if CHIP_DEVICE_CONFIG_ENABLE_THREAD && CHIP_DEVICE_CONFIG_ENABLE_WIFI_STATION
     // Enable secondary network interface
@@ -259,6 +314,17 @@ extern "C" void app_main()
     /* Matter start */
     err = esp_matter::start(app_event_cb);
     ABORT_APP_ON_FAILURE(err == ESP_OK, ESP_LOGE(TAG, "Failed to start Matter, err:%d", err));
+
+    SetTagList(1, chip::Span<const Descriptor::Structs::SemanticTagStruct::Type>(gEp1TagList));
+    SetTagList(2, chip::Span<const Descriptor::Structs::SemanticTagStruct::Type>(gEp2TagList));
+    SetTagList(3, chip::Span<const Descriptor::Structs::SemanticTagStruct::Type>(gEp3TagList));
+    SetTagList(4, chip::Span<const Descriptor::Structs::SemanticTagStruct::Type>(gEp4TagList));
+    SetTagList(5, chip::Span<const Descriptor::Structs::SemanticTagStruct::Type>(gEp5TagList));
+    SetTagList(6, chip::Span<const Descriptor::Structs::SemanticTagStruct::Type>(gEp6TagList));
+    SetTagList(7, chip::Span<const Descriptor::Structs::SemanticTagStruct::Type>(gEp7TagList));
+    SetTagList(8, chip::Span<const Descriptor::Structs::SemanticTagStruct::Type>(gEp8TagList));
+    SetTagList(9, chip::Span<const Descriptor::Structs::SemanticTagStruct::Type>(gEp9TagList));
+    SetTagList(10, chip::Span<const Descriptor::Structs::SemanticTagStruct::Type>(gEp10TagList));
 
     /* Starting driver with default values */
     app_driver_light_set_defaults(light_endpoint_id);

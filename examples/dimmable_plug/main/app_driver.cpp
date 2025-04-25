@@ -21,12 +21,12 @@
 #include <iot_button.h>
 #include <app_reset.h>
 
-using namespace chip::app::Clusters;
-using namespace esp_matter;
-
 #define BUTTON_GPIO_PIN GPIO_NUM_9
 
 static led_indicator_handle_t leds[CONFIG_BSP_LEDS_NUM];
+
+using namespace chip::app::Clusters;
+using namespace esp_matter;
 
 static const char *TAG = "app_driver";
 extern uint16_t light_endpoint_id;
@@ -127,14 +127,6 @@ esp_err_t app_driver_attribute_update(app_driver_handle_t driver_handle, uint16_
             if (attribute_id == LevelControl::Attributes::CurrentLevel::Id) {
                 err = app_driver_light_set_brightness(handle, val);
             }
-        } else if (cluster_id == ColorControl::Id) {
-            if (attribute_id == ColorControl::Attributes::CurrentHue::Id) {
-                err = app_driver_light_set_hue(handle, val);
-            } else if (attribute_id == ColorControl::Attributes::CurrentSaturation::Id) {
-                err = app_driver_light_set_saturation(handle, val);
-            } else if (attribute_id == ColorControl::Attributes::ColorTemperatureMireds::Id) {
-                err = app_driver_light_set_temperature(handle, val);
-            }
         }
     }
     return err;
@@ -152,27 +144,6 @@ esp_err_t app_driver_light_set_defaults(uint16_t endpoint_id)
     attribute::get_val(attribute, &val);
     err |= app_driver_light_set_brightness(handle, &val);
 
-    /* Setting color */
-    attribute = attribute::get(endpoint_id, ColorControl::Id, ColorControl::Attributes::ColorMode::Id);
-    attribute::get_val(attribute, &val);
-    if (val.val.u8 == (uint8_t)ColorControl::ColorMode::kCurrentHueAndCurrentSaturation) {
-        /* Setting hue */
-        attribute = attribute::get(endpoint_id, ColorControl::Id, ColorControl::Attributes::CurrentHue::Id);
-        attribute::get_val(attribute, &val);
-        err |= app_driver_light_set_hue(handle, &val);
-        /* Setting saturation */
-        attribute = attribute::get(endpoint_id, ColorControl::Id, ColorControl::Attributes::CurrentSaturation::Id);
-        attribute::get_val(attribute, &val);
-        err |= app_driver_light_set_saturation(handle, &val);
-    } else if (val.val.u8 == (uint8_t)ColorControl::ColorMode::kColorTemperature) {
-        /* Setting temperature */
-        attribute = attribute::get(endpoint_id, ColorControl::Id, ColorControl::Attributes::ColorTemperatureMireds::Id);
-        attribute::get_val(attribute, &val);
-        err |= app_driver_light_set_temperature(handle, &val);
-    } else {
-        ESP_LOGE(TAG, "Color mode not supported");
-    }
-
     /* Setting power */
     attribute = attribute::get(endpoint_id, OnOff::Id, OnOff::Attributes::OnOff::Id);
     attribute::get_val(attribute, &val);
@@ -185,7 +156,6 @@ app_driver_handle_t app_driver_light_init()
 {
 #if CONFIG_BSP_LEDS_NUM > 0
     /* Initialize led */
-    // led_indicator_handle_t leds[CONFIG_BSP_LEDS_NUM];
     ESP_ERROR_CHECK(bsp_led_indicator_create(leds, NULL, CONFIG_BSP_LEDS_NUM));
     led_indicator_set_hsv(leds[0], SET_HSV(DEFAULT_HUE, DEFAULT_SATURATION, DEFAULT_BRIGHTNESS));
 

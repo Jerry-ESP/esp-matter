@@ -238,6 +238,7 @@ cluster_t *create(endpoint_t *endpoint, config_t *config, uint8_t flags)
         attribute::create_software_version(cluster, 0);
         attribute::create_software_version_string(cluster, NULL, 0);
         attribute::create_unique_id(cluster, NULL, 0);
+        attribute::create_serial_number(cluster, NULL, 0);
         attribute::create_capability_minima(cluster, NULL, 0, 0);
         attribute::create_specification_version(cluster, 0);
         attribute::create_max_paths_per_invoke(cluster, 0);
