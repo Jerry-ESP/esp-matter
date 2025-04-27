@@ -247,8 +247,12 @@ esp_err_t add(endpoint_t *endpoint, config_t *config);
 } /* power_source_device */
 
 namespace on_off_light {
-
-using config_t = on_off_config;
+typedef struct config : on_off_config {
+    config() {
+        /* For lighting product, the default identify type should be 0x01: LightOutput*/
+        identify.identify_type = chip::to_underlying(chip::app::Clusters::Identify::IdentifyTypeEnum::kLightOutput);
+    }
+} config_t;
 
 uint32_t get_device_type_id();
 uint8_t get_device_type_version();
