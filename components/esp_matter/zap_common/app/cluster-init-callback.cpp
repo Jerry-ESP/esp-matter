@@ -130,6 +130,9 @@ void emberAfClusterInitCallback(EndpointId endpoint, ClusterId clusterId)
     case app::Clusters::ElectricalEnergyMeasurement::Id:
         emberAfElectricalEnergyMeasurementClusterInitCallback(endpoint);
         break;
+    case app::Clusters::ElectricalGridConditions::Id:
+        emberAfElectricalGridConditionsClusterInitCallback(endpoint);
+        break;
     case app::Clusters::ElectricalPowerMeasurement::Id:
         emberAfElectricalPowerMeasurementClusterInitCallback(endpoint);
         break;
@@ -333,6 +336,9 @@ void emberAfClusterInitCallback(EndpointId endpoint, ClusterId clusterId)
         break;
     case app::Clusters::SoftwareDiagnostics::Id:
         emberAfSoftwareDiagnosticsClusterInitCallback(endpoint);
+        break;
+    case app::Clusters::SoilMeasurement::Id:
+        emberAfSoilMeasurementClusterInitCallback(endpoint);
         break;
     case app::Clusters::Switch::Id:
         emberAfSwitchClusterInitCallback(endpoint);
