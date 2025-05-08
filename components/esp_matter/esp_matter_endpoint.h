@@ -174,13 +174,14 @@ typedef struct : app_base_config {
 } app_client_config;
 
 typedef struct : app_with_group_config {
-    cluster::on_off::config_t on_off;
-} on_off_config;
-
-typedef struct : app_with_group_config {
     cluster::scenes_management::config_t scenes_management;
     cluster::on_off::config_t on_off;
 } on_off_with_scenes_management_config;
+
+
+typedef struct : on_off_with_scenes_management_config {
+    cluster::on_off::config_t on_off;
+} on_off_config;
 
 typedef struct : app_base_config {
     cluster::boolean_state::config_t boolean_state;

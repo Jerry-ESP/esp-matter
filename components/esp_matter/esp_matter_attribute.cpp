@@ -297,6 +297,12 @@ attribute_t *create_max_paths_per_invoke(cluster_t *cluster, uint16_t value)
                                          esp_matter_uint16(value));
 }
 
+attribute_t *create_configuration_version(cluster_t *cluster, uint32_t value)
+{
+    return esp_matter::attribute::create(cluster, BasicInformation::Attributes::ConfigurationVersion::Id, ATTRIBUTE_FLAG_NONVOLATILE,
+                                         esp_matter_uint32(value));
+}
+
 } /* attribute */
 } /* basic_information */
 

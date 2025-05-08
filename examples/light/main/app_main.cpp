@@ -226,6 +226,11 @@ extern "C" void app_main()
     endpoint_t *endpoint = extended_color_light::create(node, &light_config, ENDPOINT_FLAG_NONE, light_handle);
     ABORT_APP_ON_FAILURE(endpoint != nullptr, ESP_LOGE(TAG, "Failed to create extended color light endpoint"));
 
+    cluster_t *hs_cluster = cluster::get(endpoint, ColorControl::Id);
+
+    cluster::color_control::feature::hue_saturation::config_t hs_config;
+    cluster::color_control::feature::hue_saturation::add(hs_cluster, &hs_config);
+
     light_endpoint_id = endpoint::get_id(endpoint);
     ESP_LOGI(TAG, "Light created with endpoint_id %d", light_endpoint_id);
 
