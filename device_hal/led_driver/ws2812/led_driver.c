@@ -12,7 +12,7 @@
 // limitations under the License
 
 #include <color_format.h>
-#include <driver/rmt.h>
+#include <driver/rmt_tx.h>
 #include <esp_log.h>
 #include <led_strip.h>
 #include <led_driver.h>
@@ -27,27 +27,33 @@ static RGB_color_t mRGB;
 led_driver_handle_t led_driver_init(led_driver_config_t *config)
 {
     ESP_LOGI(TAG, "Initializing light driver");
-    esp_err_t err = ESP_OK;
-    rmt_config_t rmt_cfg = RMT_DEFAULT_CONFIG_TX(config->gpio, config->channel);
-    rmt_cfg.clk_div = 2;
-    err = rmt_config(&rmt_cfg);
-    if (err != ESP_OK) {
-        ESP_LOGE(TAG, "rmt_cfg failed");
-        return NULL;
-    }
-    err = rmt_driver_install(rmt_cfg.channel, 0, 0);
-    if (err != ESP_OK) {
-        ESP_LOGE(TAG, "rmt_driver_install failed");
-        return NULL;
-    }
 
-    led_strip_config_t strip_config = LED_STRIP_DEFAULT_CONFIG(1, (led_strip_dev_t)rmt_cfg.channel);
-    led_strip_t *strip = led_strip_new_rmt_ws2812(&strip_config);
-    if (!strip) {
+    led_strip_config_t strip_config = {
+        .strip_gpio_num = config->gpio,
+        .max_leds = 1,
+        .led_model = LED_MODEL_WS2812,
+        .color_component_format = LED_STRIP_COLOR_COMPONENT_FMT_GRB,
+        .flags = {
+            .invert_out = false,
+        }
+    };
+
+    led_strip_rmt_config_t rmt_config = {
+        .clk_src = RMT_CLK_SRC_DEFAULT,
+        .resolution_hz = 10*1000*1000,
+        .mem_block_symbols = 0,
+        .flags = {
+            .with_dma = 0,
+        }
+    };
+
+    led_strip_handle_t led_strip;
+    ESP_ERROR_CHECK(led_strip_new_rmt_device(&strip_config, &rmt_config, &led_strip));
+    if (!led_strip) {
         ESP_LOGE(TAG, "W2812 driver install failed");
         return NULL;
     }
-    return (led_driver_handle_t)strip;
+    return (led_driver_handle_t)led_strip;
 }
 
 esp_err_t led_driver_set_power(led_driver_handle_t handle, bool power)
@@ -63,14 +69,14 @@ esp_err_t led_driver_set_RGB(led_driver_handle_t handle)
         ESP_LOGE(TAG, "led driver handle cannot be NULL");
         err = ESP_FAIL;
     } else {
-        led_strip_t *strip = (led_strip_t *)handle;
-        err = strip->set_pixel(strip, 0, mRGB.red, mRGB.green, mRGB.blue);
+        led_strip_handle_t strip = (led_strip_handle_t)handle;
+        err = led_strip_set_pixel(strip, 0, mRGB.red, mRGB.green, mRGB.blue);
         if (err != ESP_OK) {
             ESP_LOGE(TAG, "strip_set_pixel failed");
             return err;
         }
         ESP_LOGI(TAG, "led set r:%d, g:%d, b:%d", mRGB.red, mRGB.green, mRGB.blue);
-        err = strip->refresh(strip, 100);
+        err = led_strip_refresh(strip);
         if (err != ESP_OK) {
             ESP_LOGE(TAG, "strip_refresh failed");
         }
