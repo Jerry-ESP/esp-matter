@@ -52,7 +52,7 @@ constexpr uint16_t cluster_revision = 2;
 } // namespace general_commissioning
 
 namespace network_commissioning {
-constexpr uint16_t cluster_revision = 2;
+constexpr uint16_t cluster_revision = 3;
 } // namespace network_commissioning
 
 namespace diagnostic_logs {
@@ -95,12 +95,12 @@ namespace time_synchronization {
 constexpr uint16_t cluster_revision = 2;
 } // namespace time_synchronization
 
-namespace unit_localization {
-constexpr uint16_t cluster_revision = 1;
+namespace unit_localization { 
+constexpr uint16_t cluster_revision = 2;
 } // namespace unit_localization
 
 namespace bridged_device_basic_information {
-constexpr uint16_t cluster_revision = 4;
+constexpr uint16_t cluster_revision = 5;
 } // namespace bridged_device_basic_information
 
 namespace power_source {
@@ -108,7 +108,7 @@ constexpr uint16_t cluster_revision = 3;
 } // namespace power_source
 
 namespace icd_management {
-constexpr uint16_t cluster_revision = 2;
+constexpr uint16_t cluster_revision = 3;
 } // namespace icd_management
 
 namespace user_label {
@@ -120,7 +120,7 @@ constexpr uint16_t cluster_revision = 1;
 } // namespace fixed_label
 
 namespace identify {
-constexpr uint16_t cluster_revision = 5;
+constexpr uint16_t cluster_revision = 6;
 } // namespace identify
 
 namespace groups {
