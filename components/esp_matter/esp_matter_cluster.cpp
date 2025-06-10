@@ -251,6 +251,7 @@ cluster_t *create(endpoint_t *endpoint, config_t *config, uint8_t flags)
         attribute::create_capability_minima(cluster, NULL, 0, 0);
         attribute::create_specification_version(cluster, 0);
         attribute::create_max_paths_per_invoke(cluster, 0);
+        attribute::create_configuration_version(cluster, 1);
 
         /* Attributes not managed internally */
         global::attribute::create_cluster_revision(cluster, cluster_revision);
@@ -1104,15 +1105,6 @@ cluster_t *create(endpoint_t *endpoint, config_t *config, uint8_t flags)
     if(config) {
         if (config->feature_flags & feature::scene_names::get_id()) {
             feature::scene_names::add(cluster);
-        }
-        if (config->feature_flags & feature::explicit_feature::get_id()) {
-            feature::explicit_feature::add(cluster);
-        }
-        if (config->feature_flags & feature::table_size::get_id()) {
-            feature::table_size::add(cluster);
-        }
-        if (config->feature_flags & feature::fabric_scenes::get_id()) {
-            feature::fabric_scenes::add(cluster);
         }
     }
 

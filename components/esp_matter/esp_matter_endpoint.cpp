@@ -321,6 +321,8 @@ esp_err_t add(endpoint_t *endpoint, config_t *config)
     cluster_t *identify_cluster = identify::create(endpoint, &(config->identify), CLUSTER_FLAG_SERVER);
     identify::command::create_trigger_effect(identify_cluster);
     groups::create(endpoint, &(config->groups), CLUSTER_FLAG_SERVER);
+    scenes_management::config_t scene_config;
+    scenes_management::create(endpoint, &scene_config, CLUSTER_FLAG_SERVER);
     on_off::create(endpoint, &(config->on_off), CLUSTER_FLAG_SERVER, on_off::feature::lighting::get_id());
     level_control::create(endpoint, &(config->level_control), CLUSTER_FLAG_SERVER,
                           level_control::feature::on_off::get_id() | level_control::feature::lighting::get_id());
@@ -1834,7 +1836,7 @@ esp_err_t add(endpoint_t *endpoint, config_t *config)
     electrical_sensor::add(endpoint, &config->electrical_sensor);
     electrical_energy_measurement::create(endpoint, &(config->electrical_energy_measurement), CLUSTER_FLAG_SERVER, electrical_energy_measurement::feature::exported_energy::get_id() | electrical_energy_measurement::feature::cumulative_energy::get_id());
 
-    cluster_t *elec_power_measurement_cluster = cluster::get(endpoint, ElectricalPowerMeasurement::Id); 
+    cluster_t *elec_power_measurement_cluster = cluster::get(endpoint, ElectricalPowerMeasurement::Id);
 
     nullable<int64_t> voltage = 0, active_current = 0;
     electrical_power_measurement::attribute::create_voltage(elec_power_measurement_cluster, voltage);
@@ -1886,15 +1888,15 @@ esp_err_t add(endpoint_t *endpoint, config_t *config)
 
     electrical_sensor::add(endpoint, &config->electrical_sensor);
     electrical_energy_measurement::create(endpoint, &(config->electrical_energy_measurement), CLUSTER_FLAG_SERVER, electrical_energy_measurement::feature::exported_energy::get_id() | electrical_energy_measurement::feature::cumulative_energy::get_id());
-        
-    cluster_t *elec_power_measurement_cluster = cluster::get(endpoint, ElectricalPowerMeasurement::Id); 
-    
+
+    cluster_t *elec_power_measurement_cluster = cluster::get(endpoint, ElectricalPowerMeasurement::Id);
+
     electrical_power_measurement::attribute::create_voltage(elec_power_measurement_cluster, config->voltage);
     electrical_power_measurement::attribute::create_active_current(elec_power_measurement_cluster, config->active_current);
 
     device_energy_management::add(endpoint, &config->device_energy_management);
 
-    cluster_t *device_energy_management_cluster = cluster::get(endpoint, DeviceEnergyManagement::Id); 
+    cluster_t *device_energy_management_cluster = cluster::get(endpoint, DeviceEnergyManagement::Id);
     cluster::device_energy_management::feature::power_adjustment::add(device_energy_management_cluster);
     return ESP_OK;
 }
@@ -1925,8 +1927,8 @@ esp_err_t add(endpoint_t *endpoint, config_t *config)
     descriptor::feature::taglist::add(descriptor_cluster);
 
     power_source_device::add(endpoint, &config->power_source_device);
-        
-    cluster_t *power_source_cluster = cluster::get(endpoint, PowerSource::Id); 
+
+    cluster_t *power_source_cluster = cluster::get(endpoint, PowerSource::Id);
     power_source::feature::wired::add(power_source_cluster, &config->power_source_device.power_source.features.wired);
 
     electrical_sensor::add(endpoint, &config->electrical_sensor);
@@ -1939,8 +1941,8 @@ esp_err_t add(endpoint_t *endpoint, config_t *config)
     electrical_energy_measurement::create(endpoint, &(config->electrical_energy_measurement), CLUSTER_FLAG_SERVER, electrical_energy_measurement::feature::exported_energy::get_id() | electrical_energy_measurement::feature::cumulative_energy::get_id());
 
     device_energy_management::add(endpoint, &config->device_energy_management);
-        
-    cluster_t *device_energy_management_cluster = cluster::get(endpoint, DeviceEnergyManagement::Id); 
+
+    cluster_t *device_energy_management_cluster = cluster::get(endpoint, DeviceEnergyManagement::Id);
     cluster::device_energy_management::feature::power_adjustment::add(device_energy_management_cluster);
     return ESP_OK;
 }
