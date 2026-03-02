@@ -14,8 +14,12 @@
 
 #include <app-common/zap-generated/attributes/Accessors.h>
 #include <app/clusters/groupcast/GroupcastCluster.h>
+#include <app/clusters/groupcast/GroupcastContext.h>
+#include <app/server/Server.h>
 #include <clusters/Groupcast/Enums.h>
+#include <credentials/GroupDataProvider.h>
 #include <data_model_provider/esp_matter_data_model_provider.h>
+#include <lib/support/CodeUtils.h>
 
 using namespace chip::app;
 using namespace chip::app::Clusters;
@@ -32,11 +36,18 @@ void ESPMatterGroupcastClusterServerInitCallback(chip::EndpointId endpointId)
 {
     VerifyOrDie(endpointId == chip::kRootEndpointId);
 
+    chip::Credentials::GroupDataProvider * groupDataProvider = chip::Credentials::GetGroupDataProvider();
+    VerifyOrDie(groupDataProvider != nullptr);
+
     // Currently we don't support groupcast cluster in our data model, create the cluster with LN feature enabled.
     // TODO: We should create the cluster according to the enabled features after we add the cluster.
     chip::BitFlags<Groupcast::Feature> feature;
     feature.Set(Groupcast::Feature::kListener);
-    gServer.Create(feature);
+    gServer.Create(GroupcastContext{
+        .fabricTable       = chip::Server::GetInstance().GetFabricTable(),
+        .groupDataProvider = *groupDataProvider,
+    },
+    feature);
     CHIP_ERROR err = esp_matter::data_model::provider::get_instance().registry().Register(gServer.Registration());
     if (err != CHIP_NO_ERROR) {
         ChipLogError(AppServer, "Failed to register Groupcast - Error %" CHIP_ERROR_FORMAT, err.Format());

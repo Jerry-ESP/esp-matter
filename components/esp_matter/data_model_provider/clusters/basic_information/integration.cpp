@@ -16,8 +16,12 @@
 #include <data_model_provider/esp_matter_data_model_provider.h>
 
 #include <app/ClusterCallbacks.h>
+#include <app/InteractionModelEngine.h>
 #include <app/clusters/basic-information/BasicInformationCluster.h>
 #include <lib/core/DataModelTypes.h>
+#include <platform/ConfigurationManager.h>
+#include <platform/DeviceInstanceInfoProvider.h>
+#include <platform/PlatformManager.h>
 
 using namespace chip;
 using namespace chip::app;
@@ -25,7 +29,7 @@ using namespace chip::app::Clusters;
 using namespace chip::app::Clusters::BasicInformation::Attributes;
 
 namespace {
-ServerClusterRegistration gRegistration(BasicInformationCluster::Instance());
+LazyRegisteredServerCluster<BasicInformationCluster> gServer;
 
 bool IsAttrEnabled(uint32_t attrId)
 {
@@ -52,8 +56,22 @@ void ESPMatterBasicInformationClusterServerInitCallback(EndpointId endpoint)
     // We implement the cluster as a singleton on the root endpoint.
     VerifyOrReturn(endpoint == kRootEndpointId);
 
-    BasicInformationCluster::Instance().OptionalAttributes() = GetOptionalAttrsSet();
-    CHIP_ERROR err = esp_matter::data_model::provider::get_instance().registry().Register(gRegistration);
+    auto * deviceInfoProvider = DeviceLayer::GetDeviceInstanceInfoProvider();
+    VerifyOrReturn(deviceInfoProvider != nullptr);
+
+    BasicInformationCluster::Context context = {
+        .deviceInstanceInfoProvider = *deviceInfoProvider,
+        .configurationManager       = DeviceLayer::ConfigurationMgr(),
+        .platformManager            = DeviceLayer::PlatformMgr(),
+        .subscriptionsPerFabric     = InteractionModelEngine::GetInstance()->GetMinGuaranteedSubscriptionsPerFabric()
+    };
+
+    if (!gServer.IsConstructed()) {
+        gServer.Create(GetOptionalAttrsSet(), context);
+    }
+    gServer.Cluster().OptionalAttributes() = GetOptionalAttrsSet();
+
+    CHIP_ERROR err = esp_matter::data_model::provider::get_instance().registry().Register(gServer.Registration());
     if (err != CHIP_NO_ERROR) {
         ChipLogError(AppServer, "Failed to register BasicInformation - Error %" CHIP_ERROR_FORMAT, err.Format());
     }
@@ -63,11 +81,13 @@ void ESPMatterBasicInformationClusterServerShutdownCallback(EndpointId endpointI
 {
     // We implement the cluster as a singleton on the root endpoint.
     VerifyOrReturn(endpointId == kRootEndpointId);
+    VerifyOrReturn(gServer.IsConstructed());
     CHIP_ERROR err =
-        esp_matter::data_model::provider::get_instance().registry().Unregister(gRegistration.serverClusterInterface, shutdownType);
+        esp_matter::data_model::provider::get_instance().registry().Unregister(&gServer.Cluster(), shutdownType);
     if (err != CHIP_NO_ERROR) {
         ChipLogError(AppServer, "Failed to unregister BasicInformation - Error: %" CHIP_ERROR_FORMAT, err.Format());
     }
+    gServer.Destroy();
 }
 
 void MatterBasicInformationPluginServerInitCallback() {}

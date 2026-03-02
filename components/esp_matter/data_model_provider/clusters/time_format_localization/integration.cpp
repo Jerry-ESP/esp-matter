@@ -17,6 +17,7 @@
 #include <app/ClusterCallbacks.h>
 #include <app/clusters/time-format-localization-server/TimeFormatLocalizationCluster.h>
 #include <data_model_provider/esp_matter_data_model_provider.h>
+#include <platform/DeviceInfoProvider.h>
 #include "clusters/TimeFormatLocalization/Enums.h"
 
 using namespace chip;
@@ -77,7 +78,8 @@ void ESPMatterTimeFormatLocalizationClusterServerInitCallback(EndpointId endpoin
         return;
     }
     gServer.Create(endpoint, BitFlags<TimeFormatLocalization::Feature>(get_feature_map(cluster)),
-                   get_default_hour_format(cluster), get_default_calendar_type(cluster));
+                   get_default_hour_format(cluster), get_default_calendar_type(cluster),
+                   TimeFormatLocalizationCluster::Context{ *DeviceLayer::GetDeviceInfoProvider() });
 
     CHIP_ERROR err = esp_matter::data_model::provider::get_instance().registry().Register(gServer.Registration());
     if (err != CHIP_NO_ERROR) {

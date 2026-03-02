@@ -19,13 +19,15 @@
 #include "integration.h"
 
 #include <app/ClusterCallbacks.h>
+#include <app/InteractionModelEngine.h>
 #include <app/clusters/general-diagnostics-server/GeneralDiagnosticsCluster.h>
 #include <app/server-cluster/ServerClusterInterfaceRegistry.h>
+#include <app/server/Server.h>
 #include <clusters/GeneralDiagnostics/ClusterId.h>
-#include <app/InteractionModelEngine.h>
 #include <clusters/GeneralDiagnostics/Enums.h>
 #include <lib/support/BitFlags.h>
 #include <lib/support/CodeUtils.h>
+#include <platform/DiagnosticDataProvider.h>
 
 using namespace chip;
 using namespace chip::app;
@@ -114,11 +116,21 @@ void ESPMatterGeneralDiagnosticsClusterServerInitCallback(EndpointId endpointId)
             IsCommandEnabled(endpointId, GeneralDiagnostics::Commands::PayloadTestRequest::Id, COMMAND_FLAG_ACCEPTED),
         };
 
-        gServer.fullConfigurableServer.Create(attrSet, featureFlags, InteractionModelEngine::GetInstance(), functionsConfig);
+        GeneralDiagnosticsCluster::Context context{
+            .deviceLoadStatusProvider   = *InteractionModelEngine::GetInstance(),
+            .diagnosticDataProvider     = DeviceLayer::GetDiagnosticDataProvider(),
+            .testEventTriggerDelegate   = Server::GetInstance().GetTestEventTriggerDelegate(),
+        };
+        gServer.fullConfigurableServer.Create(attrSet, featureFlags, std::move(context), functionsConfig);
         err = esp_matter::data_model::provider::get_instance().registry().Register(
                   gServer.fullConfigurableServer.Registration());
     } else {
-        gServer.server.Create(attrSet, featureFlags, InteractionModelEngine::GetInstance());
+        GeneralDiagnosticsCluster::Context context{
+            .deviceLoadStatusProvider   = *InteractionModelEngine::GetInstance(),
+            .diagnosticDataProvider     = DeviceLayer::GetDiagnosticDataProvider(),
+            .testEventTriggerDelegate   = Server::GetInstance().GetTestEventTriggerDelegate(),
+        };
+        gServer.server.Create(attrSet, featureFlags, std::move(context));
         err = esp_matter::data_model::provider::get_instance().registry().Register(gServer.server.Registration());
     }
     if (err != CHIP_NO_ERROR) {

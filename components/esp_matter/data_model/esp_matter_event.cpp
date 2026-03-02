@@ -427,43 +427,64 @@ event_t *create_multi_press_complete(cluster_t *cluster)
 
 esp_err_t send_switch_latched(EndpointId endpoint, uint8_t new_position)
 {
-    SwitchServer::Instance().OnSwitchLatch(endpoint, new_position);
+    SwitchCluster * cluster = Switch::FindClusterOnEndpoint(endpoint);
+    if (cluster) {
+        cluster->OnSwitchLatch(new_position);
+    }
     return ESP_OK;
 }
 
 esp_err_t send_initial_press(EndpointId endpoint, uint8_t new_position)
 {
-    SwitchServer::Instance().OnInitialPress(endpoint, new_position);
+    SwitchCluster * cluster = Switch::FindClusterOnEndpoint(endpoint);
+    if (cluster) {
+        cluster->OnInitialPress(new_position);
+    }
     return ESP_OK;
 }
 
 esp_err_t send_long_press(EndpointId endpoint, uint8_t new_position)
 {
-    SwitchServer::Instance().OnLongPress(endpoint, new_position);
+    SwitchCluster * cluster = Switch::FindClusterOnEndpoint(endpoint);
+    if (cluster) {
+        cluster->OnLongPress(new_position);
+    }
     return ESP_OK;
 }
 
 esp_err_t send_short_release(EndpointId endpoint, uint8_t previous_position)
 {
-    SwitchServer::Instance().OnShortRelease(endpoint, previous_position);
+    SwitchCluster * cluster = Switch::FindClusterOnEndpoint(endpoint);
+    if (cluster) {
+        cluster->OnShortRelease(previous_position);
+    }
     return ESP_OK;
 }
 
 esp_err_t send_long_release(EndpointId endpoint, uint8_t previous_position)
 {
-    SwitchServer::Instance().OnLongRelease(endpoint, previous_position);
+    SwitchCluster * cluster = Switch::FindClusterOnEndpoint(endpoint);
+    if (cluster) {
+        cluster->OnLongRelease(previous_position);
+    }
     return ESP_OK;
 }
 
 esp_err_t send_multi_press_ongoing(EndpointId endpoint, uint8_t new_position, uint8_t count)
 {
-    SwitchServer::Instance().OnMultiPressOngoing(endpoint, new_position, count);
+    SwitchCluster * cluster = Switch::FindClusterOnEndpoint(endpoint);
+    if (cluster) {
+        cluster->OnMultiPressOngoing(new_position, count);
+    }
     return ESP_OK;
 }
 
 esp_err_t send_multi_press_complete(EndpointId endpoint, uint8_t new_position, uint8_t count)
 {
-    SwitchServer::Instance().OnMultiPressComplete(endpoint, new_position, count);
+    SwitchCluster * cluster = Switch::FindClusterOnEndpoint(endpoint);
+    if (cluster) {
+        cluster->OnMultiPressComplete(new_position, count);
+    }
     return ESP_OK;
 }
 

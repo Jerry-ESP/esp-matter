@@ -15,12 +15,3 @@
 #pragma once
 
 #include <app/clusters/unit-localization-server/UnitLocalizationCluster.h>
-
-namespace chip::app::Clusters::UnitLocalization {
-
-class UnitLocalizationServer : public UnitLocalizationCluster {
-public:
-    static UnitLocalizationServer  &Instance();
-};
-
-}

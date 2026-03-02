@@ -90,14 +90,14 @@ void SetDelegate(EndpointId endpointId, PushAvStreamTransportDelegate * delegate
     (void)gServers[endpointId].Cluster().Init();
 }
 
-void SetTLSClientManagementDelegate(EndpointId endpointId, TlsClientManagementDelegate * delegate)
+void SetTLSClientManagementDelegate(EndpointId endpointId, TLSClientManagementDelegate * delegate)
 {
     gServers[endpointId].Cluster().SetTLSClientManagementDelegate(delegate);
 }
 
-void SetTlsCertificateManagementDelegate(EndpointId endpointId, TlsCertificateManagementDelegate * delegate)
+void SetTLSCertificateManagementDelegate(EndpointId endpointId, TLSCertificateManagementDelegate * delegate)
 {
-    gServers[endpointId].Cluster().SetTlsCertificateManagementDelegate(delegate);
+    gServers[endpointId].Cluster().SetTLSCertificateManagementDelegate(delegate);
 }
 
 }

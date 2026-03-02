@@ -14,7 +14,10 @@
 
 #include <app/ClusterCallbacks.h>
 #include <app/clusters/user-label-server/UserLabelCluster.h>
+#include <app/server/Server.h>
 #include <data_model_provider/esp_matter_data_model_provider.h>
+#include <lib/support/CodeUtils.h>
+#include <platform/DeviceInfoProvider.h>
 #include <unordered_map>
 
 using namespace chip;
@@ -32,7 +35,13 @@ void ESPMatterUserLabelClusterServerInitCallback(EndpointId endpointId)
         return;
     }
 
-    gServers[endpointId].Create(endpointId);
+    auto * provider = DeviceLayer::GetDeviceInfoProvider();
+    VerifyOrReturn(provider != nullptr);
+    UserLabelCluster::Context context{
+        .deviceInfoProvider = *provider,
+        .fabricTable        = Server::GetInstance().GetFabricTable(),
+    };
+    gServers[endpointId].Create(endpointId, std::move(context));
     CHIP_ERROR err =
         esp_matter::data_model::provider::get_instance().registry().Register(gServers[endpointId].Registration());
     if (err != CHIP_NO_ERROR) {

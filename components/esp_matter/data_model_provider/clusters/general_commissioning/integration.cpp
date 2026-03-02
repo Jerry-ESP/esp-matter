@@ -49,7 +49,7 @@ GeneralCommissioningCluster * Instance()
             .configurationManager   = DeviceLayer::ConfigurationMgr(),                       //
             .deviceControlServer    = DeviceLayer::DeviceControlServer::DeviceControlSvr(),  //
             .fabricTable            = Server::GetInstance().GetFabricTable(),                //
-            .failsafeContext        = Server::GetInstance().GetFailSafeContext(),            //
+            .failSafeContext        = Server::GetInstance().GetFailSafeContext(),            //
             .platformManager        = DeviceLayer::PlatformMgr(),                            //
 #if CHIP_CONFIG_TERMS_AND_CONDITIONS_REQUIRED
             .termsAndConditionsProvider = TermsAndConditionsManager::GetInstance(),
@@ -80,7 +80,7 @@ void ESPMatterGeneralCommissioningClusterServerInitCallback(EndpointId endpointI
             .configurationManager   = DeviceLayer::ConfigurationMgr(),                       //
             .deviceControlServer    = DeviceLayer::DeviceControlServer::DeviceControlSvr(),  //
             .fabricTable            = Server::GetInstance().GetFabricTable(),                //
-            .failsafeContext        = Server::GetInstance().GetFailSafeContext(),            //
+            .failSafeContext        = Server::GetInstance().GetFailSafeContext(),            //
             .platformManager        = DeviceLayer::PlatformMgr(),                            //
 #if CHIP_CONFIG_TERMS_AND_CONDITIONS_REQUIRED
             .termsAndConditionsProvider = TermsAndConditionsManager::GetInstance(),

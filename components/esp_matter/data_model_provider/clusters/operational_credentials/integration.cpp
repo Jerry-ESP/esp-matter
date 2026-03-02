@@ -14,8 +14,14 @@
 // limitations under the License.
 
 #include <app/ClusterCallbacks.h>
+#include <app/EventManagement.h>
 #include <app/clusters/operational-credentials-server/OperationalCredentialsCluster.h>
+#include <app/server/Dnssd.h>
+#include <app/server/Server.h>
+#include <credentials/GroupDataProvider.h>
 #include <data_model_provider/esp_matter_data_model_provider.h>
+#include <lib/support/CodeUtils.h>
+#include <platform/PlatformManager.h>
 
 using namespace chip;
 using namespace chip::app;
@@ -29,13 +35,20 @@ void ESPMatterOperationalCredentialsClusterServerInitCallback(EndpointId endpoin
 {
     // We implement the cluster as a singleton on the root endpoint.
     VerifyOrReturn(endpoint == kRootEndpointId);
-    OperationalCredentialsCluster::Context context = {.fabricTable = Server::GetInstance().GetFabricTable(),
-                                                      .failSafeContext = Server::GetInstance().GetFailSafeContext(),
-                                                      .sessionManager = Server::GetInstance().GetSecureSessionManager(),
-                                                      .dnssdServer = app::DnssdServer::Instance(),
-                                                      .commissioningWindowManager =
-                                                          Server::GetInstance().GetCommissioningWindowManager()
-                                                     };
+    VerifyOrReturn(Credentials::GetDeviceAttestationCredentialsProvider() != nullptr);
+    VerifyOrReturn(Credentials::GetGroupDataProvider() != nullptr);
+    OperationalCredentialsCluster::Context context = {
+        .fabricTable                = Server::GetInstance().GetFabricTable(),
+        .failSafeContext            = Server::GetInstance().GetFailSafeContext(),
+        .sessionManager             = Server::GetInstance().GetSecureSessionManager(),
+        .dnssdServer                = app::DnssdServer::Instance(),
+        .commissioningWindowManager = Server::GetInstance().GetCommissioningWindowManager(),
+        .dacProvider                = *Credentials::GetDeviceAttestationCredentialsProvider(),
+        .groupDataProvider          = *Credentials::GetGroupDataProvider(),
+        .accessControl              = Server::GetInstance().GetAccessControl(),
+        .platformManager            = DeviceLayer::PlatformMgr(),
+        .eventManagement            = EventManagement::GetInstance(),
+    };
     gServer.Create(endpoint, context);
     CHIP_ERROR err = esp_matter::data_model::provider::get_instance().registry().Register(gServer.Registration());
     if (err != CHIP_NO_ERROR) {

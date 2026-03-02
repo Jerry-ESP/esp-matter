@@ -14,7 +14,11 @@
 
 #include <app/ClusterCallbacks.h>
 #include <app/clusters/bindings/BindingCluster.h>
+#include <app/clusters/bindings/BindingManager.h>
+#include <app/clusters/bindings/binding-table.h>
 #include <data_model_provider/esp_matter_data_model_provider.h>
+#include <lib/support/CodeUtils.h>
+#include <platform/PlatformManager.h>
 #include <unordered_map>
 
 using namespace chip;
@@ -32,7 +36,12 @@ void ESPMatterBindingClusterServerInitCallback(EndpointId endpointId)
         return;
     }
 
-    gServers[endpointId].Create(endpointId);
+    BindingCluster::Context context = {
+        .bindingTable    = Binding::Table::GetInstance(),
+        .bindingManager  = Binding::Manager::GetInstance(),
+        .platformManager = DeviceLayer::PlatformMgr(),
+    };
+    gServers[endpointId].Create(std::move(context), endpointId);
     CHIP_ERROR err =
         esp_matter::data_model::provider::get_instance().registry().Register(gServers[endpointId].Registration());
     if (err != CHIP_NO_ERROR) {

@@ -14,7 +14,9 @@
 
 #include <app/ClusterCallbacks.h>
 #include <app/clusters/access-control-server/access-control-cluster.h>
+#include <app/server/Server.h>
 #include <data_model_provider/esp_matter_data_model_provider.h>
+#include <lib/support/CodeUtils.h>
 
 using namespace chip;
 using namespace chip::app;
@@ -29,7 +31,11 @@ void ESPMatterAccessControlClusterServerInitCallback(EndpointId endpoint)
     // We implement the cluster as a singleton on the root endpoint.
     VerifyOrReturn(endpoint == kRootEndpointId);
 
-    gServer.Create();
+    gServer.Create(AccessControlCluster::Context{
+        .persistentStorage = Server::GetInstance().GetPersistentStorage(),
+        .fabricTable       = Server::GetInstance().GetFabricTable(),
+        .accessControl     = Server::GetInstance().GetAccessControl(),
+    });
     CHIP_ERROR err = esp_matter::data_model::provider::get_instance().registry().Register(gServer.Registration());
     if (err != CHIP_NO_ERROR) {
         ChipLogError(AppServer, "Failed to register AccessControl - Error %" CHIP_ERROR_FORMAT, err.Format());

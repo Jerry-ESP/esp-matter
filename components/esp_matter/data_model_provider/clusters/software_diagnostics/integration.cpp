@@ -14,9 +14,9 @@
 
 #include <app/ClusterCallbacks.h>
 #include <app/clusters/software-diagnostics-server/SoftwareDiagnosticsCluster.h>
-#include <app/clusters/software-diagnostics-server/SoftwareDiagnosticsLogic.h>
 #include <data_model/esp_matter_data_model.h>
 #include <data_model_provider/esp_matter_data_model_provider.h>
+#include <platform/DiagnosticDataProvider.h>
 
 using namespace esp_matter;
 using namespace chip;
@@ -38,7 +38,7 @@ bool IsAttributeEnabled(EndpointId endpointId, AttributeId attributeId)
 void ESPMatterSoftwareDiagnosticsClusterServerInitCallback(EndpointId endpointId)
 {
     VerifyOrReturn(endpointId == kRootEndpointId);
-    SoftwareDiagnosticsLogic::OptionalAttributeSet attrSet;
+    SoftwareDiagnosticsServerCluster::OptionalAttributeSet attrSet;
     if (IsAttributeEnabled(kRootEndpointId, Attributes::ThreadMetrics::Id)) {
         attrSet.Set<Attributes::ThreadMetrics::Id>();
     }
@@ -52,7 +52,7 @@ void ESPMatterSoftwareDiagnosticsClusterServerInitCallback(EndpointId endpointId
         attrSet.Set<Attributes::CurrentHeapHighWatermark::Id>();
     }
 
-    gServer.Create(attrSet);
+    gServer.Create(attrSet, DeviceLayer::GetDiagnosticDataProvider());
 
     CHIP_ERROR err = esp_matter::data_model::provider::get_instance().registry().Register(gServer.Registration());
     if (err != CHIP_NO_ERROR) {

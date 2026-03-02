@@ -15,6 +15,8 @@
 #include <app/ClusterCallbacks.h>
 #include <app/clusters/fixed-label-server/FixedLabelCluster.h>
 #include <data_model_provider/esp_matter_data_model_provider.h>
+#include <lib/support/CodeUtils.h>
+#include <platform/DeviceInfoProvider.h>
 #include <unordered_map>
 
 using namespace chip;
@@ -32,7 +34,9 @@ void ESPMatterFixedLabelClusterServerInitCallback(EndpointId endpointId)
         return;
     }
 
-    gServers[endpointId].Create(endpointId);
+    auto * provider = DeviceLayer::GetDeviceInfoProvider();
+    VerifyOrReturn(provider != nullptr);
+    gServers[endpointId].Create(endpointId, *provider);
     CHIP_ERROR err =
         esp_matter::data_model::provider::get_instance().registry().Register(gServers[endpointId].Registration());
     if (err != CHIP_NO_ERROR) {

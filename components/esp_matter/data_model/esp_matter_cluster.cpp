@@ -723,6 +723,9 @@ cluster_t *create(endpoint_t *endpoint, config_t *config, uint8_t flags)
 
         /* Attributes not managed internally */
         global::attribute::create_cluster_revision(cluster, cluster_revision);
+        cluster::set_init_and_shutdown_callbacks(cluster,
+                                                 ESPMatterThreadNetworkDiagnosticsClusterServerInitCallback,
+                                                 ESPMatterThreadNetworkDiagnosticsClusterServerShutdownCallback);
     }
 
     return cluster;
@@ -1027,10 +1030,8 @@ cluster_t *create(endpoint_t *endpoint, config_t *config, uint8_t flags)
 } /* identify */
 
 namespace groups {
-const function_generic_t function_list[] = {
-    (function_generic_t)emberAfGroupsClusterServerInitCallback,
-};
-const int function_flags = CLUSTER_FLAG_INIT_FUNCTION;
+const function_generic_t *function_list = NULL;
+const int function_flags = CLUSTER_FLAG_NONE;
 
 cluster_t *create(endpoint_t *endpoint, config_t *config, uint8_t flags)
 {
@@ -1053,6 +1054,8 @@ cluster_t *create(endpoint_t *endpoint, config_t *config, uint8_t flags)
         } else {
             ESP_LOGE(TAG, "Config is NULL. Cannot add some attributes.");
         }
+        cluster::set_init_and_shutdown_callbacks(cluster, ESPMatterGroupsClusterServerInitCallback,
+                                                 ESPMatterGroupsClusterServerShutdownCallback);
     }
 
     /* Commands */

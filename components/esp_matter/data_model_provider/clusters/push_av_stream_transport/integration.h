@@ -15,15 +15,15 @@
 #pragma once
 
 #include <app/clusters/push-av-stream-transport-server/push-av-stream-transport-delegate.h>
-#include <app/clusters/tls-certificate-management-server/TlsCertificateManagementCluster.h>
-#include <app/clusters/tls-client-management-server/TlsClientManagementCluster.h>
+#include <app/clusters/tls-certificate-management-server/TLSCertificateManagementCluster.h>
+#include <app/clusters/tls-client-management-server/TLSClientManagementCluster.h>
 
 namespace chip::app::Clusters::PushAvStreamTransport {
 
 void SetDelegate(EndpointId endpointId, PushAvStreamTransportDelegate * delegate);
 
-void SetTLSClientManagementDelegate(EndpointId endpointId, TlsClientManagementDelegate * delegate);
+void SetTLSClientManagementDelegate(EndpointId endpointId, TLSClientManagementDelegate * delegate);
 
-void SetTlsCertificateManagementDelegate(EndpointId endpointId, TlsCertificateManagementDelegate * delegate);
+void SetTLSCertificateManagementDelegate(EndpointId endpointId, TLSCertificateManagementDelegate * delegate);
 
 }

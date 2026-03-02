@@ -14,8 +14,10 @@
 
 #pragma once
 
+#include <app/SafeAttributePersistenceProvider.h>
 #include <app/clusters/chime-server/ChimeCluster.h>
 #include <app/server-cluster/ServerClusterInterfaceRegistry.h>
+#include <app/server/Server.h>
 
 namespace chip::app::Clusters::Chime {
 
@@ -27,8 +29,9 @@ public:
      * @param aDelegate A reference to the delegate to be used by this server.
      * Note: the caller must ensure that the delegate lives throughout the instance's lifetime.
      */
-    ChimeServer(EndpointId endpointId, ChimeDelegate &delegate)
-        : mCluster(endpointId, delegate)
+    ChimeServer(EndpointId endpointId, ChimeDelegate  &delegate)
+        : mCluster(endpointId, ChimeCluster::Context{ .delegate                        = delegate,
+                                                      .safeAttributePersistenceProvider = Server::GetInstance().GetDefaultAttributePersister() })
     {
     }
     ~ChimeServer();

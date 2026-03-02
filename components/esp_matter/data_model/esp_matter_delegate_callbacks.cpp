@@ -24,7 +24,8 @@
 #include <app/clusters/resource-monitoring-server/resource-monitoring-server.h>
 #include <app/clusters/fan-control-server/fan-control-server.h>
 #include <app/clusters/laundry-dryer-controls-server/laundry-dryer-controls-server.h>
-#include <app/clusters/valve-configuration-and-control-server/valve-configuration-and-control-cluster.h>
+#include <app/clusters/valve-configuration-and-control-server/ValveConfigurationAndControlCluster.h>
+#include <app/clusters/valve-configuration-and-control-server/CodegenIntegration.h>
 #include <app/clusters/door-lock-server/door-lock-server.h>
 #include <app/clusters/boolean-state-configuration-server/boolean-state-configuration-server.h>
 #include <app/clusters/application-basic-server/application-basic-server.h>
@@ -588,7 +589,7 @@ void MeterIdentificationDelegateInitCB(void *delegate, uint16_t endpoint_id)
 {
     uint32_t feature_map = get_feature_map_value(endpoint_id, MeterIdentification::Id);
     MeterIdentification::Instance *meter_identification_instance = new MeterIdentification::Instance(endpoint_id, chip::BitMask<MeterIdentification::Feature, uint32_t>(feature_map));
-    meter_identification_instance->Init();
+    (void) meter_identification_instance->Init();
 }
 
 } // namespace delegate_cb

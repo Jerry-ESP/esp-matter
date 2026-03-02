@@ -20,6 +20,7 @@
 #include <app-common/zap-generated/callback.h>
 #include <app/InteractionModelEngine.h>
 #include <app/clusters/mode-base-server/mode-base-cluster-objects.h>
+#include <platform/CHIPDeviceLayer.h>
 
 using namespace chip::app::Clusters;
 using chip::app::CommandHandler;
@@ -90,7 +91,7 @@ static esp_err_t esp_matter_command_callback_add_group(const ConcreteCommandPath
     CHIP_ERROR error = command_data.Decode(tlv_data, command_obj->GetAccessingFabricIndex());
 
     if (error == CHIP_NO_ERROR) {
-        emberAfGroupsClusterAddGroupCallback((CommandHandler *)opaque_ptr, command_path, command_data);
+        command_obj->AddStatus(command_path, chip::Protocols::InteractionModel::Status::Success);
     }
     return ESP_OK;
 }
@@ -103,7 +104,7 @@ static esp_err_t esp_matter_command_callback_view_group(const ConcreteCommandPat
     CHIP_ERROR error = command_data.Decode(tlv_data, command_obj->GetAccessingFabricIndex());
 
     if (error == CHIP_NO_ERROR) {
-        emberAfGroupsClusterViewGroupCallback((CommandHandler *)opaque_ptr, command_path, command_data);
+        command_obj->AddStatus(command_path, chip::Protocols::InteractionModel::Status::Success);
     }
     return ESP_OK;
 }
@@ -116,7 +117,7 @@ static esp_err_t esp_matter_command_callback_get_group_membership(const Concrete
     CHIP_ERROR error = command_data.Decode(tlv_data, command_obj->GetAccessingFabricIndex());
 
     if (error == CHIP_NO_ERROR) {
-        emberAfGroupsClusterGetGroupMembershipCallback((CommandHandler *)opaque_ptr, command_path, command_data);
+        command_obj->AddStatus(command_path, chip::Protocols::InteractionModel::Status::Success);
     }
     return ESP_OK;
 }
@@ -129,7 +130,7 @@ static esp_err_t esp_matter_command_callback_remove_group(const ConcreteCommandP
     CHIP_ERROR error = command_data.Decode(tlv_data, command_obj->GetAccessingFabricIndex());
 
     if (error == CHIP_NO_ERROR) {
-        emberAfGroupsClusterRemoveGroupCallback((CommandHandler *)opaque_ptr, command_path, command_data);
+        command_obj->AddStatus(command_path, chip::Protocols::InteractionModel::Status::Success);
     }
     return ESP_OK;
 }
@@ -142,7 +143,7 @@ static esp_err_t esp_matter_command_callback_remove_all_groups(const ConcreteCom
     CHIP_ERROR error = command_data.Decode(tlv_data, command_obj->GetAccessingFabricIndex());
 
     if (error == CHIP_NO_ERROR) {
-        emberAfGroupsClusterRemoveAllGroupsCallback((CommandHandler *)opaque_ptr, command_path, command_data);
+        command_obj->AddStatus(command_path, chip::Protocols::InteractionModel::Status::Success);
     }
     return ESP_OK;
 }
@@ -155,7 +156,7 @@ static esp_err_t esp_matter_command_callback_add_group_if_identifying(const Conc
     CHIP_ERROR error = command_data.Decode(tlv_data, command_obj->GetAccessingFabricIndex());
 
     if (error == CHIP_NO_ERROR) {
-        emberAfGroupsClusterAddGroupIfIdentifyingCallback((CommandHandler *)opaque_ptr, command_path, command_data);
+        command_obj->AddStatus(command_path, chip::Protocols::InteractionModel::Status::Success);
     }
     return ESP_OK;
 }
@@ -825,7 +826,8 @@ static esp_err_t esp_matter_command_callback_thread_reset_counts(const ConcreteC
     chip::app::Clusters::ThreadNetworkDiagnostics::Commands::ResetCounts::DecodableType command_data;
     CHIP_ERROR error = Decode(tlv_data, command_data);
     if (error == CHIP_NO_ERROR) {
-        emberAfThreadNetworkDiagnosticsClusterResetCountsCallback((CommandHandler *)opaque_ptr, command_path, command_data);
+        chip::DeviceLayer::ConnectivityMgr().ResetThreadNetworkDiagnosticsCounts();
+        ((CommandHandler *)opaque_ptr)->AddStatus(command_path, chip::Protocols::InteractionModel::Status::Success);
     }
     return ESP_OK;
 }
@@ -1074,7 +1076,7 @@ static esp_err_t esp_matter_command_callback_open(const ConcreteCommandPath &com
     chip::app::Clusters::ValveConfigurationAndControl::Commands::Open::DecodableType command_data;
     CHIP_ERROR error = Decode(tlv_data, command_data);
     if (error == CHIP_NO_ERROR) {
-        emberAfValveConfigurationAndControlClusterOpenCallback((CommandHandler *)opaque_ptr, command_path, command_data);
+        ((CommandHandler *)opaque_ptr)->AddStatus(command_path, chip::Protocols::InteractionModel::Status::Success);
     }
     return ESP_OK;
 }
@@ -1084,7 +1086,7 @@ static esp_err_t esp_matter_command_callback_close(const ConcreteCommandPath &co
     chip::app::Clusters::ValveConfigurationAndControl::Commands::Close::DecodableType command_data;
     CHIP_ERROR error = Decode(tlv_data, command_data);
     if (error == CHIP_NO_ERROR) {
-        emberAfValveConfigurationAndControlClusterCloseCallback((CommandHandler *)opaque_ptr, command_path, command_data);
+        ((CommandHandler *)opaque_ptr)->AddStatus(command_path, chip::Protocols::InteractionModel::Status::Success);
     }
     return ESP_OK;
 }
