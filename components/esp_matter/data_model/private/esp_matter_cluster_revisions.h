@@ -132,15 +132,15 @@ constexpr uint16_t cluster_revision = 1;
 } // namespace scenes_management
 
 namespace on_off {
-constexpr uint16_t cluster_revision = 6;
+constexpr uint16_t cluster_revision = 7;
 } // namespace on_off
 
 namespace level_control {
-constexpr uint16_t cluster_revision = 6;
+constexpr uint16_t cluster_revision = 7;
 } // namespace level_control
 
 namespace color_control {
-constexpr uint16_t cluster_revision = 8;
+constexpr uint16_t cluster_revision = 9;
 } // namespace color_control
 
 namespace fan_control {
