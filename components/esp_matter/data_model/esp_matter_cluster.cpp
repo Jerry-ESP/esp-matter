@@ -301,6 +301,58 @@ cluster_t *create(endpoint_t *endpoint, config_t *config, uint8_t flags)
 }
 } /* binding */
 
+namespace groupcast {
+const function_generic_t *function_list = NULL;
+const int function_flags = CLUSTER_FLAG_NONE;
+
+cluster_t *create(endpoint_t *endpoint, config_t *config, uint8_t flags)
+{
+    cluster_t *cluster = cluster::create(endpoint, Groupcast::Id, flags);
+    VerifyOrReturnValue(cluster, NULL, ESP_LOGE(TAG, "Could not create cluster. cluster_id: 0x%08" PRIX32, Groupcast::Id));
+
+    if (flags & CLUSTER_FLAG_SERVER) {
+        static const auto plugin_server_init_cb = CALL_ONCE(MatterGroupcastPluginServerInitCallback);
+        set_plugin_server_init_callback(cluster, plugin_server_init_cb);
+        add_function_list(cluster, function_list, function_flags);
+
+        VerifyOrReturnValue(config != NULL, ABORT_CLUSTER_CREATE(cluster));
+        /* Attributes managed internally */
+        global::attribute::create_feature_map(cluster, config->feature_flags);
+
+        /* Attributes not managed internally */
+        global::attribute::create_cluster_revision(cluster, cluster_revision);
+
+        uint32_t feature_map = config->feature_flags;
+        VALIDATE_FEATURES_AT_LEAST_ONE("Listener,Sender",
+                                       feature::listener::get_id(), feature::sender::get_id());
+        if (feature_map & feature::listener::get_id()) {
+            VerifyOrReturnValue(feature::listener::add(cluster) == ESP_OK, ABORT_CLUSTER_CREATE(cluster));
+        }
+        if (feature_map & feature::sender::get_id()) {
+            VerifyOrReturnValue(feature::sender::add(cluster) == ESP_OK, ABORT_CLUSTER_CREATE(cluster));
+        }
+        if (feature_map & feature::per_group::get_id()) {
+            VerifyOrReturnValue(feature::per_group::add(cluster) == ESP_OK, ABORT_CLUSTER_CREATE(cluster));
+        }
+
+        /* Commands (ConfigureAuxiliaryACL added by feature::listener::add when Listener enabled) */
+        command::create_join_group(cluster);
+        command::create_leave_group(cluster);
+        command::create_leave_group_response(cluster);
+        command::create_update_group_key(cluster);
+        command::create_groupcast_testing(cluster);
+
+        /* Event */
+        event::create_groupcast_testing(cluster);
+
+        cluster::set_init_and_shutdown_callbacks(cluster, ESPMatterGroupcastClusterServerInitCallback,
+                                                 ESPMatterGroupcastClusterServerShutdownCallback);
+    }
+
+    return cluster;
+}
+} /* groupcast */
+
 namespace ota_software_update_provider {
 const function_generic_t *function_list = NULL;
 const int function_flags = CLUSTER_FLAG_NONE;

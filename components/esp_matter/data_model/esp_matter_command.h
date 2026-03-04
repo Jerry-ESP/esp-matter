@@ -107,6 +107,17 @@ command_t *create_key_set_read_all_indices_response(cluster_t *cluster);
 } /* command */
 } /* group_key_management */
 
+namespace groupcast {
+namespace command {
+command_t *create_join_group(cluster_t *cluster);
+command_t *create_leave_group(cluster_t *cluster);
+command_t *create_leave_group_response(cluster_t *cluster);
+command_t *create_update_group_key(cluster_t *cluster);
+command_t *create_configure_auxiliary_acl(cluster_t *cluster);
+command_t *create_groupcast_testing(cluster_t *cluster);
+} /* command */
+} /* groupcast */
+
 namespace general_commissioning {
 namespace command {
 command_t *create_arm_fail_safe(cluster_t *cluster);

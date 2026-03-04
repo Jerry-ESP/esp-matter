@@ -881,6 +881,61 @@ esp_err_t add(cluster_t *cluster, config_t *config)
 } /* feature */
 } /* window_covering */
 
+namespace groupcast {
+namespace feature {
+
+namespace listener {
+
+uint32_t get_id()
+{
+    return chip::to_underlying(Groupcast::Feature::kListener);
+}
+
+esp_err_t add(cluster_t *cluster)
+{
+    VerifyOrReturnError(cluster, ESP_ERR_INVALID_ARG, ESP_LOGE(TAG, "Cluster cannot be NULL"));
+    update_feature_map(cluster, get_id());
+    groupcast::command::create_configure_auxiliary_acl(cluster);
+    return ESP_OK;
+}
+
+} /* listener */
+
+namespace sender {
+
+uint32_t get_id()
+{
+    return chip::to_underlying(Groupcast::Feature::kSender);
+}
+
+esp_err_t add(cluster_t *cluster)
+{
+    VerifyOrReturnError(cluster, ESP_ERR_INVALID_ARG, ESP_LOGE(TAG, "Cluster cannot be NULL"));
+    update_feature_map(cluster, get_id());
+    return ESP_OK;
+}
+
+} /* sender */
+
+namespace per_group {
+
+uint32_t get_id()
+{
+    return chip::to_underlying(Groupcast::Feature::kPerGroup);
+}
+
+esp_err_t add(cluster_t *cluster)
+{
+    VerifyOrReturnError(cluster, ESP_ERR_INVALID_ARG, ESP_LOGE(TAG, "Cluster cannot be NULL"));
+    update_feature_map(cluster, get_id());
+    return ESP_OK;
+}
+
+} /* per_group */
+
+} /* feature */
+} /* groupcast */
+
 namespace wifi_network_diagnostics {
 namespace feature {
 

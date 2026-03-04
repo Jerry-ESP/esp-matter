@@ -1341,6 +1341,42 @@ command_t *create_key_set_read_all_indices_response(cluster_t *cluster)
 } /* command */
 } /* group_key_management */
 
+namespace groupcast {
+namespace command {
+
+command_t *create_join_group(cluster_t *cluster)
+{
+    return esp_matter::command::create(cluster, Groupcast::Commands::JoinGroup::Id, COMMAND_FLAG_ACCEPTED, NULL);
+}
+
+command_t *create_leave_group(cluster_t *cluster)
+{
+    return esp_matter::command::create(cluster, Groupcast::Commands::LeaveGroup::Id, COMMAND_FLAG_ACCEPTED, NULL);
+}
+
+command_t *create_leave_group_response(cluster_t *cluster)
+{
+    return esp_matter::command::create(cluster, Groupcast::Commands::LeaveGroupResponse::Id, COMMAND_FLAG_GENERATED, NULL);
+}
+
+command_t *create_update_group_key(cluster_t *cluster)
+{
+    return esp_matter::command::create(cluster, Groupcast::Commands::UpdateGroupKey::Id, COMMAND_FLAG_ACCEPTED, NULL);
+}
+
+command_t *create_configure_auxiliary_acl(cluster_t *cluster)
+{
+    return esp_matter::command::create(cluster, Groupcast::Commands::ConfigureAuxiliaryACL::Id, COMMAND_FLAG_ACCEPTED, NULL);
+}
+
+command_t *create_groupcast_testing(cluster_t *cluster)
+{
+    return esp_matter::command::create(cluster, Groupcast::Commands::GroupcastTesting::Id, COMMAND_FLAG_ACCEPTED, NULL);
+}
+
+} /* command */
+} /* groupcast */
+
 namespace general_commissioning {
 namespace command {
 

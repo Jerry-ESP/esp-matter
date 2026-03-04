@@ -131,6 +131,12 @@ event_t *create_all_clear(cluster_t *cluster);
 } // namespace event
 } // namespace smoke_co_alarm
 
+namespace groupcast {
+namespace event {
+event_t *create_groupcast_testing(cluster_t *cluster);
+} // namespace event
+} // namespace groupcast
+
 namespace door_lock {
 namespace event {
 event_t *create_door_lock_alarm(cluster_t *cluster);

@@ -28,11 +28,11 @@ constexpr uint16_t cluster_revision = 1;
 } // namespace actions
 
 namespace access_control {
-constexpr uint16_t cluster_revision = 2;
+constexpr uint16_t cluster_revision = 3;
 } // namespace access_control
 
 namespace basic_information {
-constexpr uint16_t cluster_revision = 5;
+constexpr uint16_t cluster_revision = 6;
 } // namespace basic_information
 
 namespace binding {
@@ -52,7 +52,7 @@ constexpr uint16_t cluster_revision = 2;
 } // namespace general_commissioning
 
 namespace network_commissioning {
-constexpr uint16_t cluster_revision = 2;
+constexpr uint16_t cluster_revision = 3;
 } // namespace network_commissioning
 
 namespace diagnostic_logs {
@@ -60,7 +60,7 @@ constexpr uint16_t cluster_revision = 1;
 } // namespace diagnostic_logs
 
 namespace general_diagnostics {
-constexpr uint16_t cluster_revision = 2;
+constexpr uint16_t cluster_revision = 3;
 } // namespace general_diagnostics
 
 namespace software_diagnostics {
@@ -78,6 +78,10 @@ constexpr uint16_t cluster_revision = 2;
 namespace group_key_management {
 constexpr uint16_t cluster_revision = 2;
 } // namespace group_key_management
+
+namespace groupcast {
+constexpr uint16_t cluster_revision = 1;
+} // namespace groupcast
 
 namespace wifi_network_diagnostics {
 constexpr uint16_t cluster_revision = 1;
@@ -100,7 +104,7 @@ constexpr uint16_t cluster_revision = 2;
 } // namespace unit_localization
 
 namespace bridged_device_basic_information {
-constexpr uint16_t cluster_revision = 5;
+constexpr uint16_t cluster_revision = 6;
 } // namespace bridged_device_basic_information
 
 namespace power_source {

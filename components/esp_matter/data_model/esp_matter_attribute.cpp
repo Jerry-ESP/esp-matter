@@ -326,6 +326,43 @@ attribute_t *create_binding(cluster_t *cluster, uint8_t *value, uint16_t length,
 } /* attribute */
 } /* binding */
 
+namespace groupcast {
+namespace attribute {
+
+attribute_t *create_membership(cluster_t *cluster, uint8_t *value, uint16_t length, uint16_t count)
+{
+    return esp_matter::attribute::create(cluster, Groupcast::Attributes::Membership::Id,
+                                         ATTRIBUTE_FLAG_MANAGED_INTERNALLY | ATTRIBUTE_FLAG_NONVOLATILE,
+                                         esp_matter_array(value, length, count));
+}
+
+attribute_t *create_max_membership_count(cluster_t *cluster, uint16_t value)
+{
+    return esp_matter::attribute::create(cluster, Groupcast::Attributes::MaxMembershipCount::Id,
+                                         ATTRIBUTE_FLAG_MANAGED_INTERNALLY, esp_matter_uint16(value));
+}
+
+attribute_t *create_max_mcast_addr_count(cluster_t *cluster, uint16_t value)
+{
+    return esp_matter::attribute::create(cluster, Groupcast::Attributes::MaxMcastAddrCount::Id,
+                                         ATTRIBUTE_FLAG_MANAGED_INTERNALLY, esp_matter_uint16(value));
+}
+
+attribute_t *create_used_mcast_addr_count(cluster_t *cluster, uint16_t value)
+{
+    return esp_matter::attribute::create(cluster, Groupcast::Attributes::UsedMcastAddrCount::Id,
+                                         ATTRIBUTE_FLAG_MANAGED_INTERNALLY, esp_matter_uint16(value));
+}
+
+attribute_t *create_fabric_under_test(cluster_t *cluster, uint16_t value)
+{
+    return esp_matter::attribute::create(cluster, Groupcast::Attributes::FabricUnderTest::Id,
+                                         ATTRIBUTE_FLAG_MANAGED_INTERNALLY, esp_matter_uint16(value));
+}
+
+} /* attribute */
+} /* groupcast */
+
 namespace ota_software_update_requestor {
 namespace attribute {
 

@@ -39,8 +39,7 @@ void ESPMatterGroupcastClusterServerInitCallback(chip::EndpointId endpointId)
     chip::Credentials::GroupDataProvider * groupDataProvider = chip::Credentials::GetGroupDataProvider();
     VerifyOrDie(groupDataProvider != nullptr);
 
-    // Currently we don't support groupcast cluster in our data model, create the cluster with LN feature enabled.
-    // TODO: We should create the cluster according to the enabled features after we add the cluster.
+    // Create the cluster with Listener feature when init is called from the data model groupcast cluster.
     chip::BitFlags<Groupcast::Feature> feature;
     feature.Set(Groupcast::Feature::kListener);
     gServer.Create(GroupcastContext{

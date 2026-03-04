@@ -15,6 +15,7 @@
 #include <esp_log.h>
 #include <esp_matter_event.h>
 
+#include <app-common/zap-generated/cluster-objects.h>
 #include <app/clusters/switch-server/switch-server.h>
 #include <platform/DeviceControlServer.h>
 
@@ -325,6 +326,17 @@ event_t *create_all_clear(cluster_t *cluster)
 
 } // namespace event
 } // namespace smoke_co_alarm
+
+namespace groupcast {
+namespace event {
+
+event_t *create_groupcast_testing(cluster_t *cluster)
+{
+    return esp_matter::event::create(cluster, Groupcast::Events::GroupcastTesting::Id);
+}
+
+} // namespace event
+} // namespace groupcast
 
 namespace door_lock {
 namespace event {

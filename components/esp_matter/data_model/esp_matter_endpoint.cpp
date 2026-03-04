@@ -75,6 +75,10 @@ esp_err_t add(endpoint_t *endpoint, config_t *config)
     administrator_commissioning::create(endpoint, &(config->administrator_commissioning), CLUSTER_FLAG_SERVER);
     operational_credentials::create(endpoint, &(config->operational_credentials), CLUSTER_FLAG_SERVER);
     group_key_management::create(endpoint, CLUSTER_FLAG_SERVER);
+    if (config->groupcast.feature_flags == 0) {
+        config->groupcast.feature_flags = chip::to_underlying(Groupcast::Feature::kListener);
+    }
+    groupcast::create(endpoint, &(config->groupcast), CLUSTER_FLAG_SERVER);
 #if CHIP_CONFIG_ENABLE_ICD_SERVER
     if (icd::get_icd_server_enabled()) {
         cluster_t *icd_management_cluster = icd_management::create(endpoint, &(config->icd_management), CLUSTER_FLAG_SERVER);

@@ -158,6 +158,15 @@ using config_t = common::config_t;
 cluster_t *create(endpoint_t *endpoint, uint8_t flags);
 } /* group_key_management */
 
+namespace groupcast {
+typedef struct config {
+    uint32_t feature_flags;
+    config() : feature_flags(0) {}
+} config_t;
+
+cluster_t *create(endpoint_t *endpoint, config_t *config, uint8_t flags);
+} /* groupcast */
+
 namespace wifi_network_diagnostics {
 using config_t = common::config_t;
 cluster_t *create(endpoint_t *endpoint, config_t *config, uint8_t flags);

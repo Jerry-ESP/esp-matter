@@ -411,6 +411,33 @@ esp_err_t add(cluster_t *cluster, config_t *config);
 } /* feature */
 } /* window_covering */
 
+namespace groupcast {
+namespace feature {
+
+namespace listener {
+
+uint32_t get_id();
+esp_err_t add(cluster_t *cluster);
+
+} /* listener */
+
+namespace sender {
+
+uint32_t get_id();
+esp_err_t add(cluster_t *cluster);
+
+} /* sender */
+
+namespace per_group {
+
+uint32_t get_id();
+esp_err_t add(cluster_t *cluster);
+
+} /* per_group */
+
+} /* feature */
+} /* groupcast */
+
 namespace wifi_network_diagnostics {
 namespace feature {
 
