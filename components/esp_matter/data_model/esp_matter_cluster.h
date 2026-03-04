@@ -275,8 +275,10 @@ namespace level_control {
 typedef struct config {
     nullable<uint8_t> current_level;
     nullable<uint8_t> on_level;
+    uint8_t min_level;
+    uint8_t max_level;
     uint8_t options;
-    config() : current_level(), on_level(), options(0) {}
+    config() : current_level(), on_level(), min_level(1), max_level(254), options(0) {}
 } config_t;
 
 cluster_t *create(endpoint_t *endpoint, config_t *config, uint8_t flags);

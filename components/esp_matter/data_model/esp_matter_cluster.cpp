@@ -1238,6 +1238,8 @@ cluster_t *create(endpoint_t *endpoint, config_t *config, uint8_t flags)
         if (config) {
             attribute::create_current_level(cluster, config->current_level);
             attribute::create_on_level(cluster, config->on_level);
+            attribute::create_min_level(cluster, config->min_level);
+            attribute::create_max_level(cluster, config->max_level);
             attribute::create_options(cluster, config->options);
         } else {
             ESP_LOGE(TAG, "Config is NULL. Cannot add some attributes.");
