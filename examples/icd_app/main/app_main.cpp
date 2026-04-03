@@ -18,6 +18,7 @@
 
 #include <common_macros.h>
 #include <app_priv.h>
+#include <app_reset.h>
 #if CHIP_DEVICE_CONFIG_ENABLE_THREAD
 #include <platform/ESP32/OpenthreadLauncher.h>
 #endif
@@ -137,7 +138,8 @@ extern "C" void app_main()
     err = esp_pm_configure(&pm_config);
 #endif
 #ifdef CONFIG_ENABLE_USER_ACTIVE_MODE_TRIGGER_BUTTON
-    app_driver_button_init();
+    app_driver_handle_t button_handle = app_driver_button_init();
+    app_reset_button_register(button_handle);
 #endif
     /* Create a Matter node and add the mandatory Root Node device type on endpoint 0 */
     node::config_t node_config;
