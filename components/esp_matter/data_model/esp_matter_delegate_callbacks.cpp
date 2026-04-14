@@ -41,7 +41,7 @@
 #include <app/clusters/actions-server/actions-server.h>
 #include <app/clusters/thermostat-server/thermostat-server.h>
 #include <app/clusters/diagnostic-logs-server/diagnostic-logs-server.h>
-#include <app/clusters/closure-control-server/closure-control-server.h>
+#include <app/clusters/closure-control-server/CodegenIntegration.h>
 #include <app/clusters/closure-dimension-server/closure-dimension-server.h>
 #include <app/clusters/commodity-tariff-server/commodity-tariff-server.h>
 #include <app/clusters/commodity-price-server/commodity-price-server.h>
@@ -58,6 +58,9 @@
 #include <clusters/time_synchronization/integration.h>
 #include <clusters/resource_monitor/integration.h>
 #include <clusters/chime/integration.h>
+
+// Defined in connectedhomeip CodegenIntegration.cpp (closure-control-server).
+void MatterClosureControlClusterInitCallback(chip::EndpointId endpointId);
 
 using namespace chip::app::Clusters;
 namespace esp_matter {
@@ -533,21 +536,50 @@ void ChimeDelegateInitCB(void *delegate, uint16_t endpoint_id)
 void ClosureControlDelegateInitCB(void *delegate, uint16_t endpoint_id)
 {
     VerifyOrReturn(delegate != nullptr);
-    ClosureControl::DelegateBase *closure_control_delegate = static_cast<ClosureControl::DelegateBase*>(delegate);
-    ClosureControl::MatterContext *matter_context = new ClosureControl::MatterContext(endpoint_id);
-    ClosureControl::ClusterLogic *cluster_logic = new ClosureControl::ClusterLogic(*closure_control_delegate, *matter_context);
-    ClosureControl::Interface *server_interface = new ClosureControl::Interface(endpoint_id, *cluster_logic);
-    (void)server_interface->Init();
+    chip::EndpointId ep = static_cast<chip::EndpointId>(endpoint_id);
+    auto * closure_delegate = static_cast<ClosureControl::ClosureControlClusterDelegate *>(delegate);
+
+    const uint32_t feature_map = get_feature_map_value(endpoint_id, ClosureControl::Id);
+    ClosureControl::ClusterConformance conformance;
+    conformance.FeatureMap() = chip::BitFlags<ClosureControl::Feature>(feature_map);
+
+    ClosureControl::ClusterInitParameters init_params;
+
+    ClosureControl::MatterClosureControlSetDelegate(ep, *closure_delegate);
+    ClosureControl::MatterClosureControlSetConformance(ep, conformance);
+    ClosureControl::MatterClosureControlSetInitParams(ep, init_params);
+
+    MatterClosureControlClusterInitCallback(ep);
 }
 
 void ClosureDimensionDelegateInitCB(void *delegate, uint16_t endpoint_id)
 {
     VerifyOrReturn(delegate != nullptr);
-    ClosureDimension::DelegateBase *closure_dimension_delegate = static_cast<ClosureDimension::DelegateBase*>(delegate);
-    ClosureDimension::MatterContext *matter_context = new ClosureDimension::MatterContext(endpoint_id);
-    ClosureDimension::ClusterLogic *cluster_logic = new ClosureDimension::ClusterLogic(*closure_dimension_delegate, *matter_context);
-    ClosureDimension::Interface *server_interface = new ClosureDimension::Interface(endpoint_id, *cluster_logic);
-    (void)server_interface->Init();
+    chip::EndpointId ep = static_cast<chip::EndpointId>(endpoint_id);
+    auto * closure_dimension_delegate = static_cast<ClosureDimension::DelegateBase *>(delegate);
+
+    auto * matter_context = new ClosureDimension::MatterContext(ep);
+    auto * server_interface  = new ClosureDimension::Interface(ep, *closure_dimension_delegate, *matter_context);
+
+    const uint32_t feature_map = get_feature_map_value(endpoint_id, ClosureDimension::Id);
+    chip::BitFlags<ClosureDimension::Feature> features(feature_map);
+
+    ClosureDimension::ClusterConformance conformance;
+    conformance.FeatureMap() = features;
+
+    ClosureDimension::ClusterInitParameters init_params;
+    if (features.Has(ClosureDimension::Feature::kTranslation)) {
+        init_params.translationDirection = ClosureDimension::TranslationDirectionEnum::kDownward;
+    }
+    if (features.Has(ClosureDimension::Feature::kRotation)) {
+        init_params.rotationAxis = ClosureDimension::RotationAxisEnum::kLeft;
+    }
+    if (features.Has(ClosureDimension::Feature::kModulation)) {
+        init_params.modulationType = ClosureDimension::ModulationTypeEnum::kSlatsOrientation;
+    }
+
+    VerifyOrDie(server_interface->Init() == CHIP_NO_ERROR);
+    VerifyOrDie(server_interface->Init(conformance, init_params) == CHIP_NO_ERROR);
 }
 
 void PushAvStreamTransportDelegateInitCB(void *delegate, uint16_t endpoint_id)

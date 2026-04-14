@@ -20,6 +20,7 @@
 #include <credentials/GroupDataProvider.h>
 #include <data_model_provider/esp_matter_data_model_provider.h>
 #include <lib/support/CodeUtils.h>
+#include <platform/DefaultTimerDelegate.h>
 
 using namespace chip::app;
 using namespace chip::app::Clusters;
@@ -29,6 +30,7 @@ using chip::Protocols::InteractionModel::Status;
 namespace {
 
 LazyRegisteredServerCluster<GroupcastCluster> gServer;
+DefaultTimerDelegate sTimerDelegate;
 
 } // namespace
 
@@ -45,6 +47,7 @@ void ESPMatterGroupcastClusterServerInitCallback(chip::EndpointId endpointId)
     gServer.Create(GroupcastContext{
         .fabricTable       = chip::Server::GetInstance().GetFabricTable(),
         .groupDataProvider = *groupDataProvider,
+        .timerDelegate     = sTimerDelegate,
     },
     feature);
     CHIP_ERROR err = esp_matter::data_model::provider::get_instance().registry().Register(gServer.Registration());

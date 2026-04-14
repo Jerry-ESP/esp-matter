@@ -29,6 +29,9 @@ using namespace chip::app::Clusters::ElectricalEnergyMeasurement;
 namespace {
 std::unordered_map<EndpointId, LazyRegisteredServerCluster<ElectricalEnergyMeasurementCluster>> gServers;
 
+// Default empty accuracy at construction; callers may update via SetMeasurementAccuracy().
+const Structs::MeasurementAccuracyStruct::Type kDefaultAccuracy = {};
+
 uint32_t get_feature_map(esp_matter::cluster_t *cluster)
 {
     esp_matter::attribute_t *attribute = esp_matter::attribute::get(cluster, Globals::Attributes::FeatureMap::Id);
@@ -43,16 +46,20 @@ uint32_t get_feature_map(esp_matter::cluster_t *cluster)
 }
 ElectricalEnergyMeasurementCluster::Config GetClusterConfig(EndpointId endpointId)
 {
-    ElectricalEnergyMeasurementCluster::Config config;
-    config.endpointId = endpointId;
-    esp_matter::cluster_t *cluster = esp_matter::cluster::get(endpointId, ElectricalEnergyMeasurement::Id);
-    config.featureFlags = BitMask<ElectricalEnergyMeasurement::Feature>(get_feature_map(cluster));
+    esp_matter::cluster_t * cluster = esp_matter::cluster::get(endpointId, ElectricalEnergyMeasurement::Id);
+    BitMask<ElectricalEnergyMeasurement::Feature> featureFlags(get_feature_map(cluster));
+    BitMask<ElectricalEnergyMeasurement::OptionalAttributes> optionalAttributes;
     if (esp_matter::attribute::get(cluster, Attributes::CumulativeEnergyReset::Id)) {
-        config.optionalAttributes.SetField(OptionalAttributes::kOptionalAttributeCumulativeEnergyReset, 1);
+        optionalAttributes.SetField(OptionalAttributes::kOptionalAttributeCumulativeEnergyReset, 1);
     } else {
-        config.optionalAttributes.Clear(OptionalAttributes::kOptionalAttributeCumulativeEnergyReset);
+        optionalAttributes.Clear(OptionalAttributes::kOptionalAttributeCumulativeEnergyReset);
     }
-    return config;
+    return ElectricalEnergyMeasurementCluster::Config{
+        .endpointId         = endpointId,
+        .featureFlags       = featureFlags,
+        .optionalAttributes = optionalAttributes,
+        .accuracyStruct     = kDefaultAccuracy,
+    };
 }
 } // namespace
 

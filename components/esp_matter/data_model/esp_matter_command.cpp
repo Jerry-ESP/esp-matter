@@ -20,11 +20,15 @@
 #include <app-common/zap-generated/callback.h>
 #include <app/InteractionModelEngine.h>
 #include <app/clusters/mode-base-server/mode-base-cluster-objects.h>
+#include <app/clusters/temperature-control-server/CodegenIntegration.h>
+#include <app/data-model-provider/OperationTypes.h>
 #include <platform/CHIPDeviceLayer.h>
 
 using namespace chip::app::Clusters;
 using chip::app::CommandHandler;
 using chip::app::DataModel::Decode;
+using chip::app::DataModel::InvokeFlags;
+using chip::app::DataModel::InvokeRequest;
 using chip::TLV::TLVReader;
 
 static const char *TAG = "esp_matter_command";
@@ -899,10 +903,33 @@ static esp_err_t esp_matter_command_callback_change_to_mode(const ConcreteComman
 
 static esp_err_t esp_matter_command_callback_set_temperature(const ConcreteCommandPath &command_path, TLVReader &tlv_data, void *opaque_ptr)
 {
+    CommandHandler * handler = static_cast<CommandHandler *>(opaque_ptr);
+    if (!handler) {
+        return ESP_FAIL;
+    }
+
+    // Prefer Matter TemperatureControlCluster when registered (replaces removed emberAf...SetTemperatureCallback).
+    TemperatureControlCluster * cluster =
+        chip::app::Clusters::TemperatureControl::FindClusterOnEndpoint(command_path.mEndpointId);
+    if (cluster != nullptr) {
+        chip::Access::SubjectDescriptor subjectDescriptor = handler->GetSubjectDescriptor();
+        InvokeRequest request(command_path, subjectDescriptor);
+        request.invokeFlags.Set(InvokeFlags::kTimed, handler->IsTimedInvoke());
+        std::optional<chip::app::DataModel::ActionReturnStatus> invokeStatus =
+            cluster->InvokeCommand(request, tlv_data, handler);
+        if (invokeStatus.has_value()) {
+            handler->AddStatus(command_path, invokeStatus->GetStatusCode());
+        }
+        return ESP_OK;
+    }
+
+    // No server cluster: validate TLV; apps typically handle logic via esp_matter user command callback.
     chip::app::Clusters::TemperatureControl::Commands::SetTemperature::DecodableType command_data;
     CHIP_ERROR error = Decode(tlv_data, command_data);
     if (error == CHIP_NO_ERROR) {
-        emberAfTemperatureControlClusterSetTemperatureCallback((CommandHandler *)opaque_ptr, command_path, command_data);
+        handler->AddStatus(command_path, chip::Protocols::InteractionModel::Status::Success);
+    } else {
+        handler->AddStatus(command_path, chip::Protocols::InteractionModel::Status::InvalidCommand);
     }
     return ESP_OK;
 }

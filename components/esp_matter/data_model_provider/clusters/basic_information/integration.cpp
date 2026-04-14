@@ -36,9 +36,9 @@ bool IsAttrEnabled(uint32_t attrId)
     return esp_matter::attribute::get(kRootEndpointId, BasicInformation::Id, attrId);
 }
 
-BasicInformationCluster::OptionalAttributesSet GetOptionalAttrsSet()
+BasicInformationOptionalAttributesSet GetOptionalAttrsSet()
 {
-    BasicInformationCluster::OptionalAttributesSet attrsSet;
+    BasicInformationOptionalAttributesSet attrsSet;
     return attrsSet.Set<ManufacturingDate::Id>(IsAttrEnabled(ManufacturingDate::Id))
            .Set<PartNumber::Id>(IsAttrEnabled(PartNumber::Id))
            .Set<ProductURL::Id>(IsAttrEnabled(ProductURL::Id))
@@ -59,17 +59,11 @@ void ESPMatterBasicInformationClusterServerInitCallback(EndpointId endpoint)
     auto * deviceInfoProvider = DeviceLayer::GetDeviceInstanceInfoProvider();
     VerifyOrReturn(deviceInfoProvider != nullptr);
 
-    BasicInformationCluster::Context context = {
-        .deviceInstanceInfoProvider = *deviceInfoProvider,
-        .configurationManager       = DeviceLayer::ConfigurationMgr(),
-        .platformManager            = DeviceLayer::PlatformMgr(),
-        .subscriptionsPerFabric     = InteractionModelEngine::GetInstance()->GetMinGuaranteedSubscriptionsPerFabric()
-    };
-
     if (!gServer.IsConstructed()) {
-        gServer.Create(GetOptionalAttrsSet(), context);
+        gServer.Create(GetOptionalAttrsSet(), *deviceInfoProvider, DeviceLayer::ConfigurationMgr(), DeviceLayer::PlatformMgr(),
+                       InteractionModelEngine::GetInstance()->GetMinGuaranteedSubscriptionsPerFabric());
     }
-    gServer.Cluster().OptionalAttributes() = GetOptionalAttrsSet();
+    gServer.Cluster().GetOptionalAttributes() = GetOptionalAttrsSet();
 
     CHIP_ERROR err = esp_matter::data_model::provider::get_instance().registry().Register(gServer.Registration());
     if (err != CHIP_NO_ERROR) {
