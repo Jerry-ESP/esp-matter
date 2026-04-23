@@ -47,7 +47,8 @@ BasicInformationOptionalAttributesSet GetOptionalAttrsSet()
            .Set<LocalConfigDisabled::Id>(IsAttrEnabled(LocalConfigDisabled::Id))
            .Set<Reachable::Id>(IsAttrEnabled(Reachable::Id))
            .Set<ProductAppearance::Id>(IsAttrEnabled(ProductAppearance::Id))
-           .Set<UniqueID::Id>(IsAttrEnabled(UniqueID::Id));
+           .Set<UniqueID::Id>(IsAttrEnabled(UniqueID::Id))
+           .Set<ConfigurationVersion::Id>(IsAttrEnabled(ConfigurationVersion::Id));
 }
 } // namespace
 

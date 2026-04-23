@@ -157,6 +157,13 @@ attribute_t *create_arl(cluster_t *cluster, uint8_t *value, uint16_t length, uin
 }
 
 #endif
+
+attribute_t *create_auxiliary_acl(cluster_t *cluster, uint8_t *value, uint16_t length, uint16_t count)
+{
+    return esp_matter::attribute::create(cluster, AccessControl::Attributes::AuxiliaryACL::Id, ATTRIBUTE_FLAG_MANAGED_INTERNALLY,
+                                         esp_matter_array(value, length, count));
+}
+
 } /* attribute */
 } /* access_control */
 
@@ -306,6 +313,7 @@ attribute_t *create_max_paths_per_invoke(cluster_t *cluster, uint16_t value)
 
 attribute_t *create_configuration_version(cluster_t *cluster, uint32_t value)
 {
+    printf("create_configuration_version\n");
     return esp_matter::attribute::create(cluster, BasicInformation::Attributes::ConfigurationVersion::Id,
                                          ATTRIBUTE_FLAG_MANAGED_INTERNALLY, esp_matter_uint32(value));
 }

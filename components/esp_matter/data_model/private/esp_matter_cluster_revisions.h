@@ -76,7 +76,7 @@ constexpr uint16_t cluster_revision = 2;
 } // namespace operational_credentials
 
 namespace group_key_management {
-constexpr uint16_t cluster_revision = 2;
+constexpr uint16_t cluster_revision = 3;
 } // namespace group_key_management
 
 namespace groupcast {
@@ -136,7 +136,7 @@ constexpr uint16_t cluster_revision = 1;
 } // namespace scenes_management
 
 namespace on_off {
-constexpr uint16_t cluster_revision = 7;
+constexpr uint16_t cluster_revision = 6;
 } // namespace on_off
 
 namespace level_control {

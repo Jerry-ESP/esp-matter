@@ -40,6 +40,7 @@ void ESPMatterGroupcastClusterServerInitCallback(chip::EndpointId endpointId)
 
     chip::Credentials::GroupDataProvider * groupDataProvider = chip::Credentials::GetGroupDataProvider();
     VerifyOrDie(groupDataProvider != nullptr);
+    groupDataProvider->SetGroupcastEnabled(true);
 
     // Create the cluster with Listener feature when init is called from the data model groupcast cluster.
     chip::BitFlags<Groupcast::Feature> feature;

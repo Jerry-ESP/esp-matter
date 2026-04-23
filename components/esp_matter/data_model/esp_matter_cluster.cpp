@@ -208,6 +208,8 @@ cluster_t *create(endpoint_t *endpoint, config_t *config, uint8_t flags)
         attribute::create_access_control_entries_per_fabric(cluster, 0);
         attribute::create_targets_per_access_control_entry(cluster, 0);
 
+        VerifyOrReturnValue(feature::auxiliary::add(cluster) == ESP_OK, ABORT_CLUSTER_CREATE(cluster));
+
         /* Attributes updated later */
         global::attribute::create_feature_map(cluster, 0);
 
@@ -251,10 +253,10 @@ cluster_t *create(endpoint_t *endpoint, config_t *config, uint8_t flags)
         attribute::create_software_version_string(cluster, NULL, 0);
         attribute::create_unique_id(cluster, NULL, 0);
         attribute::create_capability_minima(cluster, NULL, 0, 0);
-        attribute::create_product_appearance(cluster, NULL, 0, 0);
+        // attribute::create_product_appearance(cluster, NULL, 0, 0);
         attribute::create_specification_version(cluster, 0);
         attribute::create_max_paths_per_invoke(cluster, 0);
-        attribute::create_configuration_version(cluster, 0);
+        // attribute::create_configuration_version(cluster, 0);
 
         /* Attributes not managed internally */
         global::attribute::create_cluster_revision(cluster, cluster_revision);
@@ -1492,6 +1494,8 @@ cluster_t *create(endpoint_t *endpoint, config_t *config, uint8_t flags)
 
         /* Attributes not managed internally */
         global::attribute::create_cluster_revision(cluster, cluster_revision);
+        cluster::set_init_and_shutdown_callbacks(cluster, ESPMatterAirQualityClusterServerInitCallback,
+                                                 ESPMatterAirQualityClusterServerShutdownCallback);
     }
 
     if (flags & CLUSTER_FLAG_CLIENT) {
