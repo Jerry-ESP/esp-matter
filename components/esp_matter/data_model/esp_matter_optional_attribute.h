@@ -82,6 +82,10 @@ namespace relative_humidity_measurement {
 esp_err_t create_optional_attributes(cluster_t *cluster);
 } /* relative_humidity_measurement */
 
+namespace humidistat {
+esp_err_t create_optional_attributes(cluster_t *cluster);
+} /* humidistat */
+
 } /* cluster */
 } /* esp_matter */
 

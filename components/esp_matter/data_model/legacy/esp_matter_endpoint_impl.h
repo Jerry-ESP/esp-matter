@@ -92,6 +92,8 @@
 #define ESP_MATTER_SMOKE_CO_ALARM_DEVICE_TYPE_VERSION 1
 #define ESP_MATTER_LAUNDRY_DRYER_DEVICE_TYPE_ID 0x007C
 #define ESP_MATTER_LAUNDRY_DRYER_DEVICE_TYPE_VERSION 2
+#define ESP_MATTER_HUMIDIFIER_DEHUMIDIFIER_DEVICE_TYPE_ID 0x007D
+#define ESP_MATTER_HUMIDIFIER_DEHUMIDIFIER_DEVICE_TYPE_VERSION 1
 
 #define ESP_MATTER_FAN_DEVICE_TYPE_ID 0x002B
 #define ESP_MATTER_FAN_DEVICE_TYPE_VERSION 4
@@ -625,6 +627,23 @@ uint8_t get_device_type_version();
 endpoint_t *create(node_t *node, config_t *config, uint8_t flags, void *priv_data);
 esp_err_t add(endpoint_t *endpoint, config_t *config);
 } /* humidity_sensor */
+
+#if defined(CONFIG_SUPPORT_HUMIDISTAT_CLUSTER)
+namespace humidifier_dehumidifier {
+typedef struct config : app_base_config {
+    config()
+    {
+        identify.identify_type = chip::to_underlying(chip::app::Clusters::Identify::IdentifyTypeEnum::kActuator);
+    }
+    cluster::humidistat::config_t humidistat;
+} config_t;
+
+uint32_t get_device_type_id();
+uint8_t get_device_type_version();
+endpoint_t *create(node_t *node, config_t *config, uint8_t flags, void *priv_data);
+esp_err_t add(endpoint_t *endpoint, config_t *config);
+} /* humidifier_dehumidifier */
+#endif /* CONFIG_SUPPORT_HUMIDISTAT_CLUSTER */
 
 namespace occupancy_sensor {
 typedef struct config : app_base_config {

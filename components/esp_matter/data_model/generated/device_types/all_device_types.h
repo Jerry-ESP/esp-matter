@@ -58,6 +58,7 @@
 #include "generic_switch_device.h"
 #include "heat_pump_device.h"
 #include "humidity_sensor_device.h"
+#include "humidifier_dehumidifier_device.h"
 #include "intercom_device.h"
 #include "irrigation_system_device.h"
 #include "joint_fabric_administrator_device.h"

@@ -18,4 +18,7 @@
 #include "generated/clusters/all_clusters.h"
 #else
 #include "legacy/esp_matter_cluster_impl.h"
+#if defined(CONFIG_SUPPORT_HUMIDISTAT_CLUSTER)
+#include "generated/clusters/humidistat/humidistat.h"
+#endif
 #endif
