@@ -700,6 +700,14 @@ void ThermostatDelegateInitCB(void *delegate, uint16_t endpoint_id)
     // Restore delegate wiring together with the Thermostat cluster integration.
 }
 
+void HumidistatDelegateInitCB(void *delegate, uint16_t endpoint_id)
+{
+    // Delegate is attached to HumidistatCluster in ESPMatterHumidistatClusterServerInitCallback
+    // via get_delegate_impl() after the cluster instance is created.
+    (void) delegate;
+    (void) endpoint_id;
+}
+
 void TemperatureControlDelegateInitCB(void *delegate, [[maybe_unused]] uint16_t endpoint_id)
 {
     VerifyOrReturn(delegate != nullptr);

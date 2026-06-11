@@ -13,6 +13,9 @@
 // limitations under the License.
 
 #include "esp_matter_cluster_impl.h"
+#if defined(CONFIG_SUPPORT_HUMIDISTAT_CLUSTER)
+#include <humidistat.h>
+#endif
 #include <esp_log.h>
 #include <esp_matter.h>
 #include <esp_matter_endpoint_impl.h>
@@ -1023,6 +1026,36 @@ esp_err_t add(endpoint_t *endpoint, config_t *config)
     return ESP_OK;
 }
 } /* humidity_sensor */
+
+#if defined(CONFIG_SUPPORT_HUMIDISTAT_CLUSTER)
+namespace humidifier_dehumidifier {
+uint32_t get_device_type_id()
+{
+    return ESP_MATTER_HUMIDIFIER_DEHUMIDIFIER_DEVICE_TYPE_ID;
+}
+
+uint8_t get_device_type_version()
+{
+    return ESP_MATTER_HUMIDIFIER_DEHUMIDIFIER_DEVICE_TYPE_VERSION;
+}
+
+endpoint_t *create(node_t *node, config_t *config, uint8_t flags, void *priv_data)
+{
+    return common::create<config_t>(node, config, flags, priv_data, add);
+}
+
+esp_err_t add(endpoint_t *endpoint, config_t *config)
+{
+    esp_err_t err = add_device_type(endpoint, get_device_type_id(), get_device_type_version());
+    VerifyOrReturnError(err == ESP_OK, err);
+
+    identify::create(endpoint, &(config->identify), CLUSTER_FLAG_SERVER);
+    humidistat::create(endpoint, &(config->humidistat), CLUSTER_FLAG_SERVER);
+
+    return ESP_OK;
+}
+} /* humidifier_dehumidifier */
+#endif /* CONFIG_SUPPORT_HUMIDISTAT_CLUSTER */
 
 namespace occupancy_sensor {
 uint32_t get_device_type_id()

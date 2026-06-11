@@ -72,6 +72,7 @@
 #include "groupcast.h"
 #include "groups.h"
 #include "hepa_filter_monitoring.h"
+#include "humidistat.h"
 #include "icd_management.h"
 #include "identify.h"
 #include "illuminance_measurement.h"

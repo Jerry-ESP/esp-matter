@@ -241,6 +241,19 @@ esp_err_t create_optional_attributes(cluster_t *cluster)
 }
 } /* relative_humidity_measurement */
 
+namespace humidistat {
+esp_err_t create_optional_attributes(cluster_t *cluster)
+{
+    ESP_RETURN_ON_FALSE(cluster, ESP_ERR_INVALID_ARG, TAG, "Cluster cannot be NULL");
+
+    ESP_RETURN_ON_FALSE(humidistat::attribute::create_sleep(cluster, false), ESP_ERR_NO_MEM, TAG, "Failed to create sleep");
+    ESP_RETURN_ON_FALSE(humidistat::attribute::create_target_setpoint(cluster, 50), ESP_ERR_NO_MEM, TAG,
+                        "Failed to create target_setpoint");
+
+    return ESP_OK;
+}
+} /* humidistat */
+
 } /* cluster */
 } /* esp_matter */
 #endif /* CONFIG_ESP_MATTER_ENABLE_OPTIONAL_ATTRIBUTES */
