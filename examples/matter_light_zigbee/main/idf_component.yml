@@ -1,0 +1,16 @@
+dependencies:
+  espressif/cmake_utilities:
+    version: "^1"
+    rules: # will add "optional_component" only when all if clauses are True
+      - if: "idf_version >=5.0"
+      - if: "target in [esp32c2]"
+  # espressif/esp-zigbee-console:
+    # version: ">=1.0.0"
+  espressif/esp-zigbee-lib:
+    version: ">=2.0.0"
+  example_common:
+    path: "./zigbee_light/utils/example_common"
+  light_driver:
+    path: "./zigbee_light/utils/light_driver"
+  alarm_timer:
+    path: "./zigbee_light/utils/alarm_timer"

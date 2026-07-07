@@ -384,7 +384,7 @@ esp_err_t start(event_callback_t callback, intptr_t callback_arg)
     err = chip_init(callback, callback_arg);
     VerifyOrReturnError(err == ESP_OK, err, ESP_LOGE(TAG, "Error initializing matter"));
 #if CHIP_DEVICE_CONFIG_ENABLE_THREAD
-#if defined(CONFIG_ESP_MATTER_ENABLE_MATTER_SERVER) && defined(CONFIG_ESP_MATTER_ENABLE_OPENTHREAD)
+#if defined(CONFIG_ESP_MATTER_ENABLE_MATTER_SERVER)// && defined(CONFIG_ESP_MATTER_ENABLE_OPENTHREAD)
     // If Thread is Provisioned, publish the dns service
     if (chip::DeviceLayer::ConnectivityMgr().IsThreadProvisioned() &&
             (chip::Server::GetInstance().GetFabricTable().FabricCount() != 0)) {
