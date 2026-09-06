@@ -731,7 +731,8 @@ typedef struct config {
     uint32_t mask;
     uint32_t state;
     uint32_t supported;
-    config() : mask(1), state(0), supported(1) {}
+    void *delegate;
+    config() : mask(1), state(0), supported(1), delegate(nullptr) {}
 } config_t;
 
 cluster_t *create(endpoint_t *endpoint, config_t *config, uint8_t flags);
@@ -1057,8 +1058,9 @@ cluster_t *create(endpoint_t *endpoint, config_t *config, uint8_t flags);
 
 namespace commodity_price {
 typedef struct config {
+    uint8_t tariff_unit;
     void *delegate;
-    config() : delegate(nullptr) {}
+    config() : tariff_unit(0), delegate(nullptr) {}
 } config_t;
 
 cluster_t *create(endpoint_t *endpoint, config_t *config, uint8_t flags);

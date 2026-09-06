@@ -1851,10 +1851,8 @@ cluster_t *create(endpoint_t *endpoint, config_t *config, uint8_t flags)
 
 namespace laundry_dryer_controls {
 
-const function_generic_t function_list[] = {
-    (function_generic_t)MatterLaundryDryerControlsClusterServerPreAttributeChangedCallback,
-};
-const int function_flags = CLUSTER_FLAG_PRE_ATTRIBUTE_CHANGED_FUNCTION;
+const function_generic_t *function_list = NULL;
+const int function_flags = CLUSTER_FLAG_NONE;
 
 cluster_t *create(endpoint_t *endpoint, config_t *config, uint8_t flags)
 {
@@ -1867,6 +1865,9 @@ cluster_t *create(endpoint_t *endpoint, config_t *config, uint8_t flags)
             set_delegate_and_init_callback(cluster, delegate_init_cb, config->delegate);
         }
         add_function_list(cluster, function_list, function_flags);
+
+        cluster::set_init_and_shutdown_callbacks(cluster, ESPMatterLaundryDryerControlsClusterServerInitCallback,
+                                                 ESPMatterLaundryDryerControlsClusterServerShutdownCallback);
 
         /* Attributes managed internally */
         global::attribute::create_feature_map(cluster, 0);
@@ -2074,10 +2075,8 @@ cluster_t *create(endpoint_t *endpoint, config_t *config, uint8_t flags)
 } /* door_lock */
 
 namespace window_covering {
-const function_generic_t function_list[] = {
-    (function_generic_t)MatterWindowCoveringClusterServerAttributeChangedCallback,
-};
-const int function_flags = CLUSTER_FLAG_ATTRIBUTE_CHANGED_FUNCTION;
+const function_generic_t *function_list = NULL;
+const int function_flags = CLUSTER_FLAG_NONE;
 
 cluster_t *create(endpoint_t *endpoint, config_t *config, uint8_t flags)
 {
@@ -2094,6 +2093,9 @@ cluster_t *create(endpoint_t *endpoint, config_t *config, uint8_t flags)
             set_delegate_and_init_callback(cluster, delegate_init_cb, config->delegate);
         }
         add_function_list(cluster, function_list, function_flags);
+
+        cluster::set_init_and_shutdown_callbacks(cluster, ESPMatterWindowCoveringClusterServerInitCallback,
+                                                 ESPMatterWindowCoveringClusterServerShutdownCallback);
 
         /* Attributes not managed internally */
         global::attribute::create_cluster_revision(cluster, cluster_revision);
@@ -2682,11 +2684,8 @@ cluster_t *create(endpoint_t *endpoint, config_t *config, uint8_t flags)
 } /* pump_configuration_and_control */
 
 namespace mode_select {
-const function_generic_t function_list[] = {
-    (function_generic_t)emberAfModeSelectClusterServerInitCallback,
-    (function_generic_t)MatterModeSelectClusterServerPreAttributeChangedCallback,
-};
-const int function_flags = CLUSTER_FLAG_INIT_FUNCTION | CLUSTER_FLAG_PRE_ATTRIBUTE_CHANGED_FUNCTION;
+const function_generic_t *function_list = NULL;
+const int function_flags = CLUSTER_FLAG_NONE;
 
 cluster_t *create(endpoint_t *endpoint, config_t *config, uint8_t flags)
 {
@@ -2700,6 +2699,9 @@ cluster_t *create(endpoint_t *endpoint, config_t *config, uint8_t flags)
         static const auto plugin_server_init_cb = CALL_ONCE(MatterModeSelectPluginServerInitCallback);
         set_plugin_server_init_callback(cluster, plugin_server_init_cb);
         add_function_list(cluster, function_list, function_flags);
+
+        cluster::set_init_and_shutdown_callbacks(cluster, ESPMatterModeSelectClusterServerInitCallback,
+                                                 ESPMatterModeSelectClusterServerShutdownCallback);
 
         /* Attributes managed internally */
         global::attribute::create_feature_map(cluster, 0);
@@ -2850,7 +2852,14 @@ cluster_t *create(endpoint_t *endpoint, config_t *config, uint8_t flags)
     if (flags & CLUSTER_FLAG_SERVER) {
         static const auto plugin_server_init_cb = CALL_ONCE(MatterRefrigeratorAlarmPluginServerInitCallback);
         set_plugin_server_init_callback(cluster, plugin_server_init_cb);
+        if (config && config->delegate != nullptr) {
+            static const auto delegate_init_cb = RefrigeratorAlarmDelegateInitCB;
+            set_delegate_and_init_callback(cluster, delegate_init_cb, config->delegate);
+        }
         add_function_list(cluster, function_list, function_flags);
+
+        cluster::set_init_and_shutdown_callbacks(cluster, ESPMatterRefrigeratorAlarmClusterServerInitCallback,
+                                                 ESPMatterRefrigeratorAlarmClusterServerShutdownCallback);
 
         /* Attributes managed internally */
         global::attribute::create_feature_map(cluster, 0);
@@ -3829,6 +3838,9 @@ cluster_t *create(endpoint_t *endpoint, config_t *config, uint8_t flags)
         set_plugin_server_init_callback(cluster, plugin_server_init_cb);
         add_function_list(cluster, function_list, function_flags);
 
+        cluster::set_init_and_shutdown_callbacks(cluster, ESPMatterEnergyPreferenceClusterServerInitCallback,
+                                                 ESPMatterEnergyPreferenceClusterServerShutdownCallback);
+
         /** Attributes not managed internally **/
         global::attribute::create_cluster_revision(cluster, cluster_revision);
 
@@ -4562,9 +4574,12 @@ cluster_t *create(endpoint_t *endpoint, config_t *config, uint8_t flags)
         set_plugin_server_init_callback(cluster, plugin_server_init_cb);
         add_function_list(cluster, function_list, function_flags);
 
+        cluster::set_init_and_shutdown_callbacks(cluster, ESPMatterCommodityPriceClusterServerInitCallback,
+                                                 ESPMatterCommodityPriceClusterServerShutdownCallback);
+
         /* Attributes managed internally */
         global::attribute::create_feature_map(cluster, 0);
-        attribute::create_tariff_unit(cluster, 0);
+        attribute::create_tariff_unit(cluster, config ? config->tariff_unit : 0);
         attribute::create_currency(cluster, NULL, 0, 0);
         attribute::create_current_price(cluster, NULL, 0, 0);
 
