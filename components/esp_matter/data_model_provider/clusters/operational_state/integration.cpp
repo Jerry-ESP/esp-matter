@@ -30,16 +30,18 @@ namespace Clusters {
 namespace OperationalState {
 
 Instance::Instance(Delegate * aDelegate, EndpointId aEndpointId, const OperationalStateCluster::Config  &config) :
-    mDelegate(aDelegate), mOwnedStorage(Platform::MakeUnique<detail::OperationalInstanceBase>(aDelegate, aEndpointId, config)),
-    mCluster(mOwnedStorage->mCluster.Cluster()), mRegPtr(&mOwnedStorage->mCluster.Registration())
+    mOwnedStorage(Platform::MakeUnique<detail::OperationalInstanceBase>(aDelegate, aEndpointId, config)),
+    mCluster(mOwnedStorage->mCluster.Cluster()), mRegPtr(&mOwnedStorage->mCluster.Registration()),
+    mDelegateWrapperPtr(&mOwnedStorage->mDelegateWrapper)
 {
-    aDelegate->SetInstance(this);
+    mDelegateWrapperPtr->SetInstance(this);
 }
 
-Instance::Instance(OperationalStateCluster  &cluster, ServerClusterRegistration  &registration, Delegate * aDelegate) :
-    mDelegate(aDelegate), mCluster(cluster), mRegPtr(&registration)
+Instance::Instance(OperationalStateCluster  &cluster, ServerClusterRegistration  &registration,
+                   detail::InstanceDelegateWrapper  &delegateWrapper, Delegate * aDelegate) :
+    mCluster(cluster), mRegPtr(&registration), mDelegateWrapperPtr(&delegateWrapper)
 {
-    aDelegate->SetInstance(this);
+    mDelegateWrapperPtr->SetInstance(this);
 }
 
 Instance::~Instance()
@@ -48,9 +50,21 @@ Instance::~Instance()
         ChipLogError(AppServer, "OperationalState::Instance destroyed without Shutdown(); shutting down now.");
         Shutdown();
     }
-    if (mDelegate) {
-        mDelegate->SetInstance(nullptr);
+    if (mDelegateWrapperPtr != nullptr) {
+        mDelegateWrapperPtr->SetInstance(nullptr);
     }
+}
+
+void Instance::SetDelegate(Delegate * aDelegate)
+{
+    if (mDelegateWrapperPtr != nullptr) {
+        mDelegateWrapperPtr->SetDelegate(aDelegate);
+    }
+}
+
+Delegate * Instance::GetDelegate() const
+{
+    return mDelegateWrapperPtr != nullptr ? mDelegateWrapperPtr->GetDelegate() : nullptr;
 }
 
 CHIP_ERROR Instance::Init()

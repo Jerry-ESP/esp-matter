@@ -48,7 +48,7 @@ esp_err_t get_attr_val(esp_matter::cluster_t *cluster, uint32_t attribute_id, es
 }
 
 CHIP_ERROR GetClusterConfig(EndpointId endpointId, ICDManagementCluster::OptionalAttributeSet &optionalAttrSet,
-                            BitMask<OptionalCommands> &optionalCommands, BitMask<UserActiveModeTriggerBitmap> &uatHint,
+                            ICDManagementCluster::OptionalCommandSet &optionalCommands, BitMask<UserActiveModeTriggerBitmap> &uatHint,
                             MutableCharSpan &instructionSpan)
 {
     esp_matter::cluster_t *cluster = esp_matter::cluster::get(endpointId, IcdManagement::Id);
@@ -56,9 +56,9 @@ CHIP_ERROR GetClusterConfig(EndpointId endpointId, ICDManagementCluster::Optiona
         return CHIP_ERROR_NOT_FOUND;
     }
     if (esp_matter::command::get(cluster, Commands::StayActiveRequest::Id, esp_matter::COMMAND_FLAG_ACCEPTED)) {
-        optionalCommands.SetField(OptionalCommands::kStayActive, 1);
+        optionalCommands.Set<IcdManagement::Commands::StayActiveRequest::Id>();
     } else {
-        optionalCommands.SetField(OptionalCommands::kStayActive, 0);
+        optionalCommands.Set<IcdManagement::Commands::StayActiveRequest::Id>(false);
     }
     esp_matter_attr_val_t attr_val;
     if (get_attr_val(cluster, Attributes::UserActiveModeTriggerHint::Id, attr_val) == ESP_OK &&
@@ -81,7 +81,7 @@ void ESPMatterIcdManagementClusterServerInitCallback(EndpointId endpointId)
     VerifyOrReturn(endpointId == kRootEndpointId);
     if (!gServer.IsConstructed()) {
         ICDManagementCluster::OptionalAttributeSet optionalAttrSet;
-        BitMask<OptionalCommands> optionalCommands;
+        ICDManagementCluster::OptionalCommandSet optionalCommands(0);
         BitMask<UserActiveModeTriggerBitmap> uatHint;
         char instructionBuffer[kUserActiveModeTriggerInstructionMaxLength];
         MutableCharSpan instructionSpan(instructionBuffer);
