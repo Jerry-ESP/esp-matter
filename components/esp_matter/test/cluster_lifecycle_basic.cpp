@@ -347,6 +347,8 @@ TEST_CLUSTER_LIFECYCLE("LaundryWasherControls", chip::app::Clusters::LaundryWash
                        cluster::laundry_washer_controls::config_t, create_laundry_washer_controls_cluster)
 TEST_CLUSTER_LIFECYCLE("MicrowaveOvenControl", chip::app::Clusters::MicrowaveOvenControl::Id,
                        cluster::microwave_oven_control::config_t, create_microwave_oven_control_cluster)
+TEST_CLUSTER_LIFECYCLE("ModeSelect", chip::app::Clusters::ModeSelect::Id, cluster::mode_select::config_t,
+                       cluster::mode_select::create)
 TEST_CLUSTER_LIFECYCLE("NetworkCommissioning", chip::app::Clusters::NetworkCommissioning::Id,
                        cluster::network_commissioning::config_t, create_network_commissioning_cluster)
 TEST_CLUSTER_LIFECYCLE("Identify", chip::app::Clusters::Identify::Id, cluster::identify::config_t,

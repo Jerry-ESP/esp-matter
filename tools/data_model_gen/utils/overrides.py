@@ -34,6 +34,15 @@ DELEGATE_CALLBACK_INCLUDE: FrozenSet[int] = frozenset(
     ]
 )
 
+# Clusters that inherit a delegate from their base cluster but have no server
+# implementation in the Matter SDK yet, so there is nothing to wire a delegate to.
+# Remove an entry once upstream adds the server for it.
+DELEGATE_CALLBACK_SKIP: FrozenSet[int] = frozenset(
+    [
+        0x0064,  # temperature_alarm
+    ]
+)
+
 PLUGIN_CALLBACK_SKIP: FrozenSet[int] = frozenset(
     [
         0x0046,  # icd_management
@@ -209,6 +218,10 @@ def should_skip_cluster_command_callbacks(cluster_id: str) -> bool:
 
 def should_include_delegate_callback(cluster_id: str) -> bool:
     return convert_to_int(cluster_id) in DELEGATE_CALLBACK_INCLUDE
+
+
+def should_skip_delegate_callback(cluster_id: str) -> bool:
+    return convert_to_int(cluster_id) in DELEGATE_CALLBACK_SKIP
 
 
 def should_skip_plugin_callback(cluster_id: str) -> bool:

@@ -13,7 +13,16 @@ set(INCLUDE_DIRS_LIST   "."
 		                "${MATTER_SDK_PATH}/third_party/uriparser/repo/include"
                         "${MATTER_SDK_PATH}/src")
 
-set(PRIV_INCLUDE_DIRS_LIST )
+# Some cluster headers (e.g. commodity-tariff-server) use pigweed container types;
+# the chip component does not export pigweed include paths, so add them here.
+# data_model/compat carries stand-ins for headers upstream generates per app from ZAP.
+set(PRIV_INCLUDE_DIRS_LIST  "data_model/compat"
+                            "${MATTER_SDK_PATH}/third_party/pigweed/repo/pw_containers/public"
+                            "${MATTER_SDK_PATH}/third_party/pigweed/repo/pw_assert/public"
+                            "${MATTER_SDK_PATH}/third_party/pigweed/repo/pw_assert/assert_compatibility_public_overrides"
+                            "${MATTER_SDK_PATH}/third_party/pigweed/repo/pw_preprocessor/public"
+                            "${MATTER_SDK_PATH}/third_party/pigweed/repo/pw_toolchain/public"
+                            "${MATTER_SDK_PATH}/third_party/pigweed/repo/pw_polyfill/public")
 
 if (CONFIG_ESP_MATTER_ENABLE_MATTER_SERVER)
     list(APPEND SRC_DIRS_LIST    "${MATTER_SDK_PATH}/src/app/server"
