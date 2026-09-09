@@ -44,9 +44,9 @@ CHIP_ERROR CodegenModeBaseCluster::Startup(ServerClusterContext  &context)
     // Migrate attributes for this cluster from SafeAttribute to AttributePersistence.
     // This is done at Startup time when the persistence providers are guaranteed to be available.
     SafeAttributePersistenceProvider * srcProvider = GetSafeAttributePersistenceProvider();
-    AttributePersistenceProvider  &dstProvider = context.attributeStorage;
 
     if (srcProvider != nullptr) {
+        AttributePersistenceProvider  &dstProvider = context.attributeStorage;
         LogErrorOnFailure(ModeBase::MigrateModeBaseServerStorage(mPath.mEndpointId, mPath.mClusterId, *srcProvider, dstProvider));
     }
 
