@@ -811,3 +811,16 @@ const EmberAfAttributeMetadata *emberAfLocateAttributeMetadata(chip::EndpointId 
     }
     return nullptr;
 }
+
+// Thermostat migrated to a code-driven cluster upstream, so CHIP no longer emits its ember
+// init / pre-attribute-changed callbacks. The legacy data model still wires them into the
+// thermostat cluster function list, so provide no-op stubs. Generic attribute bounds are still
+// enforced through esp_matter's own store (see emberAfLocateAttributeMetadata above).
+// TODO: Remove these once the thermostat cluster is decoupled from ember APIs.
+void emberAfThermostatClusterServerInitCallback(chip::EndpointId) {}
+
+Status MatterThermostatClusterServerPreAttributeChangedCallback(const chip::app::ConcreteAttributePath &,
+                                                                EmberAfAttributeType, uint16_t, uint8_t *)
+{
+    return Status::Success;
+}
