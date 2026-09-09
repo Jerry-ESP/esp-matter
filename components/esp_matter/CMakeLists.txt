@@ -96,6 +96,15 @@ endif(CONFIG_ESP_MATTER_ENABLE_MATTER_SERVER)
 
 set(REQUIRES_LIST   chip bt nvs_flash app_update esp_secure_cert_mgr mbedtls esp_system openthread espressif__cjson)
 
+# esp_matter_ota.cpp includes esp_rcp_ota.h (from espressif__esp_rcp_update) when the
+# RCP-OTA path is enabled. IDF v6.0 hard-errors on including a header from a component not
+# in requires. Requirements are expanded before Kconfig, so we cannot gate on CONFIG_* here;
+# gate on whether the example actually pulled the managed component into the build instead.
+idf_build_get_property(build_components BUILD_COMPONENTS)
+if(espressif__esp_rcp_update IN_LIST build_components)
+    list(APPEND REQUIRES_LIST espressif__esp_rcp_update)
+endif()
+
 idf_component_register( SRC_DIRS        ${SRC_DIRS_LIST}
                         INCLUDE_DIRS    ${INCLUDE_DIRS_LIST}
                         EXCLUDE_SRCS    ${EXCLUDE_SRCS_LIST}
