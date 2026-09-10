@@ -99,21 +99,20 @@ endif(CONFIG_ESP_MATTER_ENABLE_MATTER_SERVER)
 
 set(REQUIRES_LIST   chip bt nvs_flash app_update esp_secure_cert_mgr mbedtls esp_system openthread espressif__cjson)
 
-# esp_matter_ota.cpp includes esp_rcp_ota.h (from espressif__esp_rcp_update) when the
-# RCP-OTA path is enabled. IDF v6.0 hard-errors on including a header from a component not
-# in requires. Requirements are expanded before Kconfig, so we cannot gate on CONFIG_* here;
-# gate on whether the example actually pulled the managed component into the build instead.
-idf_build_get_property(build_components BUILD_COMPONENTS)
-if(espressif__esp_rcp_update IN_LIST build_components)
-    list(APPEND REQUIRES_LIST espressif__esp_rcp_update)
-endif()
-
 idf_component_register( SRC_DIRS        ${SRC_DIRS_LIST}
                         INCLUDE_DIRS    ${INCLUDE_DIRS_LIST}
                         EXCLUDE_SRCS    ${EXCLUDE_SRCS_LIST}
                         PRIV_INCLUDE_DIRS ${PRIV_INCLUDE_DIRS_LIST}
                         REQUIRES        ${REQUIRES_LIST}
                         LDFRAGMENTS     "linker.lf")
+
+# esp_matter_ota.cpp includes esp_rcp_ota.h (from espressif__esp_rcp_update) when the RCP-OTA path
+# is enabled. That managed component is pulled in by the example, not esp_matter, and component
+# requirements are expanded before Kconfig and before the component graph is final, so we cannot
+# gate on CONFIG_* or on BUILD_COMPONENTS at REQUIRES time. idf_component_optional_requires runs
+# after registration, when BUILD_COMPONENTS is complete, and links the component only if the app
+# actually pulled it in (a no-op for apps like light that don't use RCP OTA).
+idf_component_optional_requires(PRIVATE espressif__esp_rcp_update)
 
 # Precompile the shared esp_matter/CHIP headers to avoid reparsing them in every
 # source file.
