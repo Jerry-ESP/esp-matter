@@ -819,6 +819,12 @@ const EmberAfAttributeMetadata *emberAfLocateAttributeMetadata(chip::EndpointId 
 // TODO: Remove these once the thermostat cluster is decoupled from ember APIs.
 void emberAfThermostatClusterServerInitCallback(chip::EndpointId) {}
 
+// Mode select migrated to a code-driven cluster upstream; its ember init now lives only in
+// mode-select-server/CodegenIntegration.cpp, which esp_matter excludes from the build. The
+// generated data model still wires it into the mode_select function list, so stub it here.
+// TODO: Remove once the generated data model stops referencing the ember init callback.
+void emberAfModeSelectClusterServerInitCallback(chip::EndpointId) {}
+
 Status MatterThermostatClusterServerPreAttributeChangedCallback(const chip::app::ConcreteAttributePath &,
                                                                 EmberAfAttributeType, uint16_t, uint8_t *)
 {
