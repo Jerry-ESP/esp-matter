@@ -34,7 +34,8 @@ public:
         const chip::BitMask<MessageControlBitmap>  &messageControl, const DataModel::Nullable<uint32_t>  &startTime,
         const DataModel::Nullable<uint64_t>  &duration, const CharSpan  &messageText,
         const chip::Optional<DataModel::DecodableList<chip::app::Clusters::Messages::Structs::MessageResponseOptionStruct::Type>> &
-        responses) override;
+        responses,
+        const chip::Optional<CharSpan>  &languageCode, const chip::Optional<CharSpan>  &messageUri) override;
     CHIP_ERROR HandleCancelMessagesRequest(const DataModel::DecodableList<chip::ByteSpan>  &messageIds) override;
 
     CHIP_ERROR HandleGetMessages(app::AttributeValueEncoder  &aEncoder) override;
