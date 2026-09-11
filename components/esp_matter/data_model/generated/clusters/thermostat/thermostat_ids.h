@@ -240,8 +240,8 @@ inline constexpr uint32_t Id = 0x0055;
 } /* CurrentThermostatSuggestion */
 namespace ThermostatSuggestionNotFollowingReason {
 inline constexpr uint32_t Id = 0x0056;
-inline constexpr uint16_t Min = 0;
-inline constexpr uint16_t Max = 255;
+inline constexpr uint8_t Min = 0;
+inline constexpr uint8_t Max = 255;
 } /* ThermostatSuggestionNotFollowingReason */
 } /* attribute */
 

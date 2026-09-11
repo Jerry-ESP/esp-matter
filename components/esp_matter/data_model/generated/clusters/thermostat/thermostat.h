@@ -94,7 +94,7 @@ esp_err_t add(cluster_t *cluster, config_t *config);
 namespace thermostat_suggestions {
 typedef struct config {
     uint8_t max_thermostat_suggestions;
-    nullable<uint16_t> thermostat_suggestion_not_following_reason;
+    nullable<uint8_t> thermostat_suggestion_not_following_reason;
     config() : max_thermostat_suggestions(5), thermostat_suggestion_not_following_reason() {}
 } config_t;
 uint32_t get_id();
