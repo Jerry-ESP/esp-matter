@@ -1848,6 +1848,24 @@ command_t *create_atomic_response(cluster_t *cluster)
     return esp_matter::command::create(cluster, Thermostat::Commands::AtomicResponse::Id, COMMAND_FLAG_GENERATED, NULL);
 }
 
+command_t *create_add_thermostat_suggestion(cluster_t *cluster)
+{
+    return esp_matter::command::create(cluster, Thermostat::Commands::AddThermostatSuggestion::Id, COMMAND_FLAG_ACCEPTED,
+                                       NULL);
+}
+
+command_t *create_add_thermostat_suggestion_response(cluster_t *cluster)
+{
+    return esp_matter::command::create(cluster, Thermostat::Commands::AddThermostatSuggestionResponse::Id,
+                                       COMMAND_FLAG_GENERATED, NULL);
+}
+
+command_t *create_remove_thermostat_suggestion(cluster_t *cluster)
+{
+    return esp_matter::command::create(cluster, Thermostat::Commands::RemoveThermostatSuggestion::Id, COMMAND_FLAG_ACCEPTED,
+                                       NULL);
+}
+
 } /* command */
 } /* thermostat */
 

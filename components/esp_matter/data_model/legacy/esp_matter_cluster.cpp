@@ -1418,9 +1418,6 @@ cluster_t *create(endpoint_t *endpoint, config_t *config, uint8_t flags)
         if (has(feature::occupancy::get_id())) {
             feature::occupancy::add(cluster, &(config->features.occupancy));
         }
-        if (has(feature::setback::get_id())) {
-            feature::setback::add(cluster, &(config->features.setback));
-        }
         if (has(feature::local_temperature_not_exposed::get_id())) {
             feature::local_temperature_not_exposed::add(cluster, &(config->features.local_temperature_not_exposed));
         }
@@ -1429,6 +1426,9 @@ cluster_t *create(endpoint_t *endpoint, config_t *config, uint8_t flags)
         }
         if (has(feature::presets::get_id())) {
             feature::presets::add(cluster);
+        }
+        if (has(feature::thermostat_suggestions::get_id())) {
+            feature::thermostat_suggestions::add(cluster, &(config->features.thermostat_suggestions));
         }
 
         // matter_schedule_configuration and presets contains the attributes with T i.e. atomic quality
@@ -2353,6 +2353,9 @@ cluster_t *create(endpoint_t *endpoint, config_t *config, uint8_t flags)
         if (has(feature::vision::get_id())) {
             feature::vision::add(cluster);
         }
+        if (has(feature::occupancy_event::get_id())) {
+            feature::occupancy_event::add(cluster);
+        }
         cluster::set_init_and_shutdown_callbacks(cluster, ESPMatterOccupancySensingClusterServerInitCallback,
                                                  ESPMatterOccupancySensingClusterServerShutdownCallback);
     } // if (flags & CLUSTER_FLAG_SERVER)
@@ -3066,9 +3069,9 @@ cluster_t *create(endpoint_t *endpoint, config_t *config, uint8_t flags)
         /* Attributes managed internally */
         global::attribute::create_feature_map(cluster, config->feature_flags);
 
-        // check against O.a feature conformance for microwave oven control
-        VALIDATE_FEATURES_EXACT_ONE("PowerAsNumber,PowerInWatts",
-                                    feature::power_as_number::get_id(), feature::power_in_watts::get_id());
+        // PowerAsNumber is mandatory for microwave oven control
+        VALIDATE_FEATURES_EXACT_ONE("PowerAsNumber",
+                                    feature::power_as_number::get_id());
 
         if (has(feature::power_as_number::get_id())) {
             feature::power_as_number::add(cluster);
@@ -3077,9 +3080,6 @@ cluster_t *create(endpoint_t *endpoint, config_t *config, uint8_t flags)
             if (has(feature::power_number_limits::get_id())) {
                 feature::power_number_limits::add(cluster);
             }
-        }
-        if (has(feature::power_in_watts::get_id())) {
-            feature::power_in_watts::add(cluster);
         }
 
         cluster::set_init_and_shutdown_callbacks(cluster,

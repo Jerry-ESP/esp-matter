@@ -332,9 +332,9 @@ typedef struct config {
         feature::cooling::config_t cooling;
         feature::auto_mode::config_t auto_mode;
         feature::occupancy::config_t occupancy;
-        feature::setback::config_t setback;
         feature::local_temperature_not_exposed::config_t local_temperature_not_exposed;
         feature::matter_schedule_configuration::config_t matter_schedule_configuration;
+        feature::thermostat_suggestions::config_t thermostat_suggestions;
     } features;
     uint32_t feature_flags;
     config() : local_temperature(), control_sequence_of_operation(4), system_mode(1), delegate(nullptr), feature_flags(0) {}

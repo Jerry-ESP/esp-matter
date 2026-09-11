@@ -478,6 +478,51 @@ class TestConformanceRestrictions(unittest.TestCase):
         should_skip = is_restricted_by_conformance({}, elem)
         self.assertFalse(should_skip)
 
+    def test_dont_skip_or_when_one_branch_available(self):
+        """orTerm stays available if at least one branch feature is present, even when the
+        others were dropped. Regression for DoorLock User:
+        mandatoryConform(orTerm(PIN,RID,FGP,FACE,ALIRO)) must NOT be skipped once the
+        provisional RID/FGP/FACE leave the feature map while PIN remains."""
+        xml = """<feature bit="8" code="USR" name="User">
+            <mandatoryConform>
+                <orTerm>
+                    <feature name="PIN"/>
+                    <feature name="RID"/>
+                    <feature name="FGP"/>
+                </orTerm>
+            </mandatoryConform>
+        </feature>"""
+        elem = ET.fromstring(xml)
+        feature_map = {"PIN": MockFeature("PinCredential", "PIN")}  # RID/FGP dropped
+        self.assertFalse(is_restricted_by_conformance(feature_map, elem))
+
+    def test_skip_or_when_all_branches_missing(self):
+        """orTerm is restricted only when every branch feature is absent."""
+        xml = """<feature bit="8" code="USR" name="User">
+            <mandatoryConform>
+                <orTerm>
+                    <feature name="RID"/>
+                    <feature name="FGP"/>
+                </orTerm>
+            </mandatoryConform>
+        </feature>"""
+        elem = ET.fromstring(xml)
+        self.assertTrue(is_restricted_by_conformance({}, elem))
+
+    def test_skip_and_when_one_branch_missing(self):
+        """andTerm is restricted when any branch feature is absent."""
+        xml = """<feature bit="1" code="X" name="Example">
+            <mandatoryConform>
+                <andTerm>
+                    <feature name="PIN"/>
+                    <feature name="RID"/>
+                </andTerm>
+            </mandatoryConform>
+        </feature>"""
+        elem = ET.fromstring(xml)
+        feature_map = {"PIN": MockFeature("PinCredential", "PIN")}  # RID missing
+        self.assertTrue(is_restricted_by_conformance(feature_map, elem))
+
     def test_skip_zigbee_specific(self):
         """Test that Zigbee-specific optional conformance is skipped"""
         xml = """<attribute id="0x0001" name="TestAttr">
