@@ -529,7 +529,7 @@ attribute_t *create_thermostat_suggestion_not_following_reason(cluster_t *cluste
     uint32_t feature_map = get_feature_map_value(cluster);
     VerifyOrReturnValue(has_feature(thermostat_suggestions), NULL);
     attribute_t *attribute = esp_matter::attribute::create(cluster, ThermostatSuggestionNotFollowingReason::Id, ATTRIBUTE_FLAG_NULLABLE, esp_matter_attr_val(value, esp_matter_attr_val::uint_sub_type::k_bitmap));
-    esp_matter::attribute::add_bounds(attribute, esp_matter_attr_val(nullable<uint16_t>(ThermostatSuggestionNotFollowingReason::Min), esp_matter_attr_val::uint_sub_type::k_bitmap), esp_matter_attr_val(nullable<uint16_t>(ThermostatSuggestionNotFollowingReason::Max), esp_matter_attr_val::uint_sub_type::k_bitmap));
+    esp_matter::attribute::add_bounds(attribute, esp_matter_attr_val(nullable<uint8_t>(ThermostatSuggestionNotFollowingReason::Min), esp_matter_attr_val::uint_sub_type::k_bitmap), esp_matter_attr_val(nullable<uint8_t>(ThermostatSuggestionNotFollowingReason::Max), esp_matter_attr_val::uint_sub_type::k_bitmap));
     return attribute;
 }
 
