@@ -32,7 +32,7 @@ static void update_system_state(uint16_t endpoint_id, ModeEnum mode)
         return;
     }
 
-    SystemStateEnum system_state = SystemStateEnum::kOff;
+    SystemStateEnum system_state = SystemStateEnum::kIdle;
     switch (mode) {
     case ModeEnum::kHumidifier:
         system_state = SystemStateEnum::kHumidifying;
@@ -44,11 +44,8 @@ static void update_system_state(uint16_t endpoint_id, ModeEnum mode)
         system_state = SystemStateEnum::kFan;
         break;
     case ModeEnum::kAuto:
-        system_state = SystemStateEnum::kIdle;
-        break;
-    case ModeEnum::kOff:
     default:
-        system_state = SystemStateEnum::kOff;
+        system_state = SystemStateEnum::kIdle;
         break;
     }
 

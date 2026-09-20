@@ -51,42 +51,54 @@ inline constexpr uint32_t Id = 0x80;
 namespace ColdMist {
 inline constexpr uint32_t Id = 0x100;
 } /* ColdMist */
+namespace CondPump {
+inline constexpr uint32_t Id = 0x200;
+} /* CondPump */
 } /* feature */
 
 namespace attribute {
-namespace Mode {
+namespace SupportedModes {
 inline constexpr uint32_t Id = 0x0000;
+} /* SupportedModes */
+namespace Mode {
+inline constexpr uint32_t Id = 0x0001;
 } /* Mode */
 namespace SystemState {
-inline constexpr uint32_t Id = 0x0001;
+inline constexpr uint32_t Id = 0x0002;
 } /* SystemState */
 namespace UserSetpoint {
-inline constexpr uint32_t Id = 0x0002;
+inline constexpr uint32_t Id = 0x0003;
 } /* UserSetpoint */
 namespace MinSetpoint {
-inline constexpr uint32_t Id = 0x0003;
+inline constexpr uint32_t Id = 0x0004;
 } /* MinSetpoint */
 namespace MaxSetpoint {
-inline constexpr uint32_t Id = 0x0004;
+inline constexpr uint32_t Id = 0x0005;
 } /* MaxSetpoint */
 namespace Step {
-inline constexpr uint32_t Id = 0x0005;
+inline constexpr uint32_t Id = 0x0006;
 } /* Step */
 namespace TargetSetpoint {
-inline constexpr uint32_t Id = 0x0006;
+inline constexpr uint32_t Id = 0x0007;
 } /* TargetSetpoint */
 namespace MistType {
-inline constexpr uint32_t Id = 0x0007;
+inline constexpr uint32_t Id = 0x0008;
 } /* MistType */
 namespace Continuous {
-inline constexpr uint32_t Id = 0x0008;
+inline constexpr uint32_t Id = 0x0009;
 } /* Continuous */
 namespace Sleep {
-inline constexpr uint32_t Id = 0x0009;
+inline constexpr uint32_t Id = 0x000A;
 } /* Sleep */
 namespace Optimal {
-inline constexpr uint32_t Id = 0x000A;
+inline constexpr uint32_t Id = 0x000B;
 } /* Optimal */
+namespace CondPumpEnabled {
+inline constexpr uint32_t Id = 0x000C;
+} /* CondPumpEnabled */
+namespace CondRunCount {
+inline constexpr uint32_t Id = 0x000D;
+} /* CondRunCount */
 } /* attribute */
 
 namespace command {

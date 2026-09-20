@@ -78,7 +78,7 @@ void ESPMatterRefrigeratorAlarmClusterServerInitCallback(EndpointId endpointId)
     if (!entry.server.IsConstructed()) {
         AlarmBase::AlarmMap supported{};
         BitMask<RefrigeratorAlarm::AlarmBitmap> supportedDefault{};
-        if (RefrigeratorAlarm::Attributes::Supported::GetDefault(endpointId, &supportedDefault) == Status::Success) {
+        if (RefrigeratorAlarm::Attributes::Supported::GetDefault(endpointId, supportedDefault) == Status::Success) {
             supported = AlarmBase::AlarmMap(supportedDefault.Raw());
         }
 
@@ -95,12 +95,12 @@ void ESPMatterRefrigeratorAlarmClusterServerInitCallback(EndpointId endpointId)
         auto &clusterServer = entry.server.Cluster();
 
         BitMask<RefrigeratorAlarm::AlarmBitmap> maskDefault{};
-        if (RefrigeratorAlarm::Attributes::Mask::GetDefault(endpointId, &maskDefault) == Status::Success) {
+        if (RefrigeratorAlarm::Attributes::Mask::GetDefault(endpointId, maskDefault) == Status::Success) {
             clusterServer.SetMask(AlarmBase::AlarmMap(maskDefault.Raw()));
         }
 
         BitMask<RefrigeratorAlarm::AlarmBitmap> stateDefault{};
-        if (RefrigeratorAlarm::Attributes::State::GetDefault(endpointId, &stateDefault) == Status::Success) {
+        if (RefrigeratorAlarm::Attributes::State::GetDefault(endpointId, stateDefault) == Status::Success) {
             clusterServer.SetState(AlarmBase::AlarmMap(stateDefault.Raw()));
         }
     }

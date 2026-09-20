@@ -200,9 +200,34 @@ esp_err_t add(cluster_t *cluster)
 }
 } /* cold_mist */
 
+namespace cond_pump {
+uint32_t get_id()
+{
+    return CondPump::Id;
+}
+
+esp_err_t add(cluster_t *cluster, config_t *config)
+{
+    VerifyOrReturnError(cluster, ESP_ERR_INVALID_ARG);
+    VerifyOrReturnError(config, ESP_ERR_INVALID_ARG);
+    uint32_t feature_map = get_feature_map_value(cluster);
+    VerifyOrReturnError(has_feature(cond_pump), ESP_ERR_INVALID_ARG);
+    update_feature_map(cluster, get_id());
+    attribute::create_cond_pump_enabled(cluster, config->cond_pump_enabled);
+    attribute::create_cond_run_count(cluster, 0);
+
+    return ESP_OK;
+}
+} /* cold_mist */
+
 } /* feature */
 
 namespace attribute {
+attribute_t *create_supported_modes(cluster_t *cluster, uint8_t *value, uint16_t length, uint16_t count)
+{
+    return esp_matter::attribute::create(cluster, SupportedModes::Id, ATTRIBUTE_FLAG_MANAGED_INTERNALLY, esp_matter_attr_val(value, length, count));
+}
+
 attribute_t *create_mode(cluster_t *cluster, uint8_t value)
 {
     attribute_t *attribute = esp_matter::attribute::create(cluster, Mode::Id, ATTRIBUTE_FLAG_NONE, esp_matter_enum8(value));
@@ -262,9 +287,11 @@ attribute_t *create_target_setpoint(cluster_t *cluster, uint8_t value)
 
 attribute_t *create_mist_type(cluster_t *cluster, uint8_t value)
 {
+    printf("create_mist_type attribute value: %d!\n", value);
     uint32_t feature_map = get_feature_map_value(cluster);
     VerifyOrReturnValue(has_feature(humidifier), NULL);
     attribute_t *attribute = esp_matter::attribute::create(cluster, MistType::Id, ATTRIBUTE_FLAG_NONE, esp_matter_bitmap8(value));
+    printf("create_mist_type attribute success!\n");
     esp_matter::attribute::add_bounds(attribute, esp_matter_bitmap8(0), esp_matter_bitmap8(3));
     return attribute;
 }
@@ -286,6 +313,21 @@ attribute_t *create_optimal(cluster_t *cluster, bool value)
     uint32_t feature_map = get_feature_map_value(cluster);
     VerifyOrReturnValue(has_feature(optimal), NULL);
     return esp_matter::attribute::create(cluster, Optimal::Id, ATTRIBUTE_FLAG_NONE, esp_matter_bool(value));
+}
+
+attribute_t *create_cond_pump_enabled(cluster_t *cluster, bool value)
+{
+    uint32_t feature_map = get_feature_map_value(cluster);
+    VerifyOrReturnValue(has_feature(cond_pump), NULL);
+    return esp_matter::attribute::create(cluster, CondPumpEnabled::Id, ATTRIBUTE_FLAG_NONE, esp_matter_bool(value));
+}
+
+attribute_t *create_cond_run_count(cluster_t *cluster, uint16_t value)
+{
+    uint32_t feature_map = get_feature_map_value(cluster);
+    VerifyOrReturnValue(has_feature(cond_pump), NULL);
+    attribute_t *attribute = esp_matter::attribute::create(cluster, CondRunCount::Id, ATTRIBUTE_FLAG_NONE, esp_matter_uint16(value));
+    return attribute;
 }
 
 } /* attribute */
@@ -327,6 +369,7 @@ cluster_t *create(endpoint_t *endpoint, config_t *config, uint8_t flags)
         /* Attributes not managed internally */
         global::attribute::create_cluster_revision(cluster, cluster_revision);
 
+        attribute::create_supported_modes(cluster, NULL, 0, 0);
         attribute::create_mode(cluster, config->mode);
         attribute::create_system_state(cluster, config->system_state);
 
@@ -365,6 +408,9 @@ cluster_t *create(endpoint_t *endpoint, config_t *config, uint8_t flags)
         }
         if (feature_map & feature::optimal::get_id()) {
             VerifyOrReturnValue(feature::optimal::add(cluster, &(config->features.optimal)) == ESP_OK, ABORT_CLUSTER_CREATE(cluster));
+        }
+        if (feature_map & feature::cond_pump::get_id()) {
+            VerifyOrReturnValue(feature::cond_pump::add(cluster, &(config->features.cond_pump)) == ESP_OK, ABORT_CLUSTER_CREATE(cluster));
         }
         command::create_set_settings(cluster);
 

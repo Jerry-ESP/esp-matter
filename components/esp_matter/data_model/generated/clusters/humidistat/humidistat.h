@@ -88,6 +88,15 @@ uint32_t get_id();
 esp_err_t add(cluster_t *cluster);
 } /* cold_mist */
 
+namespace cond_pump {
+typedef struct config {
+    bool cond_pump_enabled;
+    config() : cond_pump_enabled(false) {}
+} config_t;
+uint32_t get_id();
+esp_err_t add(cluster_t *cluster);  
+}
+
 } /* feature */
 
 namespace attribute {
@@ -102,6 +111,8 @@ attribute_t *create_mist_type(cluster_t *cluster, uint8_t value);
 attribute_t *create_continuous(cluster_t *cluster, bool value);
 attribute_t *create_sleep(cluster_t *cluster, bool value);
 attribute_t *create_optimal(cluster_t *cluster, bool value);
+attribute_t *create_cond_pump_enabled(cluster_t *cluster, bool value);
+attribute_t *create_cond_run_count(cluster_t *cluster, uint16_t value);
 } /* attribute */
 
 namespace command {
@@ -117,6 +128,7 @@ typedef struct config {
         feature::continuous::config_t continuous;
         feature::sensor::config_t sensor;
         feature::optimal::config_t optimal;
+        feature::cond_pump::config_t cond_pump;
     } features;
     uint32_t feature_flags;
     config() : mode(0), system_state(0), delegate(nullptr), feature_flags(0) {}
