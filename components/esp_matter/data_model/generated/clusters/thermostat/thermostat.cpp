@@ -1,0 +1,787 @@
+// Copyright 2026 Espressif Systems (Shanghai) PTE LTD
+//
+// Licensed under the Apache License, Version 2.0 (the "License");
+// you may not use this file except in compliance with the License.
+// You may obtain a copy of the License at
+//
+//     http://www.apache.org/licenses/LICENSE-2.0
+//
+// Unless required by applicable law or agreed to in writing, software
+// distributed under the License is distributed on an "AS IS" BASIS,
+// WITHOUT WARRANTIES OR CONDITIONS OF ANY KIND, either express or implied.
+// See the License for the specific language governing permissions and
+// limitations under the License.
+
+/* THIS IS A GENERATED FILE, DO NOT EDIT */
+
+#include <esp_log.h>
+#include <esp_matter_core.h>
+#include <esp_matter.h>
+
+#include <app-common/zap-generated/cluster-enums.h>
+#include <zap_common/app/PluginApplicationCallbacks.h>
+#include <esp_matter_delegate_callbacks.h>
+#include <thermostat.h>
+#include <thermostat_ids.h>
+#include <binding.h>
+#include <esp_matter_data_model_priv.h>
+#include <app/ClusterCallbacks.h>
+
+using namespace chip::app::Clusters;
+using namespace esp_matter;
+using namespace esp_matter::cluster;
+using namespace esp_matter::cluster::delegate_cb;
+
+static const char *TAG = "esp_matter_cluster";
+constexpr uint16_t cluster_revision = 12;
+
+namespace esp_matter {
+namespace cluster {
+namespace thermostat {
+
+namespace feature {
+namespace heating {
+uint32_t get_id()
+{
+    return Heating::Id;
+}
+
+esp_err_t add(cluster_t *cluster, config_t *config)
+{
+    VerifyOrReturnError(cluster, ESP_ERR_INVALID_ARG);
+    VerifyOrReturnError(config, ESP_ERR_INVALID_ARG);
+    update_feature_map(cluster, get_id());
+    attribute::create_occupied_heating_setpoint(cluster, config->occupied_heating_setpoint);
+    attribute::create_unoccupied_heating_setpoint(cluster, config->unoccupied_heating_setpoint);
+
+    return ESP_OK;
+}
+} /* heating */
+
+namespace cooling {
+uint32_t get_id()
+{
+    return Cooling::Id;
+}
+
+esp_err_t add(cluster_t *cluster, config_t *config)
+{
+    VerifyOrReturnError(cluster, ESP_ERR_INVALID_ARG);
+    VerifyOrReturnError(config, ESP_ERR_INVALID_ARG);
+    update_feature_map(cluster, get_id());
+    attribute::create_occupied_cooling_setpoint(cluster, config->occupied_cooling_setpoint);
+    attribute::create_unoccupied_cooling_setpoint(cluster, config->unoccupied_cooling_setpoint);
+
+    return ESP_OK;
+}
+} /* cooling */
+
+namespace occupancy {
+uint32_t get_id()
+{
+    return Occupancy::Id;
+}
+
+esp_err_t add(cluster_t *cluster, config_t *config)
+{
+    VerifyOrReturnError(cluster, ESP_ERR_INVALID_ARG);
+    VerifyOrReturnError(config, ESP_ERR_INVALID_ARG);
+    update_feature_map(cluster, get_id());
+    attribute::create_occupancy(cluster, config->occupancy);
+    attribute::create_unoccupied_cooling_setpoint(cluster, config->unoccupied_cooling_setpoint);
+    attribute::create_unoccupied_heating_setpoint(cluster, config->unoccupied_heating_setpoint);
+
+    return ESP_OK;
+}
+} /* occupancy */
+
+namespace schedule_configuration {
+uint32_t get_id()
+{
+    return ScheduleConfiguration::Id;
+}
+
+esp_err_t add(cluster_t *cluster)
+{
+    VerifyOrReturnError(cluster, ESP_ERR_INVALID_ARG);
+    update_feature_map(cluster, get_id());
+
+    return ESP_OK;
+}
+} /* schedule_configuration */
+
+namespace setback {
+uint32_t get_id()
+{
+    return Setback::Id;
+}
+
+esp_err_t add(cluster_t *cluster)
+{
+    VerifyOrReturnError(cluster, ESP_ERR_INVALID_ARG);
+    update_feature_map(cluster, get_id());
+
+    return ESP_OK;
+}
+} /* setback */
+
+namespace auto_mode {
+uint32_t get_id()
+{
+    return AutoMode::Id;
+}
+
+esp_err_t add(cluster_t *cluster, config_t *config)
+{
+    VerifyOrReturnError(cluster, ESP_ERR_INVALID_ARG);
+    VerifyOrReturnError(config, ESP_ERR_INVALID_ARG);
+    update_feature_map(cluster, get_id());
+    attribute::create_min_setpoint_dead_band(cluster, config->min_setpoint_dead_band);
+
+    return ESP_OK;
+}
+} /* auto_mode */
+
+namespace local_temperature_not_exposed {
+uint32_t get_id()
+{
+    return LocalTemperatureNotExposed::Id;
+}
+
+esp_err_t add(cluster_t *cluster)
+{
+    VerifyOrReturnError(cluster, ESP_ERR_INVALID_ARG);
+    update_feature_map(cluster, get_id());
+
+    return ESP_OK;
+}
+} /* local_temperature_not_exposed */
+
+namespace matter_schedule_configuration {
+uint32_t get_id()
+{
+    return MatterScheduleConfiguration::Id;
+}
+
+esp_err_t add(cluster_t *cluster, config_t *config)
+{
+    VerifyOrReturnError(cluster, ESP_ERR_INVALID_ARG);
+    VerifyOrReturnError(config, ESP_ERR_INVALID_ARG);
+    update_feature_map(cluster, get_id());
+    attribute::create_number_of_schedules(cluster, config->number_of_schedules);
+    attribute::create_number_of_schedule_transitions(cluster, config->number_of_schedule_transitions);
+    attribute::create_number_of_schedule_transition_per_day(cluster, config->number_of_schedule_transition_per_day);
+    attribute::create_active_schedule_handle(cluster, config->active_schedule_handle, sizeof(config->active_schedule_handle));
+    attribute::create_schedule_types(cluster, NULL, 0, 0);
+    attribute::create_schedules(cluster, NULL, 0, 0);
+    command::create_set_active_schedule_request(cluster);
+
+    return ESP_OK;
+}
+} /* matter_schedule_configuration */
+
+namespace presets {
+uint32_t get_id()
+{
+    return Presets::Id;
+}
+
+esp_err_t add(cluster_t *cluster, config_t *config)
+{
+    VerifyOrReturnError(cluster, ESP_ERR_INVALID_ARG);
+    VerifyOrReturnError(config, ESP_ERR_INVALID_ARG);
+    update_feature_map(cluster, get_id());
+    attribute::create_number_of_presets(cluster, config->number_of_presets);
+    attribute::create_active_preset_handle(cluster, config->active_preset_handle, sizeof(config->active_preset_handle));
+    attribute::create_preset_types(cluster, NULL, 0, 0);
+    attribute::create_presets(cluster, NULL, 0, 0);
+    command::create_set_active_preset_request(cluster);
+
+    return ESP_OK;
+}
+} /* presets */
+
+namespace thermostat_suggestions {
+uint32_t get_id()
+{
+    return ThermostatSuggestions::Id;
+}
+
+esp_err_t add(cluster_t *cluster, config_t *config)
+{
+    VerifyOrReturnError(cluster, ESP_ERR_INVALID_ARG);
+    VerifyOrReturnError(config, ESP_ERR_INVALID_ARG);
+    uint32_t feature_map = get_feature_map_value(cluster);
+    VerifyOrReturnError(has_feature(presets), ESP_ERR_INVALID_ARG);
+    update_feature_map(cluster, get_id());
+    attribute::create_max_thermostat_suggestions(cluster, config->max_thermostat_suggestions);
+    attribute::create_thermostat_suggestion_not_following_reason(cluster, config->thermostat_suggestion_not_following_reason);
+    attribute::create_thermostat_suggestions(cluster, NULL, 0, 0);
+    attribute::create_current_thermostat_suggestion(cluster, NULL, 0, 0);
+    command::create_add_thermostat_suggestion_response(cluster);
+    command::create_add_thermostat_suggestion(cluster);
+    command::create_remove_thermostat_suggestion(cluster);
+
+    return ESP_OK;
+}
+} /* thermostat_suggestions */
+
+} /* feature */
+
+namespace attribute {
+attribute_t *create_local_temperature(cluster_t *cluster, nullable<int16_t> value)
+{
+    return esp_matter::attribute::create(cluster, LocalTemperature::Id, ATTRIBUTE_FLAG_NULLABLE, esp_matter_attr_val(value));
+}
+
+attribute_t *create_outdoor_temperature(cluster_t *cluster, nullable<int16_t> value)
+{
+    return esp_matter::attribute::create(cluster, OutdoorTemperature::Id, ATTRIBUTE_FLAG_NULLABLE, esp_matter_attr_val(value));
+}
+
+attribute_t *create_occupancy(cluster_t *cluster, uint8_t value)
+{
+    uint32_t feature_map = get_feature_map_value(cluster);
+    VerifyOrReturnValue(has_feature(occupancy), NULL);
+    attribute_t *attribute = esp_matter::attribute::create(cluster, Occupancy::Id, ATTRIBUTE_FLAG_NONE, esp_matter_attr_val(value, esp_matter_attr_val::uint_sub_type::k_bitmap));
+    esp_matter::attribute::add_bounds(attribute, esp_matter_attr_val(static_cast<uint8_t>(Occupancy::Min), esp_matter_attr_val::uint_sub_type::k_bitmap), esp_matter_attr_val(static_cast<uint8_t>(Occupancy::Max), esp_matter_attr_val::uint_sub_type::k_bitmap));
+    return attribute;
+}
+
+attribute_t *create_abs_min_heat_setpoint_limit(cluster_t *cluster, int16_t value)
+{
+    return esp_matter::attribute::create(cluster, AbsMinHeatSetpointLimit::Id, ATTRIBUTE_FLAG_NONE, esp_matter_attr_val(value));
+}
+
+attribute_t *create_abs_max_heat_setpoint_limit(cluster_t *cluster, int16_t value)
+{
+    return esp_matter::attribute::create(cluster, AbsMaxHeatSetpointLimit::Id, ATTRIBUTE_FLAG_NONE, esp_matter_attr_val(value));
+}
+
+attribute_t *create_abs_min_cool_setpoint_limit(cluster_t *cluster, int16_t value)
+{
+    return esp_matter::attribute::create(cluster, AbsMinCoolSetpointLimit::Id, ATTRIBUTE_FLAG_NONE, esp_matter_attr_val(value));
+}
+
+attribute_t *create_abs_max_cool_setpoint_limit(cluster_t *cluster, int16_t value)
+{
+    return esp_matter::attribute::create(cluster, AbsMaxCoolSetpointLimit::Id, ATTRIBUTE_FLAG_NONE, esp_matter_attr_val(value));
+}
+
+attribute_t *create_pi_cooling_demand(cluster_t *cluster, uint8_t value)
+{
+    attribute_t *attribute = esp_matter::attribute::create(cluster, PICoolingDemand::Id, ATTRIBUTE_FLAG_NONE, esp_matter_attr_val(value));
+    esp_matter::attribute::add_bounds(attribute, esp_matter_attr_val(static_cast<uint8_t>(PICoolingDemand::Min)), esp_matter_attr_val(static_cast<uint8_t>(PICoolingDemand::Max)));
+    return attribute;
+}
+
+attribute_t *create_pi_heating_demand(cluster_t *cluster, uint8_t value)
+{
+    attribute_t *attribute = esp_matter::attribute::create(cluster, PIHeatingDemand::Id, ATTRIBUTE_FLAG_NONE, esp_matter_attr_val(value));
+    esp_matter::attribute::add_bounds(attribute, esp_matter_attr_val(static_cast<uint8_t>(PIHeatingDemand::Min)), esp_matter_attr_val(static_cast<uint8_t>(PIHeatingDemand::Max)));
+    return attribute;
+}
+
+attribute_t *create_hvac_system_type_configuration(cluster_t *cluster, uint8_t value)
+{
+    attribute_t *attribute = esp_matter::attribute::create(cluster, HVACSystemTypeConfiguration::Id, ATTRIBUTE_FLAG_WRITABLE, esp_matter_attr_val(value, esp_matter_attr_val::uint_sub_type::k_bitmap));
+    esp_matter::attribute::add_bounds(attribute, esp_matter_attr_val(static_cast<uint8_t>(HVACSystemTypeConfiguration::Min), esp_matter_attr_val::uint_sub_type::k_bitmap), esp_matter_attr_val(static_cast<uint8_t>(HVACSystemTypeConfiguration::Max), esp_matter_attr_val::uint_sub_type::k_bitmap));
+    return attribute;
+}
+
+attribute_t *create_local_temperature_calibration(cluster_t *cluster, int8_t value)
+{
+    return esp_matter::attribute::create(cluster, LocalTemperatureCalibration::Id, ATTRIBUTE_FLAG_WRITABLE | ATTRIBUTE_FLAG_NONVOLATILE, esp_matter_attr_val(value));
+}
+
+attribute_t *create_occupied_cooling_setpoint(cluster_t *cluster, int16_t value)
+{
+    uint32_t feature_map = get_feature_map_value(cluster);
+    VerifyOrReturnValue(has_feature(cooling), NULL);
+    return esp_matter::attribute::create(cluster, OccupiedCoolingSetpoint::Id, ATTRIBUTE_FLAG_WRITABLE | ATTRIBUTE_FLAG_NONVOLATILE, esp_matter_attr_val(value));
+}
+
+attribute_t *create_occupied_heating_setpoint(cluster_t *cluster, int16_t value)
+{
+    uint32_t feature_map = get_feature_map_value(cluster);
+    VerifyOrReturnValue(has_feature(heating), NULL);
+    return esp_matter::attribute::create(cluster, OccupiedHeatingSetpoint::Id, ATTRIBUTE_FLAG_WRITABLE | ATTRIBUTE_FLAG_NONVOLATILE, esp_matter_attr_val(value));
+}
+
+attribute_t *create_unoccupied_cooling_setpoint(cluster_t *cluster, int16_t value)
+{
+    uint32_t feature_map = get_feature_map_value(cluster);
+    VerifyOrReturnValue(((has_feature(cooling)) && (has_feature(occupancy))), NULL);
+    return esp_matter::attribute::create(cluster, UnoccupiedCoolingSetpoint::Id, ATTRIBUTE_FLAG_WRITABLE | ATTRIBUTE_FLAG_NONVOLATILE, esp_matter_attr_val(value));
+}
+
+attribute_t *create_unoccupied_heating_setpoint(cluster_t *cluster, int16_t value)
+{
+    uint32_t feature_map = get_feature_map_value(cluster);
+    VerifyOrReturnValue(((has_feature(heating)) && (has_feature(occupancy))), NULL);
+    return esp_matter::attribute::create(cluster, UnoccupiedHeatingSetpoint::Id, ATTRIBUTE_FLAG_WRITABLE | ATTRIBUTE_FLAG_NONVOLATILE, esp_matter_attr_val(value));
+}
+
+attribute_t *create_min_heat_setpoint_limit(cluster_t *cluster, int16_t value)
+{
+    return esp_matter::attribute::create(cluster, MinHeatSetpointLimit::Id, ATTRIBUTE_FLAG_WRITABLE | ATTRIBUTE_FLAG_NONVOLATILE, esp_matter_attr_val(value));
+}
+
+attribute_t *create_max_heat_setpoint_limit(cluster_t *cluster, int16_t value)
+{
+    return esp_matter::attribute::create(cluster, MaxHeatSetpointLimit::Id, ATTRIBUTE_FLAG_WRITABLE | ATTRIBUTE_FLAG_NONVOLATILE, esp_matter_attr_val(value));
+}
+
+attribute_t *create_min_cool_setpoint_limit(cluster_t *cluster, int16_t value)
+{
+    return esp_matter::attribute::create(cluster, MinCoolSetpointLimit::Id, ATTRIBUTE_FLAG_WRITABLE | ATTRIBUTE_FLAG_NONVOLATILE, esp_matter_attr_val(value));
+}
+
+attribute_t *create_max_cool_setpoint_limit(cluster_t *cluster, int16_t value)
+{
+    return esp_matter::attribute::create(cluster, MaxCoolSetpointLimit::Id, ATTRIBUTE_FLAG_WRITABLE | ATTRIBUTE_FLAG_NONVOLATILE, esp_matter_attr_val(value));
+}
+
+attribute_t *create_min_setpoint_dead_band(cluster_t *cluster, int8_t value)
+{
+    uint32_t feature_map = get_feature_map_value(cluster);
+    VerifyOrReturnValue(has_feature(auto_mode), NULL);
+    attribute_t *attribute = esp_matter::attribute::create(cluster, MinSetpointDeadBand::Id, ATTRIBUTE_FLAG_WRITABLE | ATTRIBUTE_FLAG_NONVOLATILE, esp_matter_attr_val(value));
+    esp_matter::attribute::add_bounds(attribute, esp_matter_attr_val(static_cast<int8_t>(MinSetpointDeadBand::Min)), esp_matter_attr_val(static_cast<int8_t>(MinSetpointDeadBand::Max)));
+    return attribute;
+}
+
+attribute_t *create_remote_sensing(cluster_t *cluster, uint8_t value)
+{
+    attribute_t *attribute = esp_matter::attribute::create(cluster, RemoteSensing::Id, ATTRIBUTE_FLAG_WRITABLE | ATTRIBUTE_FLAG_NONVOLATILE, esp_matter_attr_val(value, esp_matter_attr_val::uint_sub_type::k_bitmap));
+    esp_matter::attribute::add_bounds(attribute, esp_matter_attr_val(static_cast<uint8_t>(RemoteSensing::Min), esp_matter_attr_val::uint_sub_type::k_bitmap), esp_matter_attr_val(static_cast<uint8_t>(RemoteSensing::Max), esp_matter_attr_val::uint_sub_type::k_bitmap));
+    return attribute;
+}
+
+attribute_t *create_control_sequence_of_operation(cluster_t *cluster, uint8_t value)
+{
+    attribute_t *attribute = esp_matter::attribute::create(cluster, ControlSequenceOfOperation::Id, ATTRIBUTE_FLAG_WRITABLE | ATTRIBUTE_FLAG_NONVOLATILE, esp_matter_attr_val(value, esp_matter_attr_val::uint_sub_type::k_enum));
+    esp_matter::attribute::add_bounds(attribute, esp_matter_attr_val(static_cast<uint8_t>(ControlSequenceOfOperation::Min), esp_matter_attr_val::uint_sub_type::k_enum), esp_matter_attr_val(static_cast<uint8_t>(ControlSequenceOfOperation::Max), esp_matter_attr_val::uint_sub_type::k_enum));
+    return attribute;
+}
+
+attribute_t *create_system_mode(cluster_t *cluster, uint8_t value)
+{
+    attribute_t *attribute = esp_matter::attribute::create(cluster, SystemMode::Id, ATTRIBUTE_FLAG_WRITABLE | ATTRIBUTE_FLAG_NONVOLATILE, esp_matter_attr_val(value, esp_matter_attr_val::uint_sub_type::k_enum));
+    esp_matter::attribute::add_bounds(attribute, esp_matter_attr_val(static_cast<uint8_t>(SystemMode::Min), esp_matter_attr_val::uint_sub_type::k_enum), esp_matter_attr_val(static_cast<uint8_t>(SystemMode::Max), esp_matter_attr_val::uint_sub_type::k_enum));
+    return attribute;
+}
+
+attribute_t *create_start_of_week(cluster_t *cluster, uint8_t value)
+{
+    attribute_t *attribute = esp_matter::attribute::create(cluster, StartOfWeek::Id, ATTRIBUTE_FLAG_NONE, esp_matter_attr_val(value, esp_matter_attr_val::uint_sub_type::k_enum));
+    esp_matter::attribute::add_bounds(attribute, esp_matter_attr_val(static_cast<uint8_t>(StartOfWeek::Min), esp_matter_attr_val::uint_sub_type::k_enum), esp_matter_attr_val(static_cast<uint8_t>(StartOfWeek::Max), esp_matter_attr_val::uint_sub_type::k_enum));
+    return attribute;
+}
+
+attribute_t *create_number_of_weekly_transitions(cluster_t *cluster, uint8_t value)
+{
+    return esp_matter::attribute::create(cluster, NumberOfWeeklyTransitions::Id, ATTRIBUTE_FLAG_NONE, esp_matter_attr_val(value));
+}
+
+attribute_t *create_number_of_daily_transitions(cluster_t *cluster, uint8_t value)
+{
+    return esp_matter::attribute::create(cluster, NumberOfDailyTransitions::Id, ATTRIBUTE_FLAG_NONE, esp_matter_attr_val(value));
+}
+
+attribute_t *create_temperature_setpoint_hold(cluster_t *cluster, uint8_t value)
+{
+    attribute_t *attribute = esp_matter::attribute::create(cluster, TemperatureSetpointHold::Id, ATTRIBUTE_FLAG_WRITABLE | ATTRIBUTE_FLAG_NONVOLATILE, esp_matter_attr_val(value, esp_matter_attr_val::uint_sub_type::k_enum));
+    esp_matter::attribute::add_bounds(attribute, esp_matter_attr_val(static_cast<uint8_t>(TemperatureSetpointHold::Min), esp_matter_attr_val::uint_sub_type::k_enum), esp_matter_attr_val(static_cast<uint8_t>(TemperatureSetpointHold::Max), esp_matter_attr_val::uint_sub_type::k_enum));
+    return attribute;
+}
+
+attribute_t *create_temperature_setpoint_hold_duration(cluster_t *cluster, nullable<uint16_t> value)
+{
+    attribute_t *attribute = esp_matter::attribute::create(cluster, TemperatureSetpointHoldDuration::Id, ATTRIBUTE_FLAG_WRITABLE | ATTRIBUTE_FLAG_NULLABLE | ATTRIBUTE_FLAG_NONVOLATILE, esp_matter_attr_val(value));
+    esp_matter::attribute::add_bounds(attribute, esp_matter_attr_val(nullable<uint16_t>(TemperatureSetpointHoldDuration::Min)), esp_matter_attr_val(nullable<uint16_t>(TemperatureSetpointHoldDuration::Max)));
+    return attribute;
+}
+
+attribute_t *create_thermostat_programming_operation_mode(cluster_t *cluster, uint8_t value)
+{
+    attribute_t *attribute = esp_matter::attribute::create(cluster, ThermostatProgrammingOperationMode::Id, ATTRIBUTE_FLAG_WRITABLE, esp_matter_attr_val(value, esp_matter_attr_val::uint_sub_type::k_bitmap));
+    esp_matter::attribute::add_bounds(attribute, esp_matter_attr_val(static_cast<uint8_t>(ThermostatProgrammingOperationMode::Min), esp_matter_attr_val::uint_sub_type::k_bitmap), esp_matter_attr_val(static_cast<uint8_t>(ThermostatProgrammingOperationMode::Max), esp_matter_attr_val::uint_sub_type::k_bitmap));
+    return attribute;
+}
+
+attribute_t *create_thermostat_running_state(cluster_t *cluster, uint16_t value)
+{
+    attribute_t *attribute = esp_matter::attribute::create(cluster, ThermostatRunningState::Id, ATTRIBUTE_FLAG_NONE, esp_matter_attr_val(value, esp_matter_attr_val::uint_sub_type::k_bitmap));
+    esp_matter::attribute::add_bounds(attribute, esp_matter_attr_val(static_cast<uint16_t>(ThermostatRunningState::Min), esp_matter_attr_val::uint_sub_type::k_bitmap), esp_matter_attr_val(static_cast<uint16_t>(ThermostatRunningState::Max), esp_matter_attr_val::uint_sub_type::k_bitmap));
+    return attribute;
+}
+
+attribute_t *create_setpoint_change_source(cluster_t *cluster, uint8_t value)
+{
+    attribute_t *attribute = esp_matter::attribute::create(cluster, SetpointChangeSource::Id, ATTRIBUTE_FLAG_NONE, esp_matter_attr_val(value, esp_matter_attr_val::uint_sub_type::k_enum));
+    esp_matter::attribute::add_bounds(attribute, esp_matter_attr_val(static_cast<uint8_t>(SetpointChangeSource::Min), esp_matter_attr_val::uint_sub_type::k_enum), esp_matter_attr_val(static_cast<uint8_t>(SetpointChangeSource::Max), esp_matter_attr_val::uint_sub_type::k_enum));
+    return attribute;
+}
+
+attribute_t *create_setpoint_change_amount(cluster_t *cluster, nullable<int16_t> value)
+{
+    return esp_matter::attribute::create(cluster, SetpointChangeAmount::Id, ATTRIBUTE_FLAG_NULLABLE, esp_matter_attr_val(value));
+}
+
+attribute_t *create_setpoint_change_source_timestamp(cluster_t *cluster, uint32_t value)
+{
+    return esp_matter::attribute::create(cluster, SetpointChangeSourceTimestamp::Id, ATTRIBUTE_FLAG_NONE, esp_matter_attr_val(value));
+}
+
+attribute_t *create_occupied_setback(cluster_t *cluster, nullable<uint8_t> value)
+{
+    return esp_matter::attribute::create(cluster, OccupiedSetback::Id, ATTRIBUTE_FLAG_WRITABLE | ATTRIBUTE_FLAG_NULLABLE | ATTRIBUTE_FLAG_NONVOLATILE, esp_matter_attr_val(value));
+}
+
+attribute_t *create_occupied_setback_min(cluster_t *cluster, nullable<uint8_t> value)
+{
+    return esp_matter::attribute::create(cluster, OccupiedSetbackMin::Id, ATTRIBUTE_FLAG_NULLABLE, esp_matter_attr_val(value));
+}
+
+attribute_t *create_occupied_setback_max(cluster_t *cluster, nullable<uint8_t> value)
+{
+    attribute_t *attribute = esp_matter::attribute::create(cluster, OccupiedSetbackMax::Id, ATTRIBUTE_FLAG_NULLABLE, esp_matter_attr_val(value));
+    esp_matter::attribute::add_bounds(attribute, esp_matter_attr_val(nullable<uint8_t>(OccupiedSetbackMax::Min)), esp_matter_attr_val(nullable<uint8_t>(OccupiedSetbackMax::Max)));
+    return attribute;
+}
+
+attribute_t *create_unoccupied_setback(cluster_t *cluster, nullable<uint8_t> value)
+{
+    return esp_matter::attribute::create(cluster, UnoccupiedSetback::Id, ATTRIBUTE_FLAG_WRITABLE | ATTRIBUTE_FLAG_NULLABLE | ATTRIBUTE_FLAG_NONVOLATILE, esp_matter_attr_val(value));
+}
+
+attribute_t *create_unoccupied_setback_min(cluster_t *cluster, nullable<uint8_t> value)
+{
+    return esp_matter::attribute::create(cluster, UnoccupiedSetbackMin::Id, ATTRIBUTE_FLAG_NULLABLE, esp_matter_attr_val(value));
+}
+
+attribute_t *create_unoccupied_setback_max(cluster_t *cluster, nullable<uint8_t> value)
+{
+    attribute_t *attribute = esp_matter::attribute::create(cluster, UnoccupiedSetbackMax::Id, ATTRIBUTE_FLAG_NULLABLE, esp_matter_attr_val(value));
+    esp_matter::attribute::add_bounds(attribute, esp_matter_attr_val(nullable<uint8_t>(UnoccupiedSetbackMax::Min)), esp_matter_attr_val(nullable<uint8_t>(UnoccupiedSetbackMax::Max)));
+    return attribute;
+}
+
+attribute_t *create_emergency_heat_delta(cluster_t *cluster, uint8_t value)
+{
+    return esp_matter::attribute::create(cluster, EmergencyHeatDelta::Id, ATTRIBUTE_FLAG_WRITABLE | ATTRIBUTE_FLAG_NONVOLATILE, esp_matter_attr_val(value));
+}
+
+attribute_t *create_ac_type(cluster_t *cluster, uint8_t value)
+{
+    attribute_t *attribute = esp_matter::attribute::create(cluster, ACType::Id, ATTRIBUTE_FLAG_WRITABLE | ATTRIBUTE_FLAG_NONVOLATILE, esp_matter_attr_val(value, esp_matter_attr_val::uint_sub_type::k_enum));
+    esp_matter::attribute::add_bounds(attribute, esp_matter_attr_val(static_cast<uint8_t>(ACType::Min), esp_matter_attr_val::uint_sub_type::k_enum), esp_matter_attr_val(static_cast<uint8_t>(ACType::Max), esp_matter_attr_val::uint_sub_type::k_enum));
+    return attribute;
+}
+
+attribute_t *create_ac_capacity(cluster_t *cluster, uint16_t value)
+{
+    return esp_matter::attribute::create(cluster, ACCapacity::Id, ATTRIBUTE_FLAG_WRITABLE | ATTRIBUTE_FLAG_NONVOLATILE, esp_matter_attr_val(value));
+}
+
+attribute_t *create_ac_refrigerant_type(cluster_t *cluster, uint8_t value)
+{
+    attribute_t *attribute = esp_matter::attribute::create(cluster, ACRefrigerantType::Id, ATTRIBUTE_FLAG_WRITABLE | ATTRIBUTE_FLAG_NONVOLATILE, esp_matter_attr_val(value, esp_matter_attr_val::uint_sub_type::k_enum));
+    esp_matter::attribute::add_bounds(attribute, esp_matter_attr_val(static_cast<uint8_t>(ACRefrigerantType::Min), esp_matter_attr_val::uint_sub_type::k_enum), esp_matter_attr_val(static_cast<uint8_t>(ACRefrigerantType::Max), esp_matter_attr_val::uint_sub_type::k_enum));
+    return attribute;
+}
+
+attribute_t *create_ac_compressor_type(cluster_t *cluster, uint8_t value)
+{
+    attribute_t *attribute = esp_matter::attribute::create(cluster, ACCompressorType::Id, ATTRIBUTE_FLAG_WRITABLE | ATTRIBUTE_FLAG_NONVOLATILE, esp_matter_attr_val(value, esp_matter_attr_val::uint_sub_type::k_enum));
+    esp_matter::attribute::add_bounds(attribute, esp_matter_attr_val(static_cast<uint8_t>(ACCompressorType::Min), esp_matter_attr_val::uint_sub_type::k_enum), esp_matter_attr_val(static_cast<uint8_t>(ACCompressorType::Max), esp_matter_attr_val::uint_sub_type::k_enum));
+    return attribute;
+}
+
+attribute_t *create_ac_error_code(cluster_t *cluster, uint32_t value)
+{
+    attribute_t *attribute = esp_matter::attribute::create(cluster, ACErrorCode::Id, ATTRIBUTE_FLAG_WRITABLE, esp_matter_attr_val(value, esp_matter_attr_val::uint_sub_type::k_bitmap));
+    esp_matter::attribute::add_bounds(attribute, esp_matter_attr_val(static_cast<uint32_t>(ACErrorCode::Min), esp_matter_attr_val::uint_sub_type::k_bitmap), esp_matter_attr_val(static_cast<uint32_t>(ACErrorCode::Max), esp_matter_attr_val::uint_sub_type::k_bitmap));
+    return attribute;
+}
+
+attribute_t *create_ac_louver_position(cluster_t *cluster, uint8_t value)
+{
+    attribute_t *attribute = esp_matter::attribute::create(cluster, ACLouverPosition::Id, ATTRIBUTE_FLAG_WRITABLE | ATTRIBUTE_FLAG_NONVOLATILE, esp_matter_attr_val(value, esp_matter_attr_val::uint_sub_type::k_enum));
+    esp_matter::attribute::add_bounds(attribute, esp_matter_attr_val(static_cast<uint8_t>(ACLouverPosition::Min), esp_matter_attr_val::uint_sub_type::k_enum), esp_matter_attr_val(static_cast<uint8_t>(ACLouverPosition::Max), esp_matter_attr_val::uint_sub_type::k_enum));
+    return attribute;
+}
+
+attribute_t *create_ac_coil_temperature(cluster_t *cluster, nullable<int16_t> value)
+{
+    return esp_matter::attribute::create(cluster, ACCoilTemperature::Id, ATTRIBUTE_FLAG_NULLABLE, esp_matter_attr_val(value));
+}
+
+attribute_t *create_ac_capacity_format(cluster_t *cluster, uint8_t value)
+{
+    attribute_t *attribute = esp_matter::attribute::create(cluster, ACCapacityFormat::Id, ATTRIBUTE_FLAG_WRITABLE | ATTRIBUTE_FLAG_NONVOLATILE, esp_matter_attr_val(value, esp_matter_attr_val::uint_sub_type::k_enum));
+    esp_matter::attribute::add_bounds(attribute, esp_matter_attr_val(static_cast<uint8_t>(ACCapacityFormat::Min), esp_matter_attr_val::uint_sub_type::k_enum), esp_matter_attr_val(static_cast<uint8_t>(ACCapacityFormat::Max), esp_matter_attr_val::uint_sub_type::k_enum));
+    return attribute;
+}
+
+attribute_t *create_preset_types(cluster_t *cluster, uint8_t *value, uint16_t length, uint16_t count)
+{
+    uint32_t feature_map = get_feature_map_value(cluster);
+    VerifyOrReturnValue(has_feature(presets), NULL);
+    return esp_matter::attribute::create(cluster, PresetTypes::Id, ATTRIBUTE_FLAG_MANAGED_INTERNALLY, esp_matter_attr_val(value, length, count));
+}
+
+attribute_t *create_schedule_types(cluster_t *cluster, uint8_t *value, uint16_t length, uint16_t count)
+{
+    uint32_t feature_map = get_feature_map_value(cluster);
+    VerifyOrReturnValue(has_feature(matter_schedule_configuration), NULL);
+    return esp_matter::attribute::create(cluster, ScheduleTypes::Id, ATTRIBUTE_FLAG_MANAGED_INTERNALLY, esp_matter_attr_val(value, length, count));
+}
+
+attribute_t *create_number_of_presets(cluster_t *cluster, uint8_t value)
+{
+    uint32_t feature_map = get_feature_map_value(cluster);
+    VerifyOrReturnValue(has_feature(presets), NULL);
+    attribute_t *attribute = esp_matter::attribute::create(cluster, NumberOfPresets::Id, ATTRIBUTE_FLAG_NONE, esp_matter_attr_val(value));
+    esp_matter::attribute::add_bounds(attribute, esp_matter_attr_val(static_cast<uint8_t>(NumberOfPresets::Min)), esp_matter_attr_val(static_cast<uint8_t>(NumberOfPresets::Max)));
+    return attribute;
+}
+
+attribute_t *create_number_of_schedules(cluster_t *cluster, uint8_t value)
+{
+    uint32_t feature_map = get_feature_map_value(cluster);
+    VerifyOrReturnValue(has_feature(matter_schedule_configuration), NULL);
+    attribute_t *attribute = esp_matter::attribute::create(cluster, NumberOfSchedules::Id, ATTRIBUTE_FLAG_NONE, esp_matter_attr_val(value));
+    esp_matter::attribute::add_bounds(attribute, esp_matter_attr_val(static_cast<uint8_t>(NumberOfSchedules::Min)), esp_matter_attr_val(static_cast<uint8_t>(NumberOfSchedules::Max)));
+    return attribute;
+}
+
+attribute_t *create_number_of_schedule_transitions(cluster_t *cluster, uint8_t value)
+{
+    uint32_t feature_map = get_feature_map_value(cluster);
+    VerifyOrReturnValue(has_feature(matter_schedule_configuration), NULL);
+    attribute_t *attribute = esp_matter::attribute::create(cluster, NumberOfScheduleTransitions::Id, ATTRIBUTE_FLAG_NONE, esp_matter_attr_val(value));
+    esp_matter::attribute::add_bounds(attribute, esp_matter_attr_val(static_cast<uint8_t>(NumberOfScheduleTransitions::Min)), esp_matter_attr_val(static_cast<uint8_t>(NumberOfScheduleTransitions::Max)));
+    return attribute;
+}
+
+attribute_t *create_number_of_schedule_transition_per_day(cluster_t *cluster, nullable<uint8_t> value)
+{
+    uint32_t feature_map = get_feature_map_value(cluster);
+    VerifyOrReturnValue(has_feature(matter_schedule_configuration), NULL);
+    attribute_t *attribute = esp_matter::attribute::create(cluster, NumberOfScheduleTransitionPerDay::Id, ATTRIBUTE_FLAG_NULLABLE, esp_matter_attr_val(value));
+    esp_matter::attribute::add_bounds(attribute, esp_matter_attr_val(nullable<uint8_t>(NumberOfScheduleTransitionPerDay::Min)), esp_matter_attr_val(nullable<uint8_t>(NumberOfScheduleTransitionPerDay::Max)));
+    return attribute;
+}
+
+attribute_t *create_active_preset_handle(cluster_t *cluster, uint8_t *value, uint16_t length)
+{
+    uint32_t feature_map = get_feature_map_value(cluster);
+    VerifyOrReturnValue(has_feature(presets), NULL);
+    VerifyOrReturnValue(length <= k_max_active_preset_handle_length + 1, NULL, ESP_LOGE(TAG, "Could not create attribute, string length out of bound. cluster_id: 0x%08" PRIX32, thermostat::Id));
+    return esp_matter::attribute::create(cluster, ActivePresetHandle::Id, ATTRIBUTE_FLAG_NULLABLE | ATTRIBUTE_FLAG_NONVOLATILE, esp_matter_attr_val(value, length));
+}
+
+attribute_t *create_active_schedule_handle(cluster_t *cluster, uint8_t *value, uint16_t length)
+{
+    uint32_t feature_map = get_feature_map_value(cluster);
+    VerifyOrReturnValue(has_feature(matter_schedule_configuration), NULL);
+    VerifyOrReturnValue(length <= k_max_active_schedule_handle_length + 1, NULL, ESP_LOGE(TAG, "Could not create attribute, string length out of bound. cluster_id: 0x%08" PRIX32, thermostat::Id));
+    return esp_matter::attribute::create(cluster, ActiveScheduleHandle::Id, ATTRIBUTE_FLAG_NULLABLE | ATTRIBUTE_FLAG_NONVOLATILE, esp_matter_attr_val(value, length));
+}
+
+attribute_t *create_presets(cluster_t *cluster, uint8_t *value, uint16_t length, uint16_t count)
+{
+    uint32_t feature_map = get_feature_map_value(cluster);
+    VerifyOrReturnValue(has_feature(presets), NULL);
+    return esp_matter::attribute::create(cluster, Presets::Id, ATTRIBUTE_FLAG_WRITABLE | ATTRIBUTE_FLAG_MANAGED_INTERNALLY | ATTRIBUTE_FLAG_NONVOLATILE, esp_matter_attr_val(value, length, count));
+}
+
+attribute_t *create_schedules(cluster_t *cluster, uint8_t *value, uint16_t length, uint16_t count)
+{
+    uint32_t feature_map = get_feature_map_value(cluster);
+    VerifyOrReturnValue(has_feature(matter_schedule_configuration), NULL);
+    return esp_matter::attribute::create(cluster, Schedules::Id, ATTRIBUTE_FLAG_WRITABLE | ATTRIBUTE_FLAG_MANAGED_INTERNALLY | ATTRIBUTE_FLAG_NONVOLATILE, esp_matter_attr_val(value, length, count));
+}
+
+attribute_t *create_setpoint_hold_expiry_timestamp(cluster_t *cluster, nullable<uint32_t> value)
+{
+    return esp_matter::attribute::create(cluster, SetpointHoldExpiryTimestamp::Id, ATTRIBUTE_FLAG_NULLABLE | ATTRIBUTE_FLAG_NONVOLATILE, esp_matter_attr_val(value));
+}
+
+attribute_t *create_max_thermostat_suggestions(cluster_t *cluster, uint8_t value)
+{
+    uint32_t feature_map = get_feature_map_value(cluster);
+    VerifyOrReturnValue(has_feature(thermostat_suggestions), NULL);
+    attribute_t *attribute = esp_matter::attribute::create(cluster, MaxThermostatSuggestions::Id, ATTRIBUTE_FLAG_NONE, esp_matter_attr_val(value));
+    esp_matter::attribute::add_bounds(attribute, esp_matter_attr_val(static_cast<uint8_t>(MaxThermostatSuggestions::Min)), esp_matter_attr_val(static_cast<uint8_t>(MaxThermostatSuggestions::Max)));
+    return attribute;
+}
+
+attribute_t *create_thermostat_suggestions(cluster_t *cluster, uint8_t *value, uint16_t length, uint16_t count)
+{
+    uint32_t feature_map = get_feature_map_value(cluster);
+    VerifyOrReturnValue(has_feature(thermostat_suggestions), NULL);
+    return esp_matter::attribute::create(cluster, ThermostatSuggestions::Id, ATTRIBUTE_FLAG_MANAGED_INTERNALLY | ATTRIBUTE_FLAG_NONVOLATILE, esp_matter_attr_val(value, length, count));
+}
+
+attribute_t *create_current_thermostat_suggestion(cluster_t *cluster, uint8_t *value, uint16_t length, uint16_t count)
+{
+    uint32_t feature_map = get_feature_map_value(cluster);
+    VerifyOrReturnValue(has_feature(thermostat_suggestions), NULL);
+    return esp_matter::attribute::create(cluster, CurrentThermostatSuggestion::Id, ATTRIBUTE_FLAG_MANAGED_INTERNALLY | ATTRIBUTE_FLAG_NULLABLE, esp_matter_attr_val(value, length, count));
+}
+
+attribute_t *create_thermostat_suggestion_not_following_reason(cluster_t *cluster, nullable<uint8_t> value)
+{
+    uint32_t feature_map = get_feature_map_value(cluster);
+    VerifyOrReturnValue(has_feature(thermostat_suggestions), NULL);
+    attribute_t *attribute = esp_matter::attribute::create(cluster, ThermostatSuggestionNotFollowingReason::Id, ATTRIBUTE_FLAG_NULLABLE, esp_matter_attr_val(value, esp_matter_attr_val::uint_sub_type::k_bitmap));
+    esp_matter::attribute::add_bounds(attribute, esp_matter_attr_val(nullable<uint8_t>(ThermostatSuggestionNotFollowingReason::Min), esp_matter_attr_val::uint_sub_type::k_bitmap), esp_matter_attr_val(nullable<uint8_t>(ThermostatSuggestionNotFollowingReason::Max), esp_matter_attr_val::uint_sub_type::k_bitmap));
+    return attribute;
+}
+
+} /* attribute */
+namespace command {
+command_t *create_get_weekly_schedule_response(cluster_t *cluster)
+{
+    return esp_matter::command::create(cluster, GetWeeklyScheduleResponse::Id, COMMAND_FLAG_GENERATED, NULL);
+}
+
+command_t *create_setpoint_raise_lower(cluster_t *cluster)
+{
+    return esp_matter::command::create(cluster, SetpointRaiseLower::Id, COMMAND_FLAG_ACCEPTED, NULL);
+}
+
+command_t *create_set_weekly_schedule(cluster_t *cluster)
+{
+    return esp_matter::command::create(cluster, SetWeeklySchedule::Id, COMMAND_FLAG_ACCEPTED, NULL);
+}
+
+command_t *create_add_thermostat_suggestion_response(cluster_t *cluster)
+{
+    uint32_t feature_map = get_feature_map_value(cluster);
+    VerifyOrReturnValue(has_feature(thermostat_suggestions), NULL);
+    return esp_matter::command::create(cluster, AddThermostatSuggestionResponse::Id, COMMAND_FLAG_GENERATED, NULL);
+}
+
+command_t *create_get_weekly_schedule(cluster_t *cluster)
+{
+    return esp_matter::command::create(cluster, GetWeeklySchedule::Id, COMMAND_FLAG_ACCEPTED, NULL);
+}
+
+command_t *create_clear_weekly_schedule(cluster_t *cluster)
+{
+    return esp_matter::command::create(cluster, ClearWeeklySchedule::Id, COMMAND_FLAG_ACCEPTED, NULL);
+}
+
+command_t *create_set_active_schedule_request(cluster_t *cluster)
+{
+    uint32_t feature_map = get_feature_map_value(cluster);
+    VerifyOrReturnValue(has_feature(matter_schedule_configuration), NULL);
+    return esp_matter::command::create(cluster, SetActiveScheduleRequest::Id, COMMAND_FLAG_ACCEPTED, NULL);
+}
+
+command_t *create_set_active_preset_request(cluster_t *cluster)
+{
+    uint32_t feature_map = get_feature_map_value(cluster);
+    VerifyOrReturnValue(has_feature(presets), NULL);
+    return esp_matter::command::create(cluster, SetActivePresetRequest::Id, COMMAND_FLAG_ACCEPTED, NULL);
+}
+
+command_t *create_add_thermostat_suggestion(cluster_t *cluster)
+{
+    uint32_t feature_map = get_feature_map_value(cluster);
+    VerifyOrReturnValue(has_feature(thermostat_suggestions), NULL);
+    return esp_matter::command::create(cluster, AddThermostatSuggestion::Id, COMMAND_FLAG_ACCEPTED, NULL);
+}
+
+command_t *create_remove_thermostat_suggestion(cluster_t *cluster)
+{
+    uint32_t feature_map = get_feature_map_value(cluster);
+    VerifyOrReturnValue(has_feature(thermostat_suggestions), NULL);
+    return esp_matter::command::create(cluster, RemoveThermostatSuggestion::Id, COMMAND_FLAG_ACCEPTED, NULL);
+}
+
+} /* command */
+
+const function_generic_t *function_list = NULL;
+
+const int function_flags = CLUSTER_FLAG_NONE;
+
+cluster_t *create(endpoint_t *endpoint, config_t *config, uint8_t flags)
+{
+    cluster_t *cluster = esp_matter::cluster::create(endpoint, thermostat::Id, flags);
+    VerifyOrReturnValue(cluster, NULL, ESP_LOGE(TAG, "Could not create cluster. cluster_id: 0x%08" PRIX32, thermostat::Id));
+    if (flags & CLUSTER_FLAG_SERVER) {
+        VerifyOrReturnValue(config != NULL, ABORT_CLUSTER_CREATE(cluster));
+        if (config->delegate != nullptr) {
+            static const auto delegate_init_cb = ThermostatDelegateInitCB;
+            set_delegate_and_init_callback(cluster, delegate_init_cb, config->delegate);
+        }
+        static const auto plugin_server_init_cb = CALL_ONCE(MatterThermostatPluginServerInitCallback);
+        set_plugin_server_init_callback(cluster, plugin_server_init_cb);
+        add_function_list(cluster, function_list, function_flags);
+
+        /* Attributes managed internally */
+        global::attribute::create_feature_map(cluster, config->feature_flags);
+
+        /* Attributes not managed internally */
+        global::attribute::create_cluster_revision(cluster, cluster_revision);
+
+        attribute::create_local_temperature(cluster, config->local_temperature);
+        attribute::create_control_sequence_of_operation(cluster, config->control_sequence_of_operation);
+        attribute::create_system_mode(cluster, config->system_mode);
+
+        uint32_t feature_map = config->feature_flags;
+        if (feature_map & feature::auto_mode::get_id()) {
+            VerifyOrReturnValue(feature::auto_mode::add(cluster, &(config->features.auto_mode)) == ESP_OK, ABORT_CLUSTER_CREATE(cluster));
+            VerifyOrReturnValue(feature::heating::add(cluster, &(config->features.heating)) == ESP_OK, ABORT_CLUSTER_CREATE(cluster));
+            VerifyOrReturnValue(feature::cooling::add(cluster, &(config->features.cooling)) == ESP_OK, ABORT_CLUSTER_CREATE(cluster));
+        } else {
+            VALIDATE_FEATURES_AT_LEAST_ONE("Heating,Cooling",
+                                           feature::heating::get_id(), feature::cooling::get_id());
+            if (feature_map & feature::heating::get_id()) {
+                VerifyOrReturnValue(feature::heating::add(cluster, &(config->features.heating)) == ESP_OK, ABORT_CLUSTER_CREATE(cluster));
+            }
+            if (feature_map & feature::cooling::get_id()) {
+                VerifyOrReturnValue(feature::cooling::add(cluster, &(config->features.cooling)) == ESP_OK, ABORT_CLUSTER_CREATE(cluster));
+            }
+        }
+        if (feature_map & feature::occupancy::get_id()) {
+            VerifyOrReturnValue(feature::occupancy::add(cluster, &(config->features.occupancy)) == ESP_OK, ABORT_CLUSTER_CREATE(cluster));
+        }
+        if (feature_map & feature::schedule_configuration::get_id()) {
+            VerifyOrReturnValue(feature::schedule_configuration::add(cluster) == ESP_OK, ABORT_CLUSTER_CREATE(cluster));
+        }
+        if (feature_map & feature::setback::get_id()) {
+            VerifyOrReturnValue(feature::setback::add(cluster) == ESP_OK, ABORT_CLUSTER_CREATE(cluster));
+        }
+        if (feature_map & feature::local_temperature_not_exposed::get_id()) {
+            VerifyOrReturnValue(feature::local_temperature_not_exposed::add(cluster) == ESP_OK, ABORT_CLUSTER_CREATE(cluster));
+        }
+        if (feature_map & feature::matter_schedule_configuration::get_id()) {
+            VerifyOrReturnValue(feature::matter_schedule_configuration::add(cluster, &(config->features.matter_schedule_configuration)) == ESP_OK, ABORT_CLUSTER_CREATE(cluster));
+        }
+        if (feature_map & feature::presets::get_id()) {
+            VerifyOrReturnValue(feature::presets::add(cluster, &(config->features.presets)) == ESP_OK, ABORT_CLUSTER_CREATE(cluster));
+        }
+        if (feature_map & feature::thermostat_suggestions::get_id()) {
+            VerifyOrReturnValue(feature::thermostat_suggestions::add(cluster, &(config->features.thermostat_suggestions)) == ESP_OK, ABORT_CLUSTER_CREATE(cluster));
+        }
+        command::create_setpoint_raise_lower(cluster);
+
+        cluster::set_init_and_shutdown_callbacks(cluster, ESPMatterThermostatClusterServerInitCallback,
+                                                 ESPMatterThermostatClusterServerShutdownCallback);
+    }
+
+    if (flags & CLUSTER_FLAG_CLIENT) {
+        create_default_binding_cluster(endpoint);
+    }
+    return cluster;
+}
+
+} /* thermostat */
+} /* cluster */
+} /* esp_matter */
