@@ -8,6 +8,12 @@ set(INCLUDE_DIRS_LIST   "."
                         "utils"
                         "utils/jsontlv"
                         "data_model_provider"
+                        # zap_common holds the app-specific ZAP headers (gen_config.h,
+                        # endpoint_config.h) that upstream's util/config.h pulls in. The
+                        # unconditionally-built Accessors.cpp reaches config.h via attribute-storage.h
+                        # (Matter 1.7 GetDefault accessors), so this must be on the path for every
+                        # build, including no-data-model configs like controller and mfg_test_app.
+                        "zap_common"
                         "${MATTER_SDK_PATH}/zzz_generated/app-common"
                         "${MATTER_SDK_PATH}/third_party/nlfaultinjection/include"
 		                "${MATTER_SDK_PATH}/third_party/uriparser/repo/include"
@@ -62,8 +68,7 @@ if (CONFIG_ESP_MATTER_ENABLE_MATTER_SERVER)
         if (NOT CONFIG_ESP_MATTER_ENABLE_OPTIONAL_ATTRIBUTES)
             list(APPEND EXCLUDE_SRCS_LIST "data_model/esp_matter_optional_attribute.cpp")
         endif()
-        list(APPEND INCLUDE_DIRS_LIST "zap_common"
-                                      "data_model")
+        list(APPEND INCLUDE_DIRS_LIST "data_model")
         list(APPEND PRIV_INCLUDE_DIRS_LIST "data_model/private"
                                            "data_model_provider/private")
 
