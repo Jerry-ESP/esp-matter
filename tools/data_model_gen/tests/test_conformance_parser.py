@@ -442,6 +442,16 @@ class TestConformanceRestrictions(unittest.TestCase):
         should_skip = is_restricted_by_conformance({}, elem)
         self.assertTrue(should_skip)
 
+    def test_skip_obsolete_conformance(self):
+        """Obsolete elements (obsoleteConform, added in Matter 1.7) must be skipped like
+        deprecated/disallowed, otherwise removed features (e.g. Thermostat Setback,
+        LevelControl Frequency, DoorLock Logging/Notification) get generated."""
+        xml = """<feature bit="0" code="SB" name="Setback">
+            <obsoleteConform/>
+        </feature>"""
+        elem = ET.fromstring(xml)
+        self.assertTrue(is_restricted_by_conformance({}, elem))
+
     def test_skip_otherwise_with_provisional_first(self):
         """Test that otherwise conformance with provisional first is skipped"""
         xml = """<attribute id="0x0001" name="TestAttr">

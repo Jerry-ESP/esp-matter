@@ -35,6 +35,7 @@ PROVISIONAL_CONFORM = "provisionalConform"
 MANDATORY_CONFORM = "mandatoryConform"
 DEPRECATE_CONFORM = "deprecateConform"
 DISALLOW_CONFORM = "disallowConform"
+OBSOLETE_CONFORM = "obsoleteConform"
 
 
 BOOLEAN_TERMS = {
@@ -63,15 +64,19 @@ COMPARISON_TERMS = {
 
 
 def get_restricted_tags():
+    # obsoleteConform (added in Matter 1.7) marks elements removed from the spec; always exclude
+    # them, like disallowed/deprecated, regardless of the provisional policy.
     if config.allow_provisional():
         return {
             DISALLOW_CONFORM,
             DEPRECATE_CONFORM,
+            OBSOLETE_CONFORM,
         }
     return {
         DISALLOW_CONFORM,
         DEPRECATE_CONFORM,
         PROVISIONAL_CONFORM,
+        OBSOLETE_CONFORM,
     }
 
 
