@@ -35,7 +35,8 @@ public:
         const DataModel::Nullable<uint64_t>  &duration, const CharSpan  &messageText,
         const chip::Optional<DataModel::DecodableList<chip::app::Clusters::Messages::Structs::MessageResponseOptionStruct::Type>> &
         responses,
-        const chip::Optional<CharSpan>  &languageCode, const chip::Optional<CharSpan>  &messageUri) override;
+        const chip::Optional<CharSpan>  &languageCode, const chip::Optional<CharSpan>  &messageUri,
+        chip::FabricIndex fabricIndex) override;
     CHIP_ERROR HandleCancelMessagesRequest(const DataModel::DecodableList<chip::ByteSpan>  &messageIds) override;
 
     CHIP_ERROR HandleGetMessages(app::AttributeValueEncoder  &aEncoder) override;
