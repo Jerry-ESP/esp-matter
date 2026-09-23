@@ -123,12 +123,12 @@ void ESPMatterWindowCoveringClusterServerInitCallback(EndpointId endpointId)
         config.WithFeatures(features).WithOptionalAttributes(optionalAttributes);
 
         WindowCovering::Type type{};
-        if (WindowCovering::Attributes::Type::GetDefault(endpointId, &type) == Status::Success) {
+        if (WindowCovering::Attributes::Type::GetDefault(endpointId, type) == Status::Success) {
             config.WithType(type);
         }
 
         WindowCovering::EndProductType endProductType{};
-        if (WindowCovering::Attributes::EndProductType::GetDefault(endpointId, &endProductType) == Status::Success) {
+        if (WindowCovering::Attributes::EndProductType::GetDefault(endpointId, endProductType) == Status::Success) {
             config.WithEndProductType(endProductType);
         }
 
@@ -137,12 +137,12 @@ void ESPMatterWindowCoveringClusterServerInitCallback(EndpointId endpointId)
         auto &clusterServer = entry.server.Cluster();
 
         BitMask<WindowCovering::ConfigStatus> configStatus;
-        if (WindowCovering::Attributes::ConfigStatus::GetDefault(endpointId, &configStatus) == Status::Success) {
+        if (WindowCovering::Attributes::ConfigStatus::GetDefault(endpointId, configStatus) == Status::Success) {
             clusterServer.SetConfigStatus(configStatus);
         }
 
         BitMask<WindowCovering::Mode> mode;
-        if (WindowCovering::Attributes::Mode::GetDefault(endpointId, &mode) == Status::Success) {
+        if (WindowCovering::Attributes::Mode::GetDefault(endpointId, mode) == Status::Success) {
             clusterServer.SetMode(mode);
         }
 

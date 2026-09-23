@@ -94,8 +94,13 @@ void ESPMatterModeSelectClusterServerInitCallback(EndpointId endpointId)
             optionalAttributeSet.Set<ModeSelect::Attributes::StartUpMode::Id>();
         }
 
+        // te2's Description::GetDefault fills a CharSpan pointing at metadata default
+        // storage; copy it into our persistent per-endpoint buffer so the cluster's
+        // Config.description backing memory stays owned by gServers.
         MutableCharSpan descSpan(entry.description_buffer, sizeof(entry.description_buffer));
-        if (ModeSelect::Attributes::Description::GetDefault(endpointId, descSpan) != Status::Success) {
+        CharSpan defaultDesc;
+        if (ModeSelect::Attributes::Description::GetDefault(endpointId, defaultDesc) != Status::Success ||
+                CopyCharSpanToMutableCharSpan(defaultDesc, descSpan) != CHIP_NO_ERROR) {
             descSpan = MutableCharSpan(entry.description_buffer, 0);
         }
 
