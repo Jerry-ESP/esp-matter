@@ -24,8 +24,8 @@ Protocols::InteractionModel::Status MockDeviceEnergyManagementDelegate::PowerAdj
 }
 
 Protocols::InteractionModel::Status
-MockDeviceEnergyManagementDelegate::PowerRangeAdjustRequest(const DataModel::Nullable<int64_t> minPower,
-                                                            const DataModel::Nullable<int64_t> maxPower,
+MockDeviceEnergyManagementDelegate::PowerRangeAdjustRequest(const Optional<int64_t> minPower,
+                                                            const Optional<int64_t> maxPower,
                                                             const uint32_t duration, AdjustmentCauseEnum cause)
 {
     // Implement your own logic here.
