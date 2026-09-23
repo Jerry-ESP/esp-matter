@@ -56,6 +56,7 @@ esp_err_t add(endpoint_t *endpoint, config_t *config)
     VerifyOrReturnError(err == ESP_OK, err);
 
     cluster::power_topology::create(endpoint, &(config->power_topology), CLUSTER_FLAG_SERVER);
+    cluster::electrical_distribution::create(endpoint, &(config->electrical_distribution), CLUSTER_FLAG_SERVER);
     return ESP_OK;
 }
 

@@ -33,9 +33,6 @@ inline constexpr uint32_t Id = 0x2;
 namespace PositionAwareLift {
 inline constexpr uint32_t Id = 0x4;
 } /* PositionAwareLift */
-namespace AbsolutePosition {
-inline constexpr uint32_t Id = 0x8;
-} /* AbsolutePosition */
 namespace PositionAwareTilt {
 inline constexpr uint32_t Id = 0x10;
 } /* PositionAwareTilt */
@@ -47,18 +44,6 @@ inline constexpr uint32_t Id = 0x0000;
 inline constexpr uint8_t Min = 0;
 inline constexpr uint8_t Max = 10;
 } /* Type */
-namespace PhysicalClosedLimitLift {
-inline constexpr uint32_t Id = 0x0001;
-} /* PhysicalClosedLimitLift */
-namespace PhysicalClosedLimitTilt {
-inline constexpr uint32_t Id = 0x0002;
-} /* PhysicalClosedLimitTilt */
-namespace CurrentPositionLift {
-inline constexpr uint32_t Id = 0x0003;
-} /* CurrentPositionLift */
-namespace CurrentPositionTilt {
-inline constexpr uint32_t Id = 0x0004;
-} /* CurrentPositionTilt */
 namespace NumberOfActuationsLift {
 inline constexpr uint32_t Id = 0x0005;
 } /* NumberOfActuationsLift */
@@ -102,26 +87,6 @@ inline constexpr uint32_t Id = 0x000F;
 inline constexpr uint16_t Min = 0;
 inline constexpr uint16_t Max = 10000;
 } /* CurrentPositionTiltPercent100ths */
-namespace InstalledOpenLimitLift {
-inline constexpr uint32_t Id = 0x0010;
-inline constexpr uint16_t Min = 0;
-inline constexpr uint16_t Max = 65534;
-} /* InstalledOpenLimitLift */
-namespace InstalledClosedLimitLift {
-inline constexpr uint32_t Id = 0x0011;
-inline constexpr uint16_t Min = 0;
-inline constexpr uint16_t Max = 65534;
-} /* InstalledClosedLimitLift */
-namespace InstalledOpenLimitTilt {
-inline constexpr uint32_t Id = 0x0012;
-inline constexpr uint16_t Min = 0;
-inline constexpr uint16_t Max = 65534;
-} /* InstalledOpenLimitTilt */
-namespace InstalledClosedLimitTilt {
-inline constexpr uint32_t Id = 0x0013;
-inline constexpr uint16_t Min = 0;
-inline constexpr uint16_t Max = 65534;
-} /* InstalledClosedLimitTilt */
 namespace Mode {
 inline constexpr uint32_t Id = 0x0017;
 inline constexpr uint8_t Min = 0;
@@ -144,15 +109,9 @@ inline constexpr uint32_t Id = 0x01;
 namespace StopMotion {
 inline constexpr uint32_t Id = 0x02;
 } /* StopMotion */
-namespace GoToLiftValue {
-inline constexpr uint32_t Id = 0x04;
-} /* GoToLiftValue */
 namespace GoToLiftPercentage {
 inline constexpr uint32_t Id = 0x05;
 } /* GoToLiftPercentage */
-namespace GoToTiltValue {
-inline constexpr uint32_t Id = 0x07;
-} /* GoToTiltValue */
 namespace GoToTiltPercentage {
 inline constexpr uint32_t Id = 0x08;
 } /* GoToTiltPercentage */

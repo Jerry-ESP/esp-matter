@@ -59,6 +59,7 @@ esp_err_t add(endpoint_t *endpoint, config_t *config)
     cluster_t *on_off = cluster::on_off::create(endpoint, &(config->on_off), CLUSTER_FLAG_SERVER);
     VerifyOrReturnValue(on_off != NULL, ESP_FAIL, ESP_LOGE(TAG, "Failed to create cluster: on_off. device_type_id: 0x%08" PRIX32, get_device_type_id()));
     cluster::on_off::feature::dead_front_behavior::add(on_off);
+    cluster::humidistat::create(endpoint, &(config->humidistat), CLUSTER_FLAG_SERVER);
     return ESP_OK;
 }
 

@@ -18,6 +18,7 @@
 #include <esp_matter_data_model.h>
 
 #include <descriptor.h>
+#include <commissioning_proxy.h>
 
 #include <esp_matter_core.h>
 
@@ -30,6 +31,7 @@ namespace commissioning_by_proxy {
 
 typedef struct config {
     cluster::descriptor::config_t descriptor;
+    cluster::commissioning_proxy::config_t commissioning_proxy;
 } config_t;
 
 uint32_t get_device_type_id();

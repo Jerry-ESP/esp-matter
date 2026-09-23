@@ -65,12 +65,11 @@ command_t *create_remove_analysis_stream(cluster_t *cluster);
 
 typedef struct config {
     bool tracking_enabled;
-    void *delegate;
     struct {
         feature::remote_context_detection::config_t remote_context_detection;
     } features;
     uint32_t feature_flags;
-    config() : tracking_enabled(false), delegate(nullptr), feature_flags(0) {}
+    config() : tracking_enabled(false), feature_flags(0) {}
 } config_t;
 
 cluster_t *create(endpoint_t *endpoint, config_t *config, uint8_t flags);

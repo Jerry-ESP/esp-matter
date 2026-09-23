@@ -54,7 +54,7 @@ endpoint_t *create(node_t *node, config_t *config, uint8_t flags, void *priv_dat
 esp_err_t add(endpoint_t *endpoint, config_t *config)
 {
     // Validate O.a+ clusters: at least one must be enabled
-    VALIDATE_OPTIONAL_CLUSTERS_AT_LEAST_ONE("ambient_context_sensor", config->optional_clusters_mask, AMBIENT_CONTEXT_SENSOR_OPTIONAL_CLUSTER_OCCUPANCY_SENSING);
+    VALIDATE_OPTIONAL_CLUSTERS_AT_LEAST_ONE("ambient_context_sensor", config->optional_clusters_mask, AMBIENT_CONTEXT_SENSOR_OPTIONAL_CLUSTER_OCCUPANCY_SENSING, AMBIENT_CONTEXT_SENSOR_OPTIONAL_CLUSTER_AMBIENT_CONTEXT_SENSING);
 
     esp_err_t err = add_device_type(endpoint, get_device_type_id(), get_device_type_version());
     VerifyOrReturnError(err == ESP_OK, err);
@@ -64,6 +64,9 @@ esp_err_t add(endpoint_t *endpoint, config_t *config)
 
     if (config->optional_clusters_mask & AMBIENT_CONTEXT_SENSOR_OPTIONAL_CLUSTER_OCCUPANCY_SENSING) {
         cluster::occupancy_sensing::create(endpoint, &(config->occupancy_sensing), CLUSTER_FLAG_SERVER);
+    }
+    if (config->optional_clusters_mask & AMBIENT_CONTEXT_SENSOR_OPTIONAL_CLUSTER_AMBIENT_CONTEXT_SENSING) {
+        cluster::ambient_context_sensing::create(endpoint, &(config->ambient_context_sensing), CLUSTER_FLAG_SERVER);
     }
     return ESP_OK;
 }

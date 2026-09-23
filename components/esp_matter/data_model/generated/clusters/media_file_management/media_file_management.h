@@ -53,8 +53,7 @@ event_t *create_shared_files_added(cluster_t *cluster);
 typedef struct config {
     uint64_t total_storage;
     uint64_t available_storage;
-    void *delegate;
-    config() : total_storage(0), available_storage(0), delegate(nullptr) {}
+    config() : total_storage(0), available_storage(0) {}
 } config_t;
 
 cluster_t *create(endpoint_t *endpoint, config_t *config, uint8_t flags);

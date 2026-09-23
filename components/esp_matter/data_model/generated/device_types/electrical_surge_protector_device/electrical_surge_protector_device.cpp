@@ -54,7 +54,7 @@ endpoint_t *create(node_t *node, config_t *config, uint8_t flags, void *priv_dat
 esp_err_t add(endpoint_t *endpoint, config_t *config)
 {
     // Validate O.a+ clusters: at least one must be enabled
-    VALIDATE_OPTIONAL_CLUSTERS_AT_LEAST_ONE("electrical_surge_protector", config->optional_clusters_mask, ELECTRICAL_SURGE_PROTECTOR_OPTIONAL_CLUSTER_ON_OFF);
+    VALIDATE_OPTIONAL_CLUSTERS_AT_LEAST_ONE("electrical_surge_protector", config->optional_clusters_mask, ELECTRICAL_SURGE_PROTECTOR_OPTIONAL_CLUSTER_ON_OFF, ELECTRICAL_SURGE_PROTECTOR_OPTIONAL_CLUSTER_ELECTRICAL_ALARM, ELECTRICAL_SURGE_PROTECTOR_OPTIONAL_CLUSTER_ELECTRICAL_PROTECTION_ALARM);
 
     esp_err_t err = add_device_type(endpoint, get_device_type_id(), get_device_type_version());
     VerifyOrReturnError(err == ESP_OK, err);
@@ -64,6 +64,12 @@ esp_err_t add(endpoint_t *endpoint, config_t *config)
 
     if (config->optional_clusters_mask & ELECTRICAL_SURGE_PROTECTOR_OPTIONAL_CLUSTER_ON_OFF) {
         cluster::on_off::create(endpoint, &(config->on_off), CLUSTER_FLAG_SERVER);
+    }
+    if (config->optional_clusters_mask & ELECTRICAL_SURGE_PROTECTOR_OPTIONAL_CLUSTER_ELECTRICAL_ALARM) {
+        cluster::electrical_alarm::create(endpoint, &(config->electrical_alarm), CLUSTER_FLAG_SERVER);
+    }
+    if (config->optional_clusters_mask & ELECTRICAL_SURGE_PROTECTOR_OPTIONAL_CLUSTER_ELECTRICAL_PROTECTION_ALARM) {
+        cluster::electrical_protection_alarm::create(endpoint, &(config->electrical_protection_alarm), CLUSTER_FLAG_SERVER);
     }
     return ESP_OK;
 }

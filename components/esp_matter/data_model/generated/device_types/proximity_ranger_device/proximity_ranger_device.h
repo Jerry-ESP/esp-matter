@@ -18,6 +18,7 @@
 #include <esp_matter_data_model.h>
 
 #include <descriptor.h>
+#include <proximity_ranging.h>
 
 #include <esp_matter_core.h>
 
@@ -30,6 +31,7 @@ namespace proximity_ranger {
 
 typedef struct config {
     cluster::descriptor::config_t descriptor;
+    cluster::proximity_ranging::config_t proximity_ranging;
 } config_t;
 
 uint32_t get_device_type_id();

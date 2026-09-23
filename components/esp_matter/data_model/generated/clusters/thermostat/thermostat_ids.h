@@ -33,12 +33,6 @@ inline constexpr uint32_t Id = 0x2;
 namespace Occupancy {
 inline constexpr uint32_t Id = 0x4;
 } /* Occupancy */
-namespace ScheduleConfiguration {
-inline constexpr uint32_t Id = 0x8;
-} /* ScheduleConfiguration */
-namespace Setback {
-inline constexpr uint32_t Id = 0x10;
-} /* Setback */
 namespace AutoMode {
 inline constexpr uint32_t Id = 0x20;
 } /* AutoMode */
@@ -80,21 +74,6 @@ inline constexpr uint32_t Id = 0x0005;
 namespace AbsMaxCoolSetpointLimit {
 inline constexpr uint32_t Id = 0x0006;
 } /* AbsMaxCoolSetpointLimit */
-namespace PICoolingDemand {
-inline constexpr uint32_t Id = 0x0007;
-inline constexpr uint8_t Min = 0;
-inline constexpr uint8_t Max = 100;
-} /* PICoolingDemand */
-namespace PIHeatingDemand {
-inline constexpr uint32_t Id = 0x0008;
-inline constexpr uint8_t Min = 0;
-inline constexpr uint8_t Max = 100;
-} /* PIHeatingDemand */
-namespace HVACSystemTypeConfiguration {
-inline constexpr uint32_t Id = 0x0009;
-inline constexpr uint8_t Min = 0;
-inline constexpr uint8_t Max = 63;
-} /* HVACSystemTypeConfiguration */
 namespace LocalTemperatureCalibration {
 inline constexpr uint32_t Id = 0x0010;
 } /* LocalTemperatureCalibration */
@@ -142,17 +121,6 @@ inline constexpr uint32_t Id = 0x001C;
 inline constexpr uint8_t Min = 0;
 inline constexpr uint8_t Max = 8;
 } /* SystemMode */
-namespace StartOfWeek {
-inline constexpr uint32_t Id = 0x0020;
-inline constexpr uint8_t Min = 0;
-inline constexpr uint8_t Max = 6;
-} /* StartOfWeek */
-namespace NumberOfWeeklyTransitions {
-inline constexpr uint32_t Id = 0x0021;
-} /* NumberOfWeeklyTransitions */
-namespace NumberOfDailyTransitions {
-inline constexpr uint32_t Id = 0x0022;
-} /* NumberOfDailyTransitions */
 namespace TemperatureSetpointHold {
 inline constexpr uint32_t Id = 0x0023;
 inline constexpr uint8_t Min = 0;
@@ -163,11 +131,6 @@ inline constexpr uint32_t Id = 0x0024;
 inline constexpr uint16_t Min = 1;
 inline constexpr uint16_t Max = 1440;
 } /* TemperatureSetpointHoldDuration */
-namespace ThermostatProgrammingOperationMode {
-inline constexpr uint32_t Id = 0x0025;
-inline constexpr uint8_t Min = 0;
-inline constexpr uint8_t Max = 7;
-} /* ThermostatProgrammingOperationMode */
 namespace ThermostatRunningState {
 inline constexpr uint32_t Id = 0x0029;
 inline constexpr uint16_t Min = 0;
@@ -184,28 +147,6 @@ inline constexpr uint32_t Id = 0x0031;
 namespace SetpointChangeSourceTimestamp {
 inline constexpr uint32_t Id = 0x0032;
 } /* SetpointChangeSourceTimestamp */
-namespace OccupiedSetback {
-inline constexpr uint32_t Id = 0x0034;
-} /* OccupiedSetback */
-namespace OccupiedSetbackMin {
-inline constexpr uint32_t Id = 0x0035;
-} /* OccupiedSetbackMin */
-namespace OccupiedSetbackMax {
-inline constexpr uint32_t Id = 0x0036;
-inline constexpr uint8_t Min = 0;
-inline constexpr uint8_t Max = 254;
-} /* OccupiedSetbackMax */
-namespace UnoccupiedSetback {
-inline constexpr uint32_t Id = 0x0037;
-} /* UnoccupiedSetback */
-namespace UnoccupiedSetbackMin {
-inline constexpr uint32_t Id = 0x0038;
-} /* UnoccupiedSetbackMin */
-namespace UnoccupiedSetbackMax {
-inline constexpr uint32_t Id = 0x0039;
-inline constexpr uint8_t Min = 0;
-inline constexpr uint8_t Max = 254;
-} /* UnoccupiedSetbackMax */
 namespace EmergencyHeatDelta {
 inline constexpr uint32_t Id = 0x003A;
 } /* EmergencyHeatDelta */
@@ -305,24 +246,12 @@ inline constexpr uint8_t Max = 255;
 } /* attribute */
 
 namespace command {
-namespace GetWeeklyScheduleResponse {
-inline constexpr uint32_t Id = 0x00;
-} /* GetWeeklyScheduleResponse */
 namespace SetpointRaiseLower {
 inline constexpr uint32_t Id = 0x00;
 } /* SetpointRaiseLower */
-namespace SetWeeklySchedule {
-inline constexpr uint32_t Id = 0x01;
-} /* SetWeeklySchedule */
 namespace AddThermostatSuggestionResponse {
 inline constexpr uint32_t Id = 0x02;
 } /* AddThermostatSuggestionResponse */
-namespace GetWeeklySchedule {
-inline constexpr uint32_t Id = 0x02;
-} /* GetWeeklySchedule */
-namespace ClearWeeklySchedule {
-inline constexpr uint32_t Id = 0x03;
-} /* ClearWeeklySchedule */
 namespace SetActiveScheduleRequest {
 inline constexpr uint32_t Id = 0x05;
 } /* SetActiveScheduleRequest */

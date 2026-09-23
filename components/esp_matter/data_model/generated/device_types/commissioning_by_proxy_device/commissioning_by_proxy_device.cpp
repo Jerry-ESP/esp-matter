@@ -55,6 +55,7 @@ esp_err_t add(endpoint_t *endpoint, config_t *config)
     esp_err_t err = add_device_type(endpoint, get_device_type_id(), get_device_type_version());
     VerifyOrReturnError(err == ESP_OK, err);
 
+    cluster::commissioning_proxy::create(endpoint, &(config->commissioning_proxy), CLUSTER_FLAG_SERVER);
     return ESP_OK;
 }
 

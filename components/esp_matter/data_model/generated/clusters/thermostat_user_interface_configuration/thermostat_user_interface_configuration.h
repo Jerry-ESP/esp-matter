@@ -30,8 +30,7 @@ attribute_t *create_schedule_programming_visibility(cluster_t *cluster, uint8_t 
 typedef struct config {
     uint8_t temperature_display_mode;
     uint8_t keypad_lockout;
-    void *delegate;
-    config() : temperature_display_mode(0), keypad_lockout(0), delegate(nullptr) {}
+    config() : temperature_display_mode(0), keypad_lockout(0) {}
 } config_t;
 
 cluster_t *create(endpoint_t *endpoint, config_t *config, uint8_t flags);

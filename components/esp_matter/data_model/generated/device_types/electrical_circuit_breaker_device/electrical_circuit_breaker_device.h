@@ -21,6 +21,8 @@
 #include <user_label.h>
 #include <power_topology.h>
 #include <on_off.h>
+#include <electrical_alarm.h>
+#include <electrical_protection_alarm.h>
 
 #include <esp_matter_core.h>
 
@@ -28,6 +30,8 @@
 #define ESP_MATTER_ELECTRICAL_CIRCUIT_BREAKER_DEVICE_TYPE_VERSION 1
 
 #define ELECTRICAL_CIRCUIT_BREAKER_OPTIONAL_CLUSTER_ON_OFF  (1 << 0)
+#define ELECTRICAL_CIRCUIT_BREAKER_OPTIONAL_CLUSTER_ELECTRICAL_ALARM  (1 << 1)
+#define ELECTRICAL_CIRCUIT_BREAKER_OPTIONAL_CLUSTER_ELECTRICAL_PROTECTION_ALARM  (1 << 2)
 
 namespace esp_matter {
 namespace endpoint {
@@ -38,12 +42,26 @@ typedef struct config {
     cluster::user_label::config_t user_label;
     cluster::power_topology::config_t power_topology;
     cluster::on_off::config_t on_off;
+    cluster::electrical_alarm::config_t electrical_alarm;
+    cluster::electrical_protection_alarm::config_t electrical_protection_alarm;
     uint32_t optional_clusters_mask;
 
     cluster::on_off::config_t &with_on_off()
     {
         optional_clusters_mask |= ELECTRICAL_CIRCUIT_BREAKER_OPTIONAL_CLUSTER_ON_OFF;
         return on_off;
+    }
+
+    cluster::electrical_alarm::config_t &with_electrical_alarm()
+    {
+        optional_clusters_mask |= ELECTRICAL_CIRCUIT_BREAKER_OPTIONAL_CLUSTER_ELECTRICAL_ALARM;
+        return electrical_alarm;
+    }
+
+    cluster::electrical_protection_alarm::config_t &with_electrical_protection_alarm()
+    {
+        optional_clusters_mask |= ELECTRICAL_CIRCUIT_BREAKER_OPTIONAL_CLUSTER_ELECTRICAL_PROTECTION_ALARM;
+        return electrical_protection_alarm;
     }
 
     config() : optional_clusters_mask(0) {}

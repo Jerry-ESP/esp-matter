@@ -99,21 +99,6 @@ esp_err_t add(cluster_t *cluster, config_t *config)
 }
 } /* position_aware_lift */
 
-namespace absolute_position {
-uint32_t get_id()
-{
-    return AbsolutePosition::Id;
-}
-
-esp_err_t add(cluster_t *cluster)
-{
-    VerifyOrReturnError(cluster, ESP_ERR_INVALID_ARG);
-    update_feature_map(cluster, get_id());
-
-    return ESP_OK;
-}
-} /* absolute_position */
-
 namespace position_aware_tilt {
 uint32_t get_id()
 {
@@ -143,26 +128,6 @@ attribute_t *create_type(cluster_t *cluster, uint8_t value)
     attribute_t *attribute = esp_matter::attribute::create(cluster, Type::Id, ATTRIBUTE_FLAG_NONE, esp_matter_attr_val(value, esp_matter_attr_val::uint_sub_type::k_enum));
     esp_matter::attribute::add_bounds(attribute, esp_matter_attr_val(static_cast<uint8_t>(Type::Min), esp_matter_attr_val::uint_sub_type::k_enum), esp_matter_attr_val(static_cast<uint8_t>(Type::Max), esp_matter_attr_val::uint_sub_type::k_enum));
     return attribute;
-}
-
-attribute_t *create_physical_closed_limit_lift(cluster_t *cluster, uint16_t value)
-{
-    return esp_matter::attribute::create(cluster, PhysicalClosedLimitLift::Id, ATTRIBUTE_FLAG_NONE, esp_matter_attr_val(value));
-}
-
-attribute_t *create_physical_closed_limit_tilt(cluster_t *cluster, uint16_t value)
-{
-    return esp_matter::attribute::create(cluster, PhysicalClosedLimitTilt::Id, ATTRIBUTE_FLAG_NONE, esp_matter_attr_val(value));
-}
-
-attribute_t *create_current_position_lift(cluster_t *cluster, nullable<uint16_t> value)
-{
-    return esp_matter::attribute::create(cluster, CurrentPositionLift::Id, ATTRIBUTE_FLAG_NULLABLE | ATTRIBUTE_FLAG_NONVOLATILE, esp_matter_attr_val(value));
-}
-
-attribute_t *create_current_position_tilt(cluster_t *cluster, nullable<uint16_t> value)
-{
-    return esp_matter::attribute::create(cluster, CurrentPositionTilt::Id, ATTRIBUTE_FLAG_NULLABLE | ATTRIBUTE_FLAG_NONVOLATILE, esp_matter_attr_val(value));
 }
 
 attribute_t *create_number_of_actuations_lift(cluster_t *cluster, uint16_t value)
@@ -238,34 +203,6 @@ attribute_t *create_current_position_tilt_percent_100ths(cluster_t *cluster, nul
     return attribute;
 }
 
-attribute_t *create_installed_open_limit_lift(cluster_t *cluster, uint16_t value)
-{
-    attribute_t *attribute = esp_matter::attribute::create(cluster, InstalledOpenLimitLift::Id, ATTRIBUTE_FLAG_NONVOLATILE, esp_matter_attr_val(value));
-    esp_matter::attribute::add_bounds(attribute, esp_matter_attr_val(static_cast<uint16_t>(InstalledOpenLimitLift::Min)), esp_matter_attr_val(static_cast<uint16_t>(InstalledOpenLimitLift::Max)));
-    return attribute;
-}
-
-attribute_t *create_installed_closed_limit_lift(cluster_t *cluster, uint16_t value)
-{
-    attribute_t *attribute = esp_matter::attribute::create(cluster, InstalledClosedLimitLift::Id, ATTRIBUTE_FLAG_NONVOLATILE, esp_matter_attr_val(value));
-    esp_matter::attribute::add_bounds(attribute, esp_matter_attr_val(static_cast<uint16_t>(InstalledClosedLimitLift::Min)), esp_matter_attr_val(static_cast<uint16_t>(InstalledClosedLimitLift::Max)));
-    return attribute;
-}
-
-attribute_t *create_installed_open_limit_tilt(cluster_t *cluster, uint16_t value)
-{
-    attribute_t *attribute = esp_matter::attribute::create(cluster, InstalledOpenLimitTilt::Id, ATTRIBUTE_FLAG_NONVOLATILE, esp_matter_attr_val(value));
-    esp_matter::attribute::add_bounds(attribute, esp_matter_attr_val(static_cast<uint16_t>(InstalledOpenLimitTilt::Min)), esp_matter_attr_val(static_cast<uint16_t>(InstalledOpenLimitTilt::Max)));
-    return attribute;
-}
-
-attribute_t *create_installed_closed_limit_tilt(cluster_t *cluster, uint16_t value)
-{
-    attribute_t *attribute = esp_matter::attribute::create(cluster, InstalledClosedLimitTilt::Id, ATTRIBUTE_FLAG_NONVOLATILE, esp_matter_attr_val(value));
-    esp_matter::attribute::add_bounds(attribute, esp_matter_attr_val(static_cast<uint16_t>(InstalledClosedLimitTilt::Min)), esp_matter_attr_val(static_cast<uint16_t>(InstalledClosedLimitTilt::Max)));
-    return attribute;
-}
-
 attribute_t *create_mode(cluster_t *cluster, uint8_t value)
 {
     attribute_t *attribute = esp_matter::attribute::create(cluster, Mode::Id, ATTRIBUTE_FLAG_WRITABLE | ATTRIBUTE_FLAG_NONVOLATILE, esp_matter_attr_val(value, esp_matter_attr_val::uint_sub_type::k_bitmap));
@@ -297,19 +234,9 @@ command_t *create_stop_motion(cluster_t *cluster)
     return esp_matter::command::create(cluster, StopMotion::Id, COMMAND_FLAG_ACCEPTED, NULL);
 }
 
-command_t *create_go_to_lift_value(cluster_t *cluster)
-{
-    return esp_matter::command::create(cluster, GoToLiftValue::Id, COMMAND_FLAG_ACCEPTED, NULL);
-}
-
 command_t *create_go_to_lift_percentage(cluster_t *cluster)
 {
     return esp_matter::command::create(cluster, GoToLiftPercentage::Id, COMMAND_FLAG_ACCEPTED, NULL);
-}
-
-command_t *create_go_to_tilt_value(cluster_t *cluster)
-{
-    return esp_matter::command::create(cluster, GoToTiltValue::Id, COMMAND_FLAG_ACCEPTED, NULL);
 }
 
 command_t *create_go_to_tilt_percentage(cluster_t *cluster)
@@ -360,9 +287,6 @@ cluster_t *create(endpoint_t *endpoint, config_t *config, uint8_t flags)
         }
         if (feature_map & feature::position_aware_lift::get_id()) {
             VerifyOrReturnValue(feature::position_aware_lift::add(cluster, &(config->features.position_aware_lift)) == ESP_OK, ABORT_CLUSTER_CREATE(cluster));
-        }
-        if (feature_map & feature::absolute_position::get_id()) {
-            VerifyOrReturnValue(feature::absolute_position::add(cluster) == ESP_OK, ABORT_CLUSTER_CREATE(cluster));
         }
         if (feature_map & feature::position_aware_tilt::get_id()) {
             VerifyOrReturnValue(feature::position_aware_tilt::add(cluster, &(config->features.position_aware_tilt)) == ESP_OK, ABORT_CLUSTER_CREATE(cluster));

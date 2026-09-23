@@ -31,8 +31,7 @@ attribute_t *create_union_contributor_list(cluster_t *cluster, uint8_t * value, 
 typedef struct config {
     char union_name[k_max_union_name_length + 1];
     uint8_t union_health;
-    void *delegate;
-    config() : union_name{0}, union_health(0), delegate(nullptr) {}
+    config() : union_name{0}, union_health(0) {}
 } config_t;
 
 cluster_t *create(endpoint_t *endpoint, config_t *config, uint8_t flags);

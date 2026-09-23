@@ -41,8 +41,7 @@ command_t *create_change_to_mode_response(cluster_t *cluster);
 } /* command */
 
 typedef struct config {
-    void *delegate;
-    config() : delegate(nullptr) {}
+    config() {}
 } config_t;
 
 cluster_t *create(endpoint_t *endpoint, config_t *config, uint8_t flags);

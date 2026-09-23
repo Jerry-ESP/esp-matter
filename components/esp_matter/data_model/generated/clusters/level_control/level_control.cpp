@@ -124,17 +124,6 @@ static esp_err_t esp_matter_command_callback_stop_with_on_off(const ConcreteComm
     return ESP_OK;
 }
 
-static esp_err_t esp_matter_command_callback_move_to_closest_frequency(const ConcreteCommandPath &command_path, TLVReader &tlv_data,
-                                                                       void *opaque_ptr)
-{
-    chip::app::Clusters::LevelControl::Commands::MoveToClosestFrequency::DecodableType command_data;
-    CHIP_ERROR error = Decode(tlv_data, command_data);
-    if (error == CHIP_NO_ERROR) {
-        emberAfLevelControlClusterMoveToClosestFrequencyCallback((CommandHandler *)opaque_ptr, command_path, command_data);
-    }
-    return ESP_OK;
-}
-
 namespace esp_matter {
 namespace cluster {
 namespace level_control {
@@ -173,26 +162,6 @@ esp_err_t add(cluster_t *cluster, config_t *config)
 }
 } /* lighting */
 
-namespace frequency {
-uint32_t get_id()
-{
-    return Frequency::Id;
-}
-
-esp_err_t add(cluster_t *cluster, config_t *config)
-{
-    VerifyOrReturnError(cluster, ESP_ERR_INVALID_ARG);
-    VerifyOrReturnError(config, ESP_ERR_INVALID_ARG);
-    update_feature_map(cluster, get_id());
-    attribute::create_current_frequency(cluster, config->current_frequency);
-    attribute::create_min_frequency(cluster, config->min_frequency);
-    attribute::create_max_frequency(cluster, config->max_frequency);
-    command::create_move_to_closest_frequency(cluster);
-
-    return ESP_OK;
-}
-} /* frequency */
-
 } /* feature */
 
 namespace attribute {
@@ -220,27 +189,6 @@ attribute_t *create_max_level(cluster_t *cluster, uint8_t value)
     attribute_t *attribute = esp_matter::attribute::create(cluster, MaxLevel::Id, ATTRIBUTE_FLAG_NONE, esp_matter_attr_val(value));
     esp_matter::attribute::add_bounds(attribute, esp_matter_attr_val(static_cast<uint8_t>(MaxLevel::Min)), esp_matter_attr_val(static_cast<uint8_t>(MaxLevel::Max)));
     return attribute;
-}
-
-attribute_t *create_current_frequency(cluster_t *cluster, uint16_t value)
-{
-    uint32_t feature_map = get_feature_map_value(cluster);
-    VerifyOrReturnValue(has_feature(frequency), NULL);
-    return esp_matter::attribute::create(cluster, CurrentFrequency::Id, ATTRIBUTE_FLAG_NONE, esp_matter_attr_val(value));
-}
-
-attribute_t *create_min_frequency(cluster_t *cluster, uint16_t value)
-{
-    uint32_t feature_map = get_feature_map_value(cluster);
-    VerifyOrReturnValue(has_feature(frequency), NULL);
-    return esp_matter::attribute::create(cluster, MinFrequency::Id, ATTRIBUTE_FLAG_NONE, esp_matter_attr_val(value));
-}
-
-attribute_t *create_max_frequency(cluster_t *cluster, uint16_t value)
-{
-    uint32_t feature_map = get_feature_map_value(cluster);
-    VerifyOrReturnValue(has_feature(frequency), NULL);
-    return esp_matter::attribute::create(cluster, MaxFrequency::Id, ATTRIBUTE_FLAG_NONE, esp_matter_attr_val(value));
 }
 
 attribute_t *create_options(cluster_t *cluster, uint8_t value)
@@ -324,13 +272,6 @@ command_t *create_step_with_on_off(cluster_t *cluster)
 command_t *create_stop_with_on_off(cluster_t *cluster)
 {
     return esp_matter::command::create(cluster, StopWithOnOff::Id, COMMAND_FLAG_ACCEPTED, esp_matter_command_callback_stop_with_on_off);
-}
-
-command_t *create_move_to_closest_frequency(cluster_t *cluster)
-{
-    uint32_t feature_map = get_feature_map_value(cluster);
-    VerifyOrReturnValue(has_feature(frequency), NULL);
-    return esp_matter::command::create(cluster, MoveToClosestFrequency::Id, COMMAND_FLAG_ACCEPTED, esp_matter_command_callback_move_to_closest_frequency);
 }
 
 } /* command */

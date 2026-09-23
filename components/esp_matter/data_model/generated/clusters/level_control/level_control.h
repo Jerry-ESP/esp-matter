@@ -37,17 +37,6 @@ uint32_t get_id();
 esp_err_t add(cluster_t *cluster, config_t *config);
 } /* lighting */
 
-namespace frequency {
-typedef struct config {
-    uint16_t current_frequency;
-    uint16_t min_frequency;
-    uint16_t max_frequency;
-    config() : current_frequency(0), min_frequency(0), max_frequency(0) {}
-} config_t;
-uint32_t get_id();
-esp_err_t add(cluster_t *cluster, config_t *config);
-} /* frequency */
-
 } /* feature */
 
 namespace attribute {
@@ -55,9 +44,6 @@ attribute_t *create_current_level(cluster_t *cluster, nullable<uint8_t> value);
 attribute_t *create_remaining_time(cluster_t *cluster, uint16_t value);
 attribute_t *create_min_level(cluster_t *cluster, uint8_t value);
 attribute_t *create_max_level(cluster_t *cluster, uint8_t value);
-attribute_t *create_current_frequency(cluster_t *cluster, uint16_t value);
-attribute_t *create_min_frequency(cluster_t *cluster, uint16_t value);
-attribute_t *create_max_frequency(cluster_t *cluster, uint16_t value);
 attribute_t *create_options(cluster_t *cluster, uint8_t value);
 attribute_t *create_on_off_transition_time(cluster_t *cluster, uint16_t value);
 attribute_t *create_on_level(cluster_t *cluster, nullable<uint8_t> value);
@@ -76,7 +62,6 @@ command_t *create_move_to_level_with_on_off(cluster_t *cluster);
 command_t *create_move_with_on_off(cluster_t *cluster);
 command_t *create_step_with_on_off(cluster_t *cluster);
 command_t *create_stop_with_on_off(cluster_t *cluster);
-command_t *create_move_to_closest_frequency(cluster_t *cluster);
 } /* command */
 
 typedef struct config {

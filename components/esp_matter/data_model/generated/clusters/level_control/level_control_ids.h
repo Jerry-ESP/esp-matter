@@ -30,9 +30,6 @@ inline constexpr uint32_t Id = 0x1;
 namespace Lighting {
 inline constexpr uint32_t Id = 0x2;
 } /* Lighting */
-namespace Frequency {
-inline constexpr uint32_t Id = 0x4;
-} /* Frequency */
 } /* feature */
 
 namespace attribute {
@@ -52,15 +49,6 @@ inline constexpr uint32_t Id = 0x0003;
 inline constexpr uint8_t Min = 0;
 inline constexpr uint8_t Max = 254;
 } /* MaxLevel */
-namespace CurrentFrequency {
-inline constexpr uint32_t Id = 0x0004;
-} /* CurrentFrequency */
-namespace MinFrequency {
-inline constexpr uint32_t Id = 0x0005;
-} /* MinFrequency */
-namespace MaxFrequency {
-inline constexpr uint32_t Id = 0x0006;
-} /* MaxFrequency */
 namespace Options {
 inline constexpr uint32_t Id = 0x000F;
 inline constexpr uint8_t Min = 0;
@@ -113,9 +101,6 @@ inline constexpr uint32_t Id = 0x06;
 namespace StopWithOnOff {
 inline constexpr uint32_t Id = 0x07;
 } /* StopWithOnOff */
-namespace MoveToClosestFrequency {
-inline constexpr uint32_t Id = 0x08;
-} /* MoveToClosestFrequency */
 } /* command */
 
 } /* level_control */

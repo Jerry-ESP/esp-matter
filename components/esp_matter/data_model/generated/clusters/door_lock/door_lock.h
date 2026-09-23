@@ -37,11 +37,6 @@ uint32_t get_id();
 esp_err_t add(cluster_t *cluster, config_t *config);
 } /* pin_credential */
 
-namespace logging {
-uint32_t get_id();
-esp_err_t add(cluster_t *cluster);
-} /* logging */
-
 namespace weekday_access_schedules {
 typedef struct config {
     uint8_t number_of_week_day_schedules_supported_per_user;
@@ -79,11 +74,6 @@ typedef struct config {
 uint32_t get_id();
 esp_err_t add(cluster_t *cluster, config_t *config);
 } /* user */
-
-namespace notification {
-uint32_t get_id();
-esp_err_t add(cluster_t *cluster);
-} /* notification */
 
 namespace year_day_access_schedules {
 typedef struct config {

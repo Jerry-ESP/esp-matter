@@ -59,6 +59,7 @@ esp_err_t add(endpoint_t *endpoint, config_t *config)
     cluster::webrtc_transport_provider::create(endpoint, NULL, CLUSTER_FLAG_CLIENT);
     cluster::webrtc_transport_requestor::create(endpoint, &(config->webrtc_transport_requestor), CLUSTER_FLAG_SERVER);
     cluster::push_av_stream_transport::create(endpoint, NULL, CLUSTER_FLAG_CLIENT);
+    cluster::av_analysis::create(endpoint, &(config->av_analysis), CLUSTER_FLAG_SERVER);
     return ESP_OK;
 }
 

@@ -27,9 +27,6 @@ namespace feature {
 namespace PINCredential {
 inline constexpr uint32_t Id = 0x1;
 } /* PINCredential */
-namespace Logging {
-inline constexpr uint32_t Id = 0x8;
-} /* Logging */
 namespace WeekdayAccessSchedules {
 inline constexpr uint32_t Id = 0x10;
 } /* WeekdayAccessSchedules */
@@ -42,9 +39,6 @@ inline constexpr uint32_t Id = 0x80;
 namespace User {
 inline constexpr uint32_t Id = 0x100;
 } /* User */
-namespace Notification {
-inline constexpr uint32_t Id = 0x200;
-} /* Notification */
 namespace YearDayAccessSchedules {
 inline constexpr uint32_t Id = 0x400;
 } /* YearDayAccessSchedules */

@@ -296,21 +296,6 @@ esp_err_t add(cluster_t *cluster, config_t *config)
 }
 } /* pin_credential */
 
-namespace logging {
-uint32_t get_id()
-{
-    return Logging::Id;
-}
-
-esp_err_t add(cluster_t *cluster)
-{
-    VerifyOrReturnError(cluster, ESP_ERR_INVALID_ARG);
-    update_feature_map(cluster, get_id());
-
-    return ESP_OK;
-}
-} /* logging */
-
 namespace weekday_access_schedules {
 uint32_t get_id()
 {
@@ -395,21 +380,6 @@ esp_err_t add(cluster_t *cluster, config_t *config)
     return ESP_OK;
 }
 } /* user */
-
-namespace notification {
-uint32_t get_id()
-{
-    return Notification::Id;
-}
-
-esp_err_t add(cluster_t *cluster)
-{
-    VerifyOrReturnError(cluster, ESP_ERR_INVALID_ARG);
-    update_feature_map(cluster, get_id());
-
-    return ESP_OK;
-}
-} /* notification */
 
 namespace year_day_access_schedules {
 uint32_t get_id()

@@ -20,6 +20,7 @@
 #include <descriptor.h>
 #include <user_label.h>
 #include <power_topology.h>
+#include <electrical_protection_alarm.h>
 
 #include <esp_matter_core.h>
 
@@ -34,6 +35,7 @@ typedef struct config {
     cluster::descriptor::config_t descriptor;
     cluster::user_label::config_t user_label;
     cluster::power_topology::config_t power_topology;
+    cluster::electrical_protection_alarm::config_t electrical_protection_alarm;
 } config_t;
 
 uint32_t get_device_type_id();

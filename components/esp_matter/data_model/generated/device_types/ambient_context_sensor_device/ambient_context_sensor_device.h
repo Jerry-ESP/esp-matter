@@ -21,6 +21,7 @@
 #include <identify.h>
 #include <service_area.h>
 #include <occupancy_sensing.h>
+#include <ambient_context_sensing.h>
 
 #include <esp_matter_core.h>
 
@@ -28,6 +29,7 @@
 #define ESP_MATTER_AMBIENT_CONTEXT_SENSOR_DEVICE_TYPE_VERSION 2
 
 #define AMBIENT_CONTEXT_SENSOR_OPTIONAL_CLUSTER_OCCUPANCY_SENSING  (1 << 0)
+#define AMBIENT_CONTEXT_SENSOR_OPTIONAL_CLUSTER_AMBIENT_CONTEXT_SENSING  (1 << 1)
 
 namespace esp_matter {
 namespace endpoint {
@@ -38,12 +40,19 @@ typedef struct config {
     cluster::identify::config_t identify;
     cluster::service_area::config_t service_area;
     cluster::occupancy_sensing::config_t occupancy_sensing;
+    cluster::ambient_context_sensing::config_t ambient_context_sensing;
     uint32_t optional_clusters_mask;
 
     cluster::occupancy_sensing::config_t &with_occupancy_sensing()
     {
         optional_clusters_mask |= AMBIENT_CONTEXT_SENSOR_OPTIONAL_CLUSTER_OCCUPANCY_SENSING;
         return occupancy_sensing;
+    }
+
+    cluster::ambient_context_sensing::config_t &with_ambient_context_sensing()
+    {
+        optional_clusters_mask |= AMBIENT_CONTEXT_SENSOR_OPTIONAL_CLUSTER_AMBIENT_CONTEXT_SENSING;
+        return ambient_context_sensing;
     }
 
     config() : optional_clusters_mask(0) {}

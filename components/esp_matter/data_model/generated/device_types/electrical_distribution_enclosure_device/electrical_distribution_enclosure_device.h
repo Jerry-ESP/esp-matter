@@ -19,6 +19,7 @@
 
 #include <descriptor.h>
 #include <power_topology.h>
+#include <electrical_distribution.h>
 
 #include <esp_matter_core.h>
 
@@ -32,6 +33,7 @@ namespace electrical_distribution_enclosure {
 typedef struct config {
     cluster::descriptor::config_t descriptor;
     cluster::power_topology::config_t power_topology;
+    cluster::electrical_distribution::config_t electrical_distribution;
 } config_t;
 
 uint32_t get_device_type_id();

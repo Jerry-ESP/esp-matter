@@ -20,6 +20,7 @@
 #include <descriptor.h>
 #include <identify.h>
 #include <on_off.h>
+#include <humidistat.h>
 
 #include <esp_matter_core.h>
 
@@ -34,6 +35,7 @@ typedef struct config {
     cluster::descriptor::config_t descriptor;
     cluster::identify::config_t identify;
     cluster::on_off::config_t on_off;
+    cluster::humidistat::config_t humidistat;
 } config_t;
 
 uint32_t get_device_type_id();

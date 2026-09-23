@@ -22,6 +22,7 @@
 #include <webrtc_transport_provider.h>
 #include <webrtc_transport_requestor.h>
 #include <push_av_stream_transport.h>
+#include <av_analysis.h>
 
 #include <esp_matter_core.h>
 
@@ -35,6 +36,7 @@ namespace av_analysis_node {
 typedef struct config {
     cluster::descriptor::config_t descriptor;
     cluster::webrtc_transport_requestor::config_t webrtc_transport_requestor;
+    cluster::av_analysis::config_t av_analysis;
 } config_t;
 
 uint32_t get_device_type_id();

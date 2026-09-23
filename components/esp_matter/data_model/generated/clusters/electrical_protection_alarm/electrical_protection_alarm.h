@@ -88,12 +88,11 @@ typedef struct config {
     uint32_t mask;
     uint32_t state;
     uint32_t supported;
-    void *delegate;
     struct {
         feature::arc_fault::config_t arc_fault;
     } features;
     uint32_t feature_flags;
-    config() : mask(0), state(0), supported(0), delegate(nullptr), feature_flags(0) {}
+    config() : mask(0), state(0), supported(0), feature_flags(0) {}
 } config_t;
 
 cluster_t *create(endpoint_t *endpoint, config_t *config, uint8_t flags);

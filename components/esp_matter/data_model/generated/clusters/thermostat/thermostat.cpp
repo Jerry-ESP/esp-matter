@@ -95,36 +95,6 @@ esp_err_t add(cluster_t *cluster, config_t *config)
 }
 } /* occupancy */
 
-namespace schedule_configuration {
-uint32_t get_id()
-{
-    return ScheduleConfiguration::Id;
-}
-
-esp_err_t add(cluster_t *cluster)
-{
-    VerifyOrReturnError(cluster, ESP_ERR_INVALID_ARG);
-    update_feature_map(cluster, get_id());
-
-    return ESP_OK;
-}
-} /* schedule_configuration */
-
-namespace setback {
-uint32_t get_id()
-{
-    return Setback::Id;
-}
-
-esp_err_t add(cluster_t *cluster)
-{
-    VerifyOrReturnError(cluster, ESP_ERR_INVALID_ARG);
-    update_feature_map(cluster, get_id());
-
-    return ESP_OK;
-}
-} /* setback */
-
 namespace auto_mode {
 uint32_t get_id()
 {
@@ -268,27 +238,6 @@ attribute_t *create_abs_max_cool_setpoint_limit(cluster_t *cluster, int16_t valu
     return esp_matter::attribute::create(cluster, AbsMaxCoolSetpointLimit::Id, ATTRIBUTE_FLAG_NONE, esp_matter_attr_val(value));
 }
 
-attribute_t *create_pi_cooling_demand(cluster_t *cluster, uint8_t value)
-{
-    attribute_t *attribute = esp_matter::attribute::create(cluster, PICoolingDemand::Id, ATTRIBUTE_FLAG_NONE, esp_matter_attr_val(value));
-    esp_matter::attribute::add_bounds(attribute, esp_matter_attr_val(static_cast<uint8_t>(PICoolingDemand::Min)), esp_matter_attr_val(static_cast<uint8_t>(PICoolingDemand::Max)));
-    return attribute;
-}
-
-attribute_t *create_pi_heating_demand(cluster_t *cluster, uint8_t value)
-{
-    attribute_t *attribute = esp_matter::attribute::create(cluster, PIHeatingDemand::Id, ATTRIBUTE_FLAG_NONE, esp_matter_attr_val(value));
-    esp_matter::attribute::add_bounds(attribute, esp_matter_attr_val(static_cast<uint8_t>(PIHeatingDemand::Min)), esp_matter_attr_val(static_cast<uint8_t>(PIHeatingDemand::Max)));
-    return attribute;
-}
-
-attribute_t *create_hvac_system_type_configuration(cluster_t *cluster, uint8_t value)
-{
-    attribute_t *attribute = esp_matter::attribute::create(cluster, HVACSystemTypeConfiguration::Id, ATTRIBUTE_FLAG_WRITABLE, esp_matter_attr_val(value, esp_matter_attr_val::uint_sub_type::k_bitmap));
-    esp_matter::attribute::add_bounds(attribute, esp_matter_attr_val(static_cast<uint8_t>(HVACSystemTypeConfiguration::Min), esp_matter_attr_val::uint_sub_type::k_bitmap), esp_matter_attr_val(static_cast<uint8_t>(HVACSystemTypeConfiguration::Max), esp_matter_attr_val::uint_sub_type::k_bitmap));
-    return attribute;
-}
-
 attribute_t *create_local_temperature_calibration(cluster_t *cluster, int8_t value)
 {
     return esp_matter::attribute::create(cluster, LocalTemperatureCalibration::Id, ATTRIBUTE_FLAG_WRITABLE | ATTRIBUTE_FLAG_NONVOLATILE, esp_matter_attr_val(value));
@@ -372,23 +321,6 @@ attribute_t *create_system_mode(cluster_t *cluster, uint8_t value)
     return attribute;
 }
 
-attribute_t *create_start_of_week(cluster_t *cluster, uint8_t value)
-{
-    attribute_t *attribute = esp_matter::attribute::create(cluster, StartOfWeek::Id, ATTRIBUTE_FLAG_NONE, esp_matter_attr_val(value, esp_matter_attr_val::uint_sub_type::k_enum));
-    esp_matter::attribute::add_bounds(attribute, esp_matter_attr_val(static_cast<uint8_t>(StartOfWeek::Min), esp_matter_attr_val::uint_sub_type::k_enum), esp_matter_attr_val(static_cast<uint8_t>(StartOfWeek::Max), esp_matter_attr_val::uint_sub_type::k_enum));
-    return attribute;
-}
-
-attribute_t *create_number_of_weekly_transitions(cluster_t *cluster, uint8_t value)
-{
-    return esp_matter::attribute::create(cluster, NumberOfWeeklyTransitions::Id, ATTRIBUTE_FLAG_NONE, esp_matter_attr_val(value));
-}
-
-attribute_t *create_number_of_daily_transitions(cluster_t *cluster, uint8_t value)
-{
-    return esp_matter::attribute::create(cluster, NumberOfDailyTransitions::Id, ATTRIBUTE_FLAG_NONE, esp_matter_attr_val(value));
-}
-
 attribute_t *create_temperature_setpoint_hold(cluster_t *cluster, uint8_t value)
 {
     attribute_t *attribute = esp_matter::attribute::create(cluster, TemperatureSetpointHold::Id, ATTRIBUTE_FLAG_WRITABLE | ATTRIBUTE_FLAG_NONVOLATILE, esp_matter_attr_val(value, esp_matter_attr_val::uint_sub_type::k_enum));
@@ -400,13 +332,6 @@ attribute_t *create_temperature_setpoint_hold_duration(cluster_t *cluster, nulla
 {
     attribute_t *attribute = esp_matter::attribute::create(cluster, TemperatureSetpointHoldDuration::Id, ATTRIBUTE_FLAG_WRITABLE | ATTRIBUTE_FLAG_NULLABLE | ATTRIBUTE_FLAG_NONVOLATILE, esp_matter_attr_val(value));
     esp_matter::attribute::add_bounds(attribute, esp_matter_attr_val(nullable<uint16_t>(TemperatureSetpointHoldDuration::Min)), esp_matter_attr_val(nullable<uint16_t>(TemperatureSetpointHoldDuration::Max)));
-    return attribute;
-}
-
-attribute_t *create_thermostat_programming_operation_mode(cluster_t *cluster, uint8_t value)
-{
-    attribute_t *attribute = esp_matter::attribute::create(cluster, ThermostatProgrammingOperationMode::Id, ATTRIBUTE_FLAG_WRITABLE, esp_matter_attr_val(value, esp_matter_attr_val::uint_sub_type::k_bitmap));
-    esp_matter::attribute::add_bounds(attribute, esp_matter_attr_val(static_cast<uint8_t>(ThermostatProgrammingOperationMode::Min), esp_matter_attr_val::uint_sub_type::k_bitmap), esp_matter_attr_val(static_cast<uint8_t>(ThermostatProgrammingOperationMode::Max), esp_matter_attr_val::uint_sub_type::k_bitmap));
     return attribute;
 }
 
@@ -432,40 +357,6 @@ attribute_t *create_setpoint_change_amount(cluster_t *cluster, nullable<int16_t>
 attribute_t *create_setpoint_change_source_timestamp(cluster_t *cluster, uint32_t value)
 {
     return esp_matter::attribute::create(cluster, SetpointChangeSourceTimestamp::Id, ATTRIBUTE_FLAG_NONE, esp_matter_attr_val(value));
-}
-
-attribute_t *create_occupied_setback(cluster_t *cluster, nullable<uint8_t> value)
-{
-    return esp_matter::attribute::create(cluster, OccupiedSetback::Id, ATTRIBUTE_FLAG_WRITABLE | ATTRIBUTE_FLAG_NULLABLE | ATTRIBUTE_FLAG_NONVOLATILE, esp_matter_attr_val(value));
-}
-
-attribute_t *create_occupied_setback_min(cluster_t *cluster, nullable<uint8_t> value)
-{
-    return esp_matter::attribute::create(cluster, OccupiedSetbackMin::Id, ATTRIBUTE_FLAG_NULLABLE, esp_matter_attr_val(value));
-}
-
-attribute_t *create_occupied_setback_max(cluster_t *cluster, nullable<uint8_t> value)
-{
-    attribute_t *attribute = esp_matter::attribute::create(cluster, OccupiedSetbackMax::Id, ATTRIBUTE_FLAG_NULLABLE, esp_matter_attr_val(value));
-    esp_matter::attribute::add_bounds(attribute, esp_matter_attr_val(nullable<uint8_t>(OccupiedSetbackMax::Min)), esp_matter_attr_val(nullable<uint8_t>(OccupiedSetbackMax::Max)));
-    return attribute;
-}
-
-attribute_t *create_unoccupied_setback(cluster_t *cluster, nullable<uint8_t> value)
-{
-    return esp_matter::attribute::create(cluster, UnoccupiedSetback::Id, ATTRIBUTE_FLAG_WRITABLE | ATTRIBUTE_FLAG_NULLABLE | ATTRIBUTE_FLAG_NONVOLATILE, esp_matter_attr_val(value));
-}
-
-attribute_t *create_unoccupied_setback_min(cluster_t *cluster, nullable<uint8_t> value)
-{
-    return esp_matter::attribute::create(cluster, UnoccupiedSetbackMin::Id, ATTRIBUTE_FLAG_NULLABLE, esp_matter_attr_val(value));
-}
-
-attribute_t *create_unoccupied_setback_max(cluster_t *cluster, nullable<uint8_t> value)
-{
-    attribute_t *attribute = esp_matter::attribute::create(cluster, UnoccupiedSetbackMax::Id, ATTRIBUTE_FLAG_NULLABLE, esp_matter_attr_val(value));
-    esp_matter::attribute::add_bounds(attribute, esp_matter_attr_val(nullable<uint8_t>(UnoccupiedSetbackMax::Min)), esp_matter_attr_val(nullable<uint8_t>(UnoccupiedSetbackMax::Max)));
-    return attribute;
 }
 
 attribute_t *create_emergency_heat_delta(cluster_t *cluster, uint8_t value)
@@ -644,19 +535,9 @@ attribute_t *create_thermostat_suggestion_not_following_reason(cluster_t *cluste
 
 } /* attribute */
 namespace command {
-command_t *create_get_weekly_schedule_response(cluster_t *cluster)
-{
-    return esp_matter::command::create(cluster, GetWeeklyScheduleResponse::Id, COMMAND_FLAG_GENERATED, NULL);
-}
-
 command_t *create_setpoint_raise_lower(cluster_t *cluster)
 {
     return esp_matter::command::create(cluster, SetpointRaiseLower::Id, COMMAND_FLAG_ACCEPTED, NULL);
-}
-
-command_t *create_set_weekly_schedule(cluster_t *cluster)
-{
-    return esp_matter::command::create(cluster, SetWeeklySchedule::Id, COMMAND_FLAG_ACCEPTED, NULL);
 }
 
 command_t *create_add_thermostat_suggestion_response(cluster_t *cluster)
@@ -664,16 +545,6 @@ command_t *create_add_thermostat_suggestion_response(cluster_t *cluster)
     uint32_t feature_map = get_feature_map_value(cluster);
     VerifyOrReturnValue(has_feature(thermostat_suggestions), NULL);
     return esp_matter::command::create(cluster, AddThermostatSuggestionResponse::Id, COMMAND_FLAG_GENERATED, NULL);
-}
-
-command_t *create_get_weekly_schedule(cluster_t *cluster)
-{
-    return esp_matter::command::create(cluster, GetWeeklySchedule::Id, COMMAND_FLAG_ACCEPTED, NULL);
-}
-
-command_t *create_clear_weekly_schedule(cluster_t *cluster)
-{
-    return esp_matter::command::create(cluster, ClearWeeklySchedule::Id, COMMAND_FLAG_ACCEPTED, NULL);
 }
 
 command_t *create_set_active_schedule_request(cluster_t *cluster)
@@ -751,12 +622,6 @@ cluster_t *create(endpoint_t *endpoint, config_t *config, uint8_t flags)
         }
         if (feature_map & feature::occupancy::get_id()) {
             VerifyOrReturnValue(feature::occupancy::add(cluster, &(config->features.occupancy)) == ESP_OK, ABORT_CLUSTER_CREATE(cluster));
-        }
-        if (feature_map & feature::schedule_configuration::get_id()) {
-            VerifyOrReturnValue(feature::schedule_configuration::add(cluster) == ESP_OK, ABORT_CLUSTER_CREATE(cluster));
-        }
-        if (feature_map & feature::setback::get_id()) {
-            VerifyOrReturnValue(feature::setback::add(cluster) == ESP_OK, ABORT_CLUSTER_CREATE(cluster));
         }
         if (feature_map & feature::local_temperature_not_exposed::get_id()) {
             VerifyOrReturnValue(feature::local_temperature_not_exposed::add(cluster) == ESP_OK, ABORT_CLUSTER_CREATE(cluster));

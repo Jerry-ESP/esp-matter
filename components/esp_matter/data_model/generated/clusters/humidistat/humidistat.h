@@ -124,7 +124,6 @@ command_t *create_set_settings(cluster_t *cluster);
 typedef struct config {
     uint8_t mode;
     uint8_t system_state;
-    void *delegate;
     struct {
         feature::humidifier::config_t humidifier;
         feature::continuous::config_t continuous;
@@ -133,7 +132,7 @@ typedef struct config {
         feature::cond_pump::config_t cond_pump;
     } features;
     uint32_t feature_flags;
-    config() : mode(0), system_state(0), delegate(nullptr), feature_flags(0) {}
+    config() : mode(0), system_state(0), feature_flags(0) {}
 } config_t;
 
 cluster_t *create(endpoint_t *endpoint, config_t *config, uint8_t flags);

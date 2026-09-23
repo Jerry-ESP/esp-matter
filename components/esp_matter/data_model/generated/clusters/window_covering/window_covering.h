@@ -52,11 +52,6 @@ uint32_t get_id();
 esp_err_t add(cluster_t *cluster, config_t *config);
 } /* position_aware_lift */
 
-namespace absolute_position {
-uint32_t get_id();
-esp_err_t add(cluster_t *cluster);
-} /* absolute_position */
-
 namespace position_aware_tilt {
 typedef struct config {
     nullable<uint16_t> target_position_tilt_percent_100ths;
@@ -71,10 +66,6 @@ esp_err_t add(cluster_t *cluster, config_t *config);
 
 namespace attribute {
 attribute_t *create_type(cluster_t *cluster, uint8_t value);
-attribute_t *create_physical_closed_limit_lift(cluster_t *cluster, uint16_t value);
-attribute_t *create_physical_closed_limit_tilt(cluster_t *cluster, uint16_t value);
-attribute_t *create_current_position_lift(cluster_t *cluster, nullable<uint16_t> value);
-attribute_t *create_current_position_tilt(cluster_t *cluster, nullable<uint16_t> value);
 attribute_t *create_number_of_actuations_lift(cluster_t *cluster, uint16_t value);
 attribute_t *create_number_of_actuations_tilt(cluster_t *cluster, uint16_t value);
 attribute_t *create_config_status(cluster_t *cluster, uint8_t value);
@@ -86,10 +77,6 @@ attribute_t *create_target_position_tilt_percent_100ths(cluster_t *cluster, null
 attribute_t *create_end_product_type(cluster_t *cluster, uint8_t value);
 attribute_t *create_current_position_lift_percent_100ths(cluster_t *cluster, nullable<uint16_t> value);
 attribute_t *create_current_position_tilt_percent_100ths(cluster_t *cluster, nullable<uint16_t> value);
-attribute_t *create_installed_open_limit_lift(cluster_t *cluster, uint16_t value);
-attribute_t *create_installed_closed_limit_lift(cluster_t *cluster, uint16_t value);
-attribute_t *create_installed_open_limit_tilt(cluster_t *cluster, uint16_t value);
-attribute_t *create_installed_closed_limit_tilt(cluster_t *cluster, uint16_t value);
 attribute_t *create_mode(cluster_t *cluster, uint8_t value);
 attribute_t *create_safety_status(cluster_t *cluster, uint16_t value);
 } /* attribute */
@@ -98,9 +85,7 @@ namespace command {
 command_t *create_up_or_open(cluster_t *cluster);
 command_t *create_down_or_close(cluster_t *cluster);
 command_t *create_stop_motion(cluster_t *cluster);
-command_t *create_go_to_lift_value(cluster_t *cluster);
 command_t *create_go_to_lift_percentage(cluster_t *cluster);
-command_t *create_go_to_tilt_value(cluster_t *cluster);
 command_t *create_go_to_tilt_percentage(cluster_t *cluster);
 } /* command */
 

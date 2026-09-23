@@ -57,6 +57,7 @@ esp_err_t add(endpoint_t *endpoint, config_t *config)
 
     cluster::user_label::create(endpoint, &(config->user_label), CLUSTER_FLAG_SERVER);
     cluster::power_topology::create(endpoint, &(config->power_topology), CLUSTER_FLAG_SERVER);
+    cluster::electrical_protection_alarm::create(endpoint, &(config->electrical_protection_alarm), CLUSTER_FLAG_SERVER);
     return ESP_OK;
 }
 

@@ -80,8 +80,7 @@ typedef struct config {
     uint8_t increase_volume_unmute_policy;
     uint8_t increase_volume_unmute_volume;
     uint8_t decrease_volume_unmute_policy;
-    void *delegate;
-    config() : soft_muted(false), volume(0), min_device_volume(1), max_device_volume(0), default_step_size(1), set_volume_unmute_policy(0), increase_volume_unmute_policy(0), increase_volume_unmute_volume(0), decrease_volume_unmute_policy(0), delegate(nullptr) {}
+    config() : soft_muted(false), volume(0), min_device_volume(1), max_device_volume(0), default_step_size(1), set_volume_unmute_policy(0), increase_volume_unmute_policy(0), increase_volume_unmute_volume(0), decrease_volume_unmute_policy(0) {}
 } config_t;
 
 cluster_t *create(endpoint_t *endpoint, config_t *config, uint8_t flags);
