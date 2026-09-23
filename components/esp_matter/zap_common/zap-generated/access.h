@@ -327,6 +327,9 @@
     0x00000201, /* Cluster: Thermostat, Attribute: ACCapacityformat, Privilege: manage */ \
     0x00000201, /* Cluster: Thermostat, Attribute: Presets, Privilege: manage */ \
     0x00000201, /* Cluster: Thermostat, Attribute: Schedules, Privilege: manage */ \
+    0x00000201, /* Cluster: Thermostat, Attribute: AvailableSensorHandles, Privilege: manage */ \
+    0x00000201, /* Cluster: Thermostat, Attribute: EnabledSensorHandles, Privilege: manage */ \
+    0x00000201, /* Cluster: Thermostat, Attribute: SensorSchedule, Privilege: manage */ \
     0x00000204, /* Cluster: Thermostat User Interface Configuration, Attribute: KeypadLockout, Privilege: manage */ \
     0x00000204, /* Cluster: Thermostat User Interface Configuration, Attribute: ScheduleProgrammingVisibility, Privilege: manage */ \
     0x00000300, /* Cluster: Color Control, Attribute: StartUpColorTemperatureMireds, Privilege: manage */ \
@@ -455,6 +458,9 @@
     0x00000047, /* Cluster: Thermostat, Attribute: ACCapacityformat, Privilege: manage */ \
     0x00000050, /* Cluster: Thermostat, Attribute: Presets, Privilege: manage */ \
     0x00000051, /* Cluster: Thermostat, Attribute: Schedules, Privilege: manage */ \
+    0x0000005A, /* Cluster: Thermostat, Attribute: AvailableSensorHandles, Privilege: manage */ \
+    0x0000005B, /* Cluster: Thermostat, Attribute: EnabledSensorHandles, Privilege: manage */ \
+    0x0000005D, /* Cluster: Thermostat, Attribute: SensorSchedule, Privilege: manage */ \
     0x00000001, /* Cluster: Thermostat User Interface Configuration, Attribute: KeypadLockout, Privilege: manage */ \
     0x00000002, /* Cluster: Thermostat User Interface Configuration, Attribute: ScheduleProgrammingVisibility, Privilege: manage */ \
     0x00004010, /* Cluster: Color Control, Attribute: StartUpColorTemperatureMireds, Privilege: manage */ \
@@ -583,6 +589,9 @@
     chip::Access::Privilege::kManage, /* Cluster: Thermostat, Attribute: ACCapacityformat, Privilege: manage */ \
     chip::Access::Privilege::kManage, /* Cluster: Thermostat, Attribute: Presets, Privilege: manage */ \
     chip::Access::Privilege::kManage, /* Cluster: Thermostat, Attribute: Schedules, Privilege: manage */ \
+    chip::Access::Privilege::kManage, /* Cluster: Thermostat, Attribute: AvailableSensorHandles, Privilege: manage */ \
+    chip::Access::Privilege::kManage, /* Cluster: Thermostat, Attribute: EnabledSensorHandles, Privilege: manage */ \
+    chip::Access::Privilege::kManage, /* Cluster: Thermostat, Attribute: SensorSchedule, Privilege: manage */ \
     chip::Access::Privilege::kManage, /* Cluster: Thermostat User Interface Configuration, Attribute: KeypadLockout, Privilege: manage */ \
     chip::Access::Privilege::kManage, /* Cluster: Thermostat User Interface Configuration, Attribute: ScheduleProgrammingVisibility, Privilege: manage */ \
     chip::Access::Privilege::kManage, /* Cluster: Color Control, Attribute: StartUpColorTemperatureMireds, Privilege: manage */ \
