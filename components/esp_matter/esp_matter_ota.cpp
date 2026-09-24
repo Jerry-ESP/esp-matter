@@ -131,7 +131,12 @@ static esp_matter_ota_requestor_impl_t s_ota_requestor_impl = {
 
 esp_err_t esp_matter_ota_requestor_init(void)
 {
-#if (CONFIG_ENABLE_OTA_REQUESTOR && (FIXED_ENDPOINT_COUNT == 0))
+// The dynamic-endpoint path below uses esp-matter's own data model (node/endpoint APIs), so it must
+// be gated on the data model being enabled — not just FIXED_ENDPOINT_COUNT == 0. A ZAP app (e.g.
+// zap_light) has the data model disabled yet resolves FIXED_ENDPOINT_COUNT from whichever
+// endpoint_config.h wins the include order, so relying on the count alone can wrongly select this
+// branch and reference undeclared node/endpoint types. ZAP apps wire their OTA requestor statically.
+#if (CONFIG_ENABLE_OTA_REQUESTOR && CONFIG_ESP_MATTER_ENABLE_DATA_MODEL && (FIXED_ENDPOINT_COUNT == 0))
     endpoint::ota_requestor::config_t config;
     node_t *root_node = esp_matter::node::get();
     endpoint_t *root_node_endpoint = esp_matter::endpoint::get(root_node, 0);
