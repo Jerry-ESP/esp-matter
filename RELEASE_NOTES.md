@@ -6,6 +6,25 @@
   An application that uses them must add them to its own `idf_component.yml`.
 - The controller example reads the DAC revocation set with cJSON.
 
+# 28-October-2026
+
+## connectedhomeip submodule bump to v1.7 SVE (5bc438df24)
+
+Upstream migrated the DoorLock cluster to the code-driven approach; generated data model API changes follow:
+
+- **Changed (breaking, generated DM)** `door_lock::feature::aliro_provisioning::add` and
+  `door_lock::feature::aliro_bleuwb::add` now take a `config_t *` with the Aliro attribute values
+  (attribute state moved out of the ember store).
+- **Changed (breaking, generated DM)** `smoke_concentration_measurement` feature `add()` functions no
+  longer take config values; the measurement attributes are now managed internally by CHIP.
+- **Renamed (breaking, generated DM)** `humidistat` enums (`ModeEnum` → `HumidistatModeEnum`,
+  `SystemStateEnum` → `HumidistatSystemStateEnum`) and the `thermostat_mode` `CoreModes` feature is
+  replaced by the `ChangeToModeByCoreTag` command, following spec XML updates.
+- **Added** `WaterTankLevelMonitoring` server integration (registers the upstream
+  `ResourceMonitoringCluster`) and a lifecycle unit test for it.
+- **Fixed (legacy DM)** `closure_dimension` `Resolution`/`StepValue` now default to 1 and enforce
+  spec bounds (1..65535), matching the generated data model.
+
 # 26-October-2026
 
 ## Client interaction API changes (Breaking)
@@ -158,7 +177,6 @@ python tools/data_model_gen/data_model_gen.py
 ```
 - Some APIs and namespaces have been updated with the generated data model.
 - The examples below are representative and not a complete list of changes.
-
 
 e.g.
 
@@ -379,7 +397,6 @@ API change.
 
 Move the macros `REMAP_TO_RANGE()` and `REMAP_TO_RANGE_INVERSE()` to from the `esp_matter_attribute_utils.h` to `common_macros.h`
 in `examples/common/utils` directory.
-
 
 # 10-June-2025
 
