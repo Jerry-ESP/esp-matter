@@ -22,6 +22,10 @@ namespace cluster {
 namespace door_lock {
 
 const uint8_t k_max_language_length = 3u;
+const uint8_t k_max_aliro_reader_verification_key_length = 65u;
+const uint8_t k_max_aliro_reader_group_identifier_length = 16u;
+const uint8_t k_max_aliro_reader_group_sub_identifier_length = 16u;
+const uint8_t k_max_aliro_group_resolving_key_length = 16u;
 namespace feature {
 namespace pin_credential {
 typedef struct config {
@@ -99,13 +103,26 @@ esp_err_t add(cluster_t *cluster);
 } /* unbolting */
 
 namespace aliro_provisioning {
+typedef struct config {
+    uint8_t aliro_reader_verification_key[k_max_aliro_reader_verification_key_length];
+    uint8_t aliro_reader_group_identifier[k_max_aliro_reader_group_identifier_length];
+    uint8_t aliro_reader_group_sub_identifier[k_max_aliro_reader_group_sub_identifier_length];
+    uint16_t number_of_aliro_credential_issuer_keys_supported;
+    uint16_t number_of_aliro_endpoint_keys_supported;
+    config() : number_of_aliro_credential_issuer_keys_supported(0), number_of_aliro_endpoint_keys_supported(0) {}
+} config_t;
 uint32_t get_id();
-esp_err_t add(cluster_t *cluster);
+esp_err_t add(cluster_t *cluster, config_t *config);
 } /* aliro_provisioning */
 
 namespace aliro_bleuwb {
+typedef struct config {
+    uint8_t aliro_group_resolving_key[k_max_aliro_group_resolving_key_length];
+    uint8_t aliro_ble_advertising_version;
+    config() : aliro_ble_advertising_version(0) {}
+} config_t;
 uint32_t get_id();
-esp_err_t add(cluster_t *cluster);
+esp_err_t add(cluster_t *cluster, config_t *config);
 } /* aliro_bleuwb */
 
 } /* feature */

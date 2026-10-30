@@ -59,9 +59,13 @@ inline constexpr uint32_t Id = 0x0001;
 } /* TargetState */
 namespace Resolution {
 inline constexpr uint32_t Id = 0x0002;
+inline constexpr uint16_t Min = 1;
+inline constexpr uint16_t Max = 65535;
 } /* Resolution */
 namespace StepValue {
 inline constexpr uint32_t Id = 0x0003;
+inline constexpr uint16_t Min = 1;
+inline constexpr uint16_t Max = 65535;
 } /* StepValue */
 namespace Unit {
 inline constexpr uint32_t Id = 0x0004;

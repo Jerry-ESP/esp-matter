@@ -26,7 +26,7 @@ namespace positioning {
 typedef struct config {
     uint16_t resolution;
     uint16_t step_value;
-    config() : resolution(0), step_value(0) {}
+    config() : resolution(1), step_value(1) {}
 } config_t;
 uint32_t get_id();
 esp_err_t add(cluster_t *cluster, config_t *config);

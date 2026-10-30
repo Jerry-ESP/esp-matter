@@ -43,15 +43,14 @@ uint32_t get_id()
     return NumericMeasurement::Id;
 }
 
-esp_err_t add(cluster_t *cluster, config_t *config)
+esp_err_t add(cluster_t *cluster)
 {
     VerifyOrReturnError(cluster, ESP_ERR_INVALID_ARG);
-    VerifyOrReturnError(config, ESP_ERR_INVALID_ARG);
     update_feature_map(cluster, get_id());
-    attribute::create_measured_value(cluster, config->measured_value);
-    attribute::create_min_measured_value(cluster, config->min_measured_value);
-    attribute::create_max_measured_value(cluster, config->max_measured_value);
-    attribute::create_measurement_unit(cluster, config->measurement_unit);
+    attribute::create_measured_value(cluster, 0);
+    attribute::create_min_measured_value(cluster, 0);
+    attribute::create_max_measured_value(cluster, 0);
+    attribute::create_measurement_unit(cluster, 0);
 
     return ESP_OK;
 }
@@ -63,12 +62,11 @@ uint32_t get_id()
     return LevelIndication::Id;
 }
 
-esp_err_t add(cluster_t *cluster, config_t *config)
+esp_err_t add(cluster_t *cluster)
 {
     VerifyOrReturnError(cluster, ESP_ERR_INVALID_ARG);
-    VerifyOrReturnError(config, ESP_ERR_INVALID_ARG);
     update_feature_map(cluster, get_id());
-    attribute::create_level_value(cluster, config->level_value);
+    attribute::create_level_value(cluster, 0);
 
     return ESP_OK;
 }
@@ -114,15 +112,14 @@ uint32_t get_id()
     return PeakMeasurement::Id;
 }
 
-esp_err_t add(cluster_t *cluster, config_t *config)
+esp_err_t add(cluster_t *cluster)
 {
     VerifyOrReturnError(cluster, ESP_ERR_INVALID_ARG);
-    VerifyOrReturnError(config, ESP_ERR_INVALID_ARG);
     uint32_t feature_map = get_feature_map_value(cluster);
     VerifyOrReturnError(has_feature(numeric_measurement), ESP_ERR_INVALID_ARG);
     update_feature_map(cluster, get_id());
-    attribute::create_peak_measured_value(cluster, config->peak_measured_value);
-    attribute::create_peak_measured_value_window(cluster, config->peak_measured_value_window);
+    attribute::create_peak_measured_value(cluster, 0);
+    attribute::create_peak_measured_value_window(cluster, 0);
 
     return ESP_OK;
 }
@@ -134,15 +131,14 @@ uint32_t get_id()
     return AverageMeasurement::Id;
 }
 
-esp_err_t add(cluster_t *cluster, config_t *config)
+esp_err_t add(cluster_t *cluster)
 {
     VerifyOrReturnError(cluster, ESP_ERR_INVALID_ARG);
-    VerifyOrReturnError(config, ESP_ERR_INVALID_ARG);
     uint32_t feature_map = get_feature_map_value(cluster);
     VerifyOrReturnError(has_feature(numeric_measurement), ESP_ERR_INVALID_ARG);
     update_feature_map(cluster, get_id());
-    attribute::create_average_measured_value(cluster, config->average_measured_value);
-    attribute::create_average_measured_value_window(cluster, config->average_measured_value_window);
+    attribute::create_average_measured_value(cluster, 0);
+    attribute::create_average_measured_value_window(cluster, 0);
 
     return ESP_OK;
 }
@@ -155,83 +151,73 @@ attribute_t *create_measured_value(cluster_t *cluster, nullable<float> value)
 {
     uint32_t feature_map = get_feature_map_value(cluster);
     VerifyOrReturnValue(has_feature(numeric_measurement), NULL);
-    return esp_matter::attribute::create(cluster, MeasuredValue::Id, ATTRIBUTE_FLAG_NULLABLE, esp_matter_attr_val(value));
+    return esp_matter::attribute::create(cluster, MeasuredValue::Id, ATTRIBUTE_FLAG_MANAGED_INTERNALLY | ATTRIBUTE_FLAG_NULLABLE, esp_matter_attr_val(value));
 }
 
 attribute_t *create_min_measured_value(cluster_t *cluster, nullable<float> value)
 {
     uint32_t feature_map = get_feature_map_value(cluster);
     VerifyOrReturnValue(has_feature(numeric_measurement), NULL);
-    return esp_matter::attribute::create(cluster, MinMeasuredValue::Id, ATTRIBUTE_FLAG_NULLABLE, esp_matter_attr_val(value));
+    return esp_matter::attribute::create(cluster, MinMeasuredValue::Id, ATTRIBUTE_FLAG_MANAGED_INTERNALLY | ATTRIBUTE_FLAG_NULLABLE, esp_matter_attr_val(value));
 }
 
 attribute_t *create_max_measured_value(cluster_t *cluster, nullable<float> value)
 {
     uint32_t feature_map = get_feature_map_value(cluster);
     VerifyOrReturnValue(has_feature(numeric_measurement), NULL);
-    return esp_matter::attribute::create(cluster, MaxMeasuredValue::Id, ATTRIBUTE_FLAG_NULLABLE, esp_matter_attr_val(value));
+    return esp_matter::attribute::create(cluster, MaxMeasuredValue::Id, ATTRIBUTE_FLAG_MANAGED_INTERNALLY | ATTRIBUTE_FLAG_NULLABLE, esp_matter_attr_val(value));
 }
 
 attribute_t *create_peak_measured_value(cluster_t *cluster, nullable<float> value)
 {
     uint32_t feature_map = get_feature_map_value(cluster);
     VerifyOrReturnValue(has_feature(peak_measurement), NULL);
-    return esp_matter::attribute::create(cluster, PeakMeasuredValue::Id, ATTRIBUTE_FLAG_NULLABLE, esp_matter_attr_val(value));
+    return esp_matter::attribute::create(cluster, PeakMeasuredValue::Id, ATTRIBUTE_FLAG_MANAGED_INTERNALLY | ATTRIBUTE_FLAG_NULLABLE, esp_matter_attr_val(value));
 }
 
 attribute_t *create_peak_measured_value_window(cluster_t *cluster, uint32_t value)
 {
     uint32_t feature_map = get_feature_map_value(cluster);
     VerifyOrReturnValue(has_feature(peak_measurement), NULL);
-    attribute_t *attribute = esp_matter::attribute::create(cluster, PeakMeasuredValueWindow::Id, ATTRIBUTE_FLAG_NONE, esp_matter_attr_val(value));
-    esp_matter::attribute::add_bounds(attribute, esp_matter_attr_val(static_cast<uint32_t>(PeakMeasuredValueWindow::Min)), esp_matter_attr_val(static_cast<uint32_t>(PeakMeasuredValueWindow::Max)));
-    return attribute;
+    return esp_matter::attribute::create(cluster, PeakMeasuredValueWindow::Id, ATTRIBUTE_FLAG_MANAGED_INTERNALLY, esp_matter_attr_val(value));
 }
 
 attribute_t *create_average_measured_value(cluster_t *cluster, nullable<float> value)
 {
     uint32_t feature_map = get_feature_map_value(cluster);
     VerifyOrReturnValue(has_feature(average_measurement), NULL);
-    return esp_matter::attribute::create(cluster, AverageMeasuredValue::Id, ATTRIBUTE_FLAG_NULLABLE, esp_matter_attr_val(value));
+    return esp_matter::attribute::create(cluster, AverageMeasuredValue::Id, ATTRIBUTE_FLAG_MANAGED_INTERNALLY | ATTRIBUTE_FLAG_NULLABLE, esp_matter_attr_val(value));
 }
 
 attribute_t *create_average_measured_value_window(cluster_t *cluster, uint32_t value)
 {
     uint32_t feature_map = get_feature_map_value(cluster);
     VerifyOrReturnValue(has_feature(average_measurement), NULL);
-    attribute_t *attribute = esp_matter::attribute::create(cluster, AverageMeasuredValueWindow::Id, ATTRIBUTE_FLAG_NONE, esp_matter_attr_val(value));
-    esp_matter::attribute::add_bounds(attribute, esp_matter_attr_val(static_cast<uint32_t>(AverageMeasuredValueWindow::Min)), esp_matter_attr_val(static_cast<uint32_t>(AverageMeasuredValueWindow::Max)));
-    return attribute;
+    return esp_matter::attribute::create(cluster, AverageMeasuredValueWindow::Id, ATTRIBUTE_FLAG_MANAGED_INTERNALLY, esp_matter_attr_val(value));
 }
 
 attribute_t *create_uncertainty(cluster_t *cluster, float value)
 {
-    return esp_matter::attribute::create(cluster, Uncertainty::Id, ATTRIBUTE_FLAG_NONE, esp_matter_attr_val(value));
+    return esp_matter::attribute::create(cluster, Uncertainty::Id, ATTRIBUTE_FLAG_MANAGED_INTERNALLY, esp_matter_attr_val(value));
 }
 
 attribute_t *create_measurement_unit(cluster_t *cluster, uint8_t value)
 {
     uint32_t feature_map = get_feature_map_value(cluster);
     VerifyOrReturnValue(has_feature(numeric_measurement), NULL);
-    attribute_t *attribute = esp_matter::attribute::create(cluster, MeasurementUnit::Id, ATTRIBUTE_FLAG_NONE, esp_matter_attr_val(value, esp_matter_attr_val::uint_sub_type::k_enum));
-    esp_matter::attribute::add_bounds(attribute, esp_matter_attr_val(static_cast<uint8_t>(MeasurementUnit::Min), esp_matter_attr_val::uint_sub_type::k_enum), esp_matter_attr_val(static_cast<uint8_t>(MeasurementUnit::Max), esp_matter_attr_val::uint_sub_type::k_enum));
-    return attribute;
+    return esp_matter::attribute::create(cluster, MeasurementUnit::Id, ATTRIBUTE_FLAG_MANAGED_INTERNALLY, esp_matter_attr_val(value, esp_matter_attr_val::uint_sub_type::k_enum));
 }
 
 attribute_t *create_measurement_medium(cluster_t *cluster, uint8_t value)
 {
-    attribute_t *attribute = esp_matter::attribute::create(cluster, MeasurementMedium::Id, ATTRIBUTE_FLAG_NONE, esp_matter_attr_val(value, esp_matter_attr_val::uint_sub_type::k_enum));
-    esp_matter::attribute::add_bounds(attribute, esp_matter_attr_val(static_cast<uint8_t>(MeasurementMedium::Min), esp_matter_attr_val::uint_sub_type::k_enum), esp_matter_attr_val(static_cast<uint8_t>(MeasurementMedium::Max), esp_matter_attr_val::uint_sub_type::k_enum));
-    return attribute;
+    return esp_matter::attribute::create(cluster, MeasurementMedium::Id, ATTRIBUTE_FLAG_MANAGED_INTERNALLY, esp_matter_attr_val(value, esp_matter_attr_val::uint_sub_type::k_enum));
 }
 
 attribute_t *create_level_value(cluster_t *cluster, uint8_t value)
 {
     uint32_t feature_map = get_feature_map_value(cluster);
     VerifyOrReturnValue(has_feature(level_indication), NULL);
-    attribute_t *attribute = esp_matter::attribute::create(cluster, LevelValue::Id, ATTRIBUTE_FLAG_NONE, esp_matter_attr_val(value, esp_matter_attr_val::uint_sub_type::k_enum));
-    esp_matter::attribute::add_bounds(attribute, esp_matter_attr_val(static_cast<uint8_t>(LevelValue::Min), esp_matter_attr_val::uint_sub_type::k_enum), esp_matter_attr_val(static_cast<uint8_t>(LevelValue::Max), esp_matter_attr_val::uint_sub_type::k_enum));
-    return attribute;
+    return esp_matter::attribute::create(cluster, LevelValue::Id, ATTRIBUTE_FLAG_MANAGED_INTERNALLY, esp_matter_attr_val(value, esp_matter_attr_val::uint_sub_type::k_enum));
 }
 
 } /* attribute */
@@ -256,16 +242,16 @@ cluster_t *create(endpoint_t *endpoint, config_t *config, uint8_t flags)
         /* Attributes not managed internally */
         global::attribute::create_cluster_revision(cluster, cluster_revision);
 
-        attribute::create_measurement_medium(cluster, config->measurement_medium);
+        attribute::create_measurement_medium(cluster, 0);
 
         uint32_t feature_map = config->feature_flags;
         VALIDATE_FEATURES_AT_LEAST_ONE("NumericMeasurement,LevelIndication",
                                        feature::numeric_measurement::get_id(), feature::level_indication::get_id());
         if (feature_map & feature::numeric_measurement::get_id()) {
-            VerifyOrReturnValue(feature::numeric_measurement::add(cluster, &(config->features.numeric_measurement)) == ESP_OK, ABORT_CLUSTER_CREATE(cluster));
+            VerifyOrReturnValue(feature::numeric_measurement::add(cluster) == ESP_OK, ABORT_CLUSTER_CREATE(cluster));
         }
         if (feature_map & feature::level_indication::get_id()) {
-            VerifyOrReturnValue(feature::level_indication::add(cluster, &(config->features.level_indication)) == ESP_OK, ABORT_CLUSTER_CREATE(cluster));
+            VerifyOrReturnValue(feature::level_indication::add(cluster) == ESP_OK, ABORT_CLUSTER_CREATE(cluster));
         }
         if (feature_map & feature::medium_level::get_id()) {
             VerifyOrReturnValue(feature::medium_level::add(cluster) == ESP_OK, ABORT_CLUSTER_CREATE(cluster));
@@ -274,10 +260,10 @@ cluster_t *create(endpoint_t *endpoint, config_t *config, uint8_t flags)
             VerifyOrReturnValue(feature::critical_level::add(cluster) == ESP_OK, ABORT_CLUSTER_CREATE(cluster));
         }
         if (feature_map & feature::peak_measurement::get_id()) {
-            VerifyOrReturnValue(feature::peak_measurement::add(cluster, &(config->features.peak_measurement)) == ESP_OK, ABORT_CLUSTER_CREATE(cluster));
+            VerifyOrReturnValue(feature::peak_measurement::add(cluster) == ESP_OK, ABORT_CLUSTER_CREATE(cluster));
         }
         if (feature_map & feature::average_measurement::get_id()) {
-            VerifyOrReturnValue(feature::average_measurement::add(cluster, &(config->features.average_measurement)) == ESP_OK, ABORT_CLUSTER_CREATE(cluster));
+            VerifyOrReturnValue(feature::average_measurement::add(cluster) == ESP_OK, ABORT_CLUSTER_CREATE(cluster));
         }
     }
 

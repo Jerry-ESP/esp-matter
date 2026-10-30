@@ -25,7 +25,6 @@
     0x00000031, /* Cluster: Network Commissioning, Attribute: LastNetworkID, Privilege: administer */ \
     0x00000031, /* Cluster: Network Commissioning, Attribute: LastConnectErrorValue, Privilege: administer */ \
     0x0000003E, /* Cluster: Operational Credentials, Attribute: NOCs, Privilege: administer */ \
-    0x0000003F, /* Cluster: Group Key Management, Attribute: GroupcastAdoption, Privilege: administer */ \
     0x00000046, /* Cluster: ICD Management, Attribute: RegisteredClients, Privilege: administer */ \
     0x00000046, /* Cluster: ICD Management, Attribute: ICDCounter, Privilege: administer */ \
     0x00000101, /* Cluster: Door Lock, Attribute: AliroReaderVerificationKey, Privilege: administer */ \
@@ -42,7 +41,6 @@
     0x00000511, /* Cluster: Media File Management, Attribute: TotalStorage, Privilege: manage */ \
     0x00000511, /* Cluster: Media File Management, Attribute: AvailableStorage, Privilege: manage */ \
     0x00000511, /* Cluster: Media File Management, Attribute: AvailableFiles, Privilege: manage */ \
-    0x00000511, /* Cluster: Media File Management, Attribute: SupportedMimeTypes, Privilege: manage */ \
     0x00000551, /* Cluster: Camera AV Stream Management, Attribute: HDRModeEnabled, Privilege: manage */ \
     0x00000551, /* Cluster: Camera AV Stream Management, Attribute: NightVision, Privilege: manage */ \
     0x00000551, /* Cluster: Camera AV Stream Management, Attribute: NightVisionIllum, Privilege: manage */ \
@@ -106,7 +104,6 @@
     0x00000006, /* Cluster: Network Commissioning, Attribute: LastNetworkID, Privilege: administer */ \
     0x00000007, /* Cluster: Network Commissioning, Attribute: LastConnectErrorValue, Privilege: administer */ \
     0x00000000, /* Cluster: Operational Credentials, Attribute: NOCs, Privilege: administer */ \
-    0x00000004, /* Cluster: Group Key Management, Attribute: GroupcastAdoption, Privilege: administer */ \
     0x00000003, /* Cluster: ICD Management, Attribute: RegisteredClients, Privilege: administer */ \
     0x00000004, /* Cluster: ICD Management, Attribute: ICDCounter, Privilege: administer */ \
     0x00000080, /* Cluster: Door Lock, Attribute: AliroReaderVerificationKey, Privilege: administer */ \
@@ -123,7 +120,6 @@
     0x00000000, /* Cluster: Media File Management, Attribute: TotalStorage, Privilege: manage */ \
     0x00000001, /* Cluster: Media File Management, Attribute: AvailableStorage, Privilege: manage */ \
     0x00000002, /* Cluster: Media File Management, Attribute: AvailableFiles, Privilege: manage */ \
-    0x00000003, /* Cluster: Media File Management, Attribute: SupportedMimeTypes, Privilege: manage */ \
     0x0000000D, /* Cluster: Camera AV Stream Management, Attribute: HDRModeEnabled, Privilege: manage */ \
     0x00000016, /* Cluster: Camera AV Stream Management, Attribute: NightVision, Privilege: manage */ \
     0x00000017, /* Cluster: Camera AV Stream Management, Attribute: NightVisionIllum, Privilege: manage */ \
@@ -187,7 +183,6 @@
     chip::Access::Privilege::kAdminister, /* Cluster: Network Commissioning, Attribute: LastNetworkID, Privilege: administer */ \
     chip::Access::Privilege::kAdminister, /* Cluster: Network Commissioning, Attribute: LastConnectErrorValue, Privilege: administer */ \
     chip::Access::Privilege::kAdminister, /* Cluster: Operational Credentials, Attribute: NOCs, Privilege: administer */ \
-    chip::Access::Privilege::kAdminister, /* Cluster: Group Key Management, Attribute: GroupcastAdoption, Privilege: administer */ \
     chip::Access::Privilege::kAdminister, /* Cluster: ICD Management, Attribute: RegisteredClients, Privilege: administer */ \
     chip::Access::Privilege::kAdminister, /* Cluster: ICD Management, Attribute: ICDCounter, Privilege: administer */ \
     chip::Access::Privilege::kAdminister, /* Cluster: Door Lock, Attribute: AliroReaderVerificationKey, Privilege: administer */ \
@@ -204,7 +199,6 @@
     chip::Access::Privilege::kManage, /* Cluster: Media File Management, Attribute: TotalStorage, Privilege: manage */ \
     chip::Access::Privilege::kManage, /* Cluster: Media File Management, Attribute: AvailableStorage, Privilege: manage */ \
     chip::Access::Privilege::kManage, /* Cluster: Media File Management, Attribute: AvailableFiles, Privilege: manage */ \
-    chip::Access::Privilege::kManage, /* Cluster: Media File Management, Attribute: SupportedMimeTypes, Privilege: manage */ \
     chip::Access::Privilege::kManage, /* Cluster: Camera AV Stream Management, Attribute: HDRModeEnabled, Privilege: manage */ \
     chip::Access::Privilege::kManage, /* Cluster: Camera AV Stream Management, Attribute: NightVision, Privilege: manage */ \
     chip::Access::Privilege::kManage, /* Cluster: Camera AV Stream Management, Attribute: NightVisionIllum, Privilege: manage */ \
@@ -273,7 +267,6 @@
     0x00000039, /* Cluster: Bridged Device Basic Information, Attribute: NodeLabel, Privilege: manage */ \
     0x00000039, /* Cluster: Bridged Device Basic Information, Attribute: DeviceLocation, Privilege: administer */ \
     0x0000003F, /* Cluster: Group Key Management, Attribute: GroupKeyMap, Privilege: manage */ \
-    0x0000003F, /* Cluster: Group Key Management, Attribute: GroupcastAdoption, Privilege: administer */ \
     0x00000041, /* Cluster: User Label, Attribute: LabelList, Privilege: manage */ \
     0x0000005C, /* Cluster: Smoke CO Alarm, Attribute: SmokeSensitivityLevel, Privilege: manage */ \
     0x00000099, /* Cluster: Energy EVSE, Attribute: UserMaximumChargeCurrent, Privilege: manage */ \
@@ -404,7 +397,6 @@
     0x00000005, /* Cluster: Bridged Device Basic Information, Attribute: NodeLabel, Privilege: manage */ \
     0x00000017, /* Cluster: Bridged Device Basic Information, Attribute: DeviceLocation, Privilege: administer */ \
     0x00000000, /* Cluster: Group Key Management, Attribute: GroupKeyMap, Privilege: manage */ \
-    0x00000004, /* Cluster: Group Key Management, Attribute: GroupcastAdoption, Privilege: administer */ \
     0x00000000, /* Cluster: User Label, Attribute: LabelList, Privilege: manage */ \
     0x0000000B, /* Cluster: Smoke CO Alarm, Attribute: SmokeSensitivityLevel, Privilege: manage */ \
     0x00000009, /* Cluster: Energy EVSE, Attribute: UserMaximumChargeCurrent, Privilege: manage */ \
@@ -535,7 +527,6 @@
     chip::Access::Privilege::kManage, /* Cluster: Bridged Device Basic Information, Attribute: NodeLabel, Privilege: manage */ \
     chip::Access::Privilege::kAdminister, /* Cluster: Bridged Device Basic Information, Attribute: DeviceLocation, Privilege: administer */ \
     chip::Access::Privilege::kManage, /* Cluster: Group Key Management, Attribute: GroupKeyMap, Privilege: manage */ \
-    chip::Access::Privilege::kAdminister, /* Cluster: Group Key Management, Attribute: GroupcastAdoption, Privilege: administer */ \
     chip::Access::Privilege::kManage, /* Cluster: User Label, Attribute: LabelList, Privilege: manage */ \
     chip::Access::Privilege::kManage, /* Cluster: Smoke CO Alarm, Attribute: SmokeSensitivityLevel, Privilege: manage */ \
     chip::Access::Privilege::kManage, /* Cluster: Energy EVSE, Attribute: UserMaximumChargeCurrent, Privilege: manage */ \
@@ -702,6 +693,8 @@
     0x00000062, /* Cluster: Scenes Management, Command: RemoveAllScenes, Privilege: manage */ \
     0x00000062, /* Cluster: Scenes Management, Command: StoreScene, Privilege: manage */ \
     0x00000062, /* Cluster: Scenes Management, Command: CopyScene, Privilege: manage */ \
+    0x00000063, /* Cluster: Thermostat Mode, Command: ChangeToMode, Privilege: manage */ \
+    0x00000063, /* Cluster: Thermostat Mode, Command: ChangeToModeByCoreTag, Privilege: manage */ \
     0x00000065, /* Cluster: Groupcast, Command: JoinGroup, Privilege: manage */ \
     0x00000065, /* Cluster: Groupcast, Command: LeaveGroup, Privilege: manage */ \
     0x00000065, /* Cluster: Groupcast, Command: UpdateGroupKey, Privilege: manage */ \
@@ -878,6 +871,8 @@
     0x00000003, /* Cluster: Scenes Management, Command: RemoveAllScenes, Privilege: manage */ \
     0x00000004, /* Cluster: Scenes Management, Command: StoreScene, Privilege: manage */ \
     0x00000040, /* Cluster: Scenes Management, Command: CopyScene, Privilege: manage */ \
+    0x00000000, /* Cluster: Thermostat Mode, Command: ChangeToMode, Privilege: manage */ \
+    0x00000002, /* Cluster: Thermostat Mode, Command: ChangeToModeByCoreTag, Privilege: manage */ \
     0x00000000, /* Cluster: Groupcast, Command: JoinGroup, Privilege: manage */ \
     0x00000001, /* Cluster: Groupcast, Command: LeaveGroup, Privilege: manage */ \
     0x00000003, /* Cluster: Groupcast, Command: UpdateGroupKey, Privilege: manage */ \
@@ -1054,6 +1049,8 @@
     chip::Access::Privilege::kManage, /* Cluster: Scenes Management, Command: RemoveAllScenes, Privilege: manage */ \
     chip::Access::Privilege::kManage, /* Cluster: Scenes Management, Command: StoreScene, Privilege: manage */ \
     chip::Access::Privilege::kManage, /* Cluster: Scenes Management, Command: CopyScene, Privilege: manage */ \
+    chip::Access::Privilege::kManage, /* Cluster: Thermostat Mode, Command: ChangeToMode, Privilege: manage */ \
+    chip::Access::Privilege::kManage, /* Cluster: Thermostat Mode, Command: ChangeToModeByCoreTag, Privilege: manage */ \
     chip::Access::Privilege::kManage, /* Cluster: Groupcast, Command: JoinGroup, Privilege: manage */ \
     chip::Access::Privilege::kManage, /* Cluster: Groupcast, Command: LeaveGroup, Privilege: manage */ \
     chip::Access::Privilege::kManage, /* Cluster: Groupcast, Command: UpdateGroupKey, Privilege: manage */ \

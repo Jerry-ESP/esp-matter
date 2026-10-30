@@ -23,24 +23,13 @@ namespace smoke_concentration_measurement {
 
 namespace feature {
 namespace numeric_measurement {
-typedef struct config {
-    nullable<float> measured_value;
-    nullable<float> min_measured_value;
-    nullable<float> max_measured_value;
-    uint8_t measurement_unit;
-    config() : measured_value(), min_measured_value(), max_measured_value(), measurement_unit(0) {}
-} config_t;
 uint32_t get_id();
-esp_err_t add(cluster_t *cluster, config_t *config);
+esp_err_t add(cluster_t *cluster);
 } /* numeric_measurement */
 
 namespace level_indication {
-typedef struct config {
-    uint8_t level_value;
-    config() : level_value(0) {}
-} config_t;
 uint32_t get_id();
-esp_err_t add(cluster_t *cluster, config_t *config);
+esp_err_t add(cluster_t *cluster);
 } /* level_indication */
 
 namespace medium_level {
@@ -54,23 +43,13 @@ esp_err_t add(cluster_t *cluster);
 } /* critical_level */
 
 namespace peak_measurement {
-typedef struct config {
-    nullable<float> peak_measured_value;
-    uint32_t peak_measured_value_window;
-    config() : peak_measured_value(), peak_measured_value_window(0) {}
-} config_t;
 uint32_t get_id();
-esp_err_t add(cluster_t *cluster, config_t *config);
+esp_err_t add(cluster_t *cluster);
 } /* peak_measurement */
 
 namespace average_measurement {
-typedef struct config {
-    nullable<float> average_measured_value;
-    uint32_t average_measured_value_window;
-    config() : average_measured_value(), average_measured_value_window(0) {}
-} config_t;
 uint32_t get_id();
-esp_err_t add(cluster_t *cluster, config_t *config);
+esp_err_t add(cluster_t *cluster);
 } /* average_measurement */
 
 } /* feature */
@@ -90,15 +69,8 @@ attribute_t *create_level_value(cluster_t *cluster, uint8_t value);
 } /* attribute */
 
 typedef struct config {
-    uint8_t measurement_medium;
-    struct {
-        feature::numeric_measurement::config_t numeric_measurement;
-        feature::level_indication::config_t level_indication;
-        feature::peak_measurement::config_t peak_measurement;
-        feature::average_measurement::config_t average_measurement;
-    } features;
     uint32_t feature_flags;
-    config() : measurement_medium(0), feature_flags(0) {}
+    config() : feature_flags(0) {}
 } config_t;
 
 cluster_t *create(endpoint_t *endpoint, config_t *config, uint8_t flags);

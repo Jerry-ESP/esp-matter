@@ -24,6 +24,7 @@
 #include <water_tank_level_monitoring_ids.h>
 #include <binding.h>
 #include <esp_matter_data_model_priv.h>
+#include <app/ClusterCallbacks.h>
 
 using namespace chip::app::Clusters;
 using namespace esp_matter;
@@ -159,6 +160,9 @@ cluster_t *create(endpoint_t *endpoint, config_t *config, uint8_t flags)
         global::attribute::create_cluster_revision(cluster, cluster_revision);
 
         attribute::create_change_indication(cluster, config->change_indication);
+
+        cluster::set_init_and_shutdown_callbacks(cluster, ESPMatterWaterTankLevelMonitoringClusterServerInitCallback,
+                                                 ESPMatterWaterTankLevelMonitoringClusterServerShutdownCallback);
     }
 
     if (flags & CLUSTER_FLAG_CLIENT) {

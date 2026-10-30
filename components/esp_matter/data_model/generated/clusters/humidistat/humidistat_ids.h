@@ -85,7 +85,7 @@ inline constexpr uint8_t Max = 100;
 } /* MaxSetpoint */
 namespace Step {
 inline constexpr uint32_t Id = 0x0006;
-inline constexpr uint8_t Min = 0;
+inline constexpr uint8_t Min = 1;
 inline constexpr uint8_t Max = 100;
 } /* Step */
 namespace TargetSetpoint {
@@ -93,7 +93,7 @@ inline constexpr uint32_t Id = 0x0007;
 } /* TargetSetpoint */
 namespace MistType {
 inline constexpr uint32_t Id = 0x0008;
-inline constexpr uint8_t Min = 0;
+inline constexpr uint8_t Min = 1;
 inline constexpr uint8_t Max = 3;
 } /* MistType */
 namespace Continuous {
