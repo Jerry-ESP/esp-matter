@@ -52,15 +52,15 @@ HumidistatCluster::StartupConfiguration LoadStartupConfiguration(EndpointId endp
     HumidistatCluster::StartupConfiguration config;
 
     uint8_t raw = 0;
-    if (read_attribute_raw_value(endpointId, Humidistat::Id, Mode::Id, raw)) {
-        auto mode = EnsureKnownEnumValue(static_cast<ModeEnum>(raw));
-        if (mode != ModeEnum::kUnknownEnumValue) {
+    if (read_attribute_raw_value(endpointId, Humidistat::Id, HumidistatMode::Id, raw)) {
+        auto mode = EnsureKnownEnumValue(static_cast<HumidistatModeEnum>(raw));
+        if (mode != HumidistatModeEnum::kUnknownEnumValue) {
             config.mode = mode;
         }
     }
-    if (read_attribute_raw_value(endpointId, Humidistat::Id, SystemState::Id, raw)) {
-        auto systemState = EnsureKnownEnumValue(static_cast<SystemStateEnum>(raw));
-        if (systemState != SystemStateEnum::kUnknownEnumValue) {
+    if (read_attribute_raw_value(endpointId, Humidistat::Id, HumidistatSystemState::Id, raw)) {
+        auto systemState = EnsureKnownEnumValue(static_cast<HumidistatSystemStateEnum>(raw));
+        if (systemState != HumidistatSystemStateEnum::kUnknownEnumValue) {
             config.systemState = systemState;
         }
     }
