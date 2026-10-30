@@ -26,248 +26,15 @@
 #include <door_lock_ids.h>
 #include <binding.h>
 #include <esp_matter_data_model_priv.h>
+#include <app/ClusterCallbacks.h>
 
 using namespace chip::app::Clusters;
-using chip::app::CommandHandler;
-using chip::app::DataModel::Decode;
-using chip::TLV::TLVReader;
 using namespace esp_matter;
 using namespace esp_matter::cluster;
 using namespace esp_matter::cluster::delegate_cb;
 
 static const char *TAG = "esp_matter_cluster";
 constexpr uint16_t cluster_revision = 10;
-
-static esp_err_t esp_matter_command_callback_lock_door(const ConcreteCommandPath &command_path, TLVReader &tlv_data,
-                                                       void *opaque_ptr)
-{
-    chip::app::Clusters::DoorLock::Commands::LockDoor::DecodableType command_data;
-    CHIP_ERROR error = Decode(tlv_data, command_data);
-    if (error == CHIP_NO_ERROR) {
-        emberAfDoorLockClusterLockDoorCallback((CommandHandler *)opaque_ptr, command_path, command_data);
-    }
-    return ESP_OK;
-}
-
-static esp_err_t esp_matter_command_callback_unlock_door(const ConcreteCommandPath &command_path, TLVReader &tlv_data,
-                                                         void *opaque_ptr)
-{
-    chip::app::Clusters::DoorLock::Commands::UnlockDoor::DecodableType command_data;
-    CHIP_ERROR error = Decode(tlv_data, command_data);
-    if (error == CHIP_NO_ERROR) {
-        emberAfDoorLockClusterUnlockDoorCallback((CommandHandler *)opaque_ptr, command_path, command_data);
-    }
-    return ESP_OK;
-}
-
-static esp_err_t esp_matter_command_callback_unlock_with_timeout(const ConcreteCommandPath &command_path, TLVReader &tlv_data,
-                                                                 void *opaque_ptr)
-{
-    chip::app::Clusters::DoorLock::Commands::UnlockWithTimeout::DecodableType command_data;
-    CHIP_ERROR error = Decode(tlv_data, command_data);
-    if (error == CHIP_NO_ERROR) {
-        emberAfDoorLockClusterUnlockWithTimeoutCallback((CommandHandler *)opaque_ptr, command_path, command_data);
-    }
-    return ESP_OK;
-}
-
-static esp_err_t esp_matter_command_callback_set_week_day_schedule(const ConcreteCommandPath &command_path, TLVReader &tlv_data,
-                                                                   void *opaque_ptr)
-{
-    chip::app::Clusters::DoorLock::Commands::SetWeekDaySchedule::DecodableType command_data;
-    CHIP_ERROR error = Decode(tlv_data, command_data);
-    if (error == CHIP_NO_ERROR) {
-        emberAfDoorLockClusterSetWeekDayScheduleCallback((CommandHandler *)opaque_ptr, command_path, command_data);
-    }
-    return ESP_OK;
-}
-
-static esp_err_t esp_matter_command_callback_get_week_day_schedule(const ConcreteCommandPath &command_path, TLVReader &tlv_data,
-                                                                   void *opaque_ptr)
-{
-    chip::app::Clusters::DoorLock::Commands::GetWeekDaySchedule::DecodableType command_data;
-    CHIP_ERROR error = Decode(tlv_data, command_data);
-    if (error == CHIP_NO_ERROR) {
-        emberAfDoorLockClusterGetWeekDayScheduleCallback((CommandHandler *)opaque_ptr, command_path, command_data);
-    }
-    return ESP_OK;
-}
-
-static esp_err_t esp_matter_command_callback_clear_week_day_schedule(const ConcreteCommandPath &command_path, TLVReader &tlv_data,
-                                                                     void *opaque_ptr)
-{
-    chip::app::Clusters::DoorLock::Commands::ClearWeekDaySchedule::DecodableType command_data;
-    CHIP_ERROR error = Decode(tlv_data, command_data);
-    if (error == CHIP_NO_ERROR) {
-        emberAfDoorLockClusterClearWeekDayScheduleCallback((CommandHandler *)opaque_ptr, command_path, command_data);
-    }
-    return ESP_OK;
-}
-
-static esp_err_t esp_matter_command_callback_set_year_day_schedule(const ConcreteCommandPath &command_path, TLVReader &tlv_data,
-                                                                   void *opaque_ptr)
-{
-    chip::app::Clusters::DoorLock::Commands::SetYearDaySchedule::DecodableType command_data;
-    CHIP_ERROR error = Decode(tlv_data, command_data);
-    if (error == CHIP_NO_ERROR) {
-        emberAfDoorLockClusterSetYearDayScheduleCallback((CommandHandler *)opaque_ptr, command_path, command_data);
-    }
-    return ESP_OK;
-}
-
-static esp_err_t esp_matter_command_callback_get_year_day_schedule(const ConcreteCommandPath &command_path, TLVReader &tlv_data,
-                                                                   void *opaque_ptr)
-{
-    chip::app::Clusters::DoorLock::Commands::GetYearDaySchedule::DecodableType command_data;
-    CHIP_ERROR error = Decode(tlv_data, command_data);
-    if (error == CHIP_NO_ERROR) {
-        emberAfDoorLockClusterGetYearDayScheduleCallback((CommandHandler *)opaque_ptr, command_path, command_data);
-    }
-    return ESP_OK;
-}
-
-static esp_err_t esp_matter_command_callback_clear_year_day_schedule(const ConcreteCommandPath &command_path, TLVReader &tlv_data,
-                                                                     void *opaque_ptr)
-{
-    chip::app::Clusters::DoorLock::Commands::ClearYearDaySchedule::DecodableType command_data;
-    CHIP_ERROR error = Decode(tlv_data, command_data);
-    if (error == CHIP_NO_ERROR) {
-        emberAfDoorLockClusterClearYearDayScheduleCallback((CommandHandler *)opaque_ptr, command_path, command_data);
-    }
-    return ESP_OK;
-}
-
-static esp_err_t esp_matter_command_callback_set_holiday_schedule(const ConcreteCommandPath &command_path, TLVReader &tlv_data,
-                                                                  void *opaque_ptr)
-{
-    chip::app::Clusters::DoorLock::Commands::SetHolidaySchedule::DecodableType command_data;
-    CHIP_ERROR error = Decode(tlv_data, command_data);
-    if (error == CHIP_NO_ERROR) {
-        emberAfDoorLockClusterSetHolidayScheduleCallback((CommandHandler *)opaque_ptr, command_path, command_data);
-    }
-    return ESP_OK;
-}
-
-static esp_err_t esp_matter_command_callback_get_holiday_schedule(const ConcreteCommandPath &command_path, TLVReader &tlv_data,
-                                                                  void *opaque_ptr)
-{
-    chip::app::Clusters::DoorLock::Commands::GetHolidaySchedule::DecodableType command_data;
-    CHIP_ERROR error = Decode(tlv_data, command_data);
-    if (error == CHIP_NO_ERROR) {
-        emberAfDoorLockClusterGetHolidayScheduleCallback((CommandHandler *)opaque_ptr, command_path, command_data);
-    }
-    return ESP_OK;
-}
-
-static esp_err_t esp_matter_command_callback_clear_holiday_schedule(const ConcreteCommandPath &command_path, TLVReader &tlv_data,
-                                                                    void *opaque_ptr)
-{
-    chip::app::Clusters::DoorLock::Commands::ClearHolidaySchedule::DecodableType command_data;
-    CHIP_ERROR error = Decode(tlv_data, command_data);
-    if (error == CHIP_NO_ERROR) {
-        emberAfDoorLockClusterClearHolidayScheduleCallback((CommandHandler *)opaque_ptr, command_path, command_data);
-    }
-    return ESP_OK;
-}
-
-static esp_err_t esp_matter_command_callback_set_user(const ConcreteCommandPath &command_path, TLVReader &tlv_data,
-                                                      void *opaque_ptr)
-{
-    chip::app::Clusters::DoorLock::Commands::SetUser::DecodableType command_data;
-    CHIP_ERROR error = Decode(tlv_data, command_data);
-    if (error == CHIP_NO_ERROR) {
-        emberAfDoorLockClusterSetUserCallback((CommandHandler *)opaque_ptr, command_path, command_data);
-    }
-    return ESP_OK;
-}
-
-static esp_err_t esp_matter_command_callback_get_user(const ConcreteCommandPath &command_path, TLVReader &tlv_data,
-                                                      void *opaque_ptr)
-{
-    chip::app::Clusters::DoorLock::Commands::GetUser::DecodableType command_data;
-    CHIP_ERROR error = Decode(tlv_data, command_data);
-    if (error == CHIP_NO_ERROR) {
-        emberAfDoorLockClusterGetUserCallback((CommandHandler *)opaque_ptr, command_path, command_data);
-    }
-    return ESP_OK;
-}
-
-static esp_err_t esp_matter_command_callback_clear_user(const ConcreteCommandPath &command_path, TLVReader &tlv_data,
-                                                        void *opaque_ptr)
-{
-    chip::app::Clusters::DoorLock::Commands::ClearUser::DecodableType command_data;
-    CHIP_ERROR error = Decode(tlv_data, command_data);
-    if (error == CHIP_NO_ERROR) {
-        emberAfDoorLockClusterClearUserCallback((CommandHandler *)opaque_ptr, command_path, command_data);
-    }
-    return ESP_OK;
-}
-
-static esp_err_t esp_matter_command_callback_set_credential(const ConcreteCommandPath &command_path, TLVReader &tlv_data,
-                                                            void *opaque_ptr)
-{
-    chip::app::Clusters::DoorLock::Commands::SetCredential::DecodableType command_data;
-    CHIP_ERROR error = Decode(tlv_data, command_data);
-    if (error == CHIP_NO_ERROR) {
-        emberAfDoorLockClusterSetCredentialCallback((CommandHandler *)opaque_ptr, command_path, command_data);
-    }
-    return ESP_OK;
-}
-
-static esp_err_t esp_matter_command_callback_get_credential_status(const ConcreteCommandPath &command_path, TLVReader &tlv_data,
-                                                                   void *opaque_ptr)
-{
-    chip::app::Clusters::DoorLock::Commands::GetCredentialStatus::DecodableType command_data;
-    CHIP_ERROR error = Decode(tlv_data, command_data);
-    if (error == CHIP_NO_ERROR) {
-        emberAfDoorLockClusterGetCredentialStatusCallback((CommandHandler *)opaque_ptr, command_path, command_data);
-    }
-    return ESP_OK;
-}
-
-static esp_err_t esp_matter_command_callback_clear_credential(const ConcreteCommandPath &command_path, TLVReader &tlv_data,
-                                                              void *opaque_ptr)
-{
-    chip::app::Clusters::DoorLock::Commands::ClearCredential::DecodableType command_data;
-    CHIP_ERROR error = Decode(tlv_data, command_data);
-    if (error == CHIP_NO_ERROR) {
-        emberAfDoorLockClusterClearCredentialCallback((CommandHandler *)opaque_ptr, command_path, command_data);
-    }
-    return ESP_OK;
-}
-
-static esp_err_t esp_matter_command_callback_unbolt_door(const ConcreteCommandPath &command_path, TLVReader &tlv_data,
-                                                         void *opaque_ptr)
-{
-    chip::app::Clusters::DoorLock::Commands::UnboltDoor::DecodableType command_data;
-    CHIP_ERROR error = Decode(tlv_data, command_data);
-    if (error == CHIP_NO_ERROR) {
-        emberAfDoorLockClusterUnboltDoorCallback((CommandHandler *)opaque_ptr, command_path, command_data);
-    }
-    return ESP_OK;
-}
-
-static esp_err_t esp_matter_command_callback_set_aliro_reader_config(const ConcreteCommandPath &command_path, TLVReader &tlv_data,
-                                                                     void *opaque_ptr)
-{
-    chip::app::Clusters::DoorLock::Commands::SetAliroReaderConfig::DecodableType command_data;
-    CHIP_ERROR error = Decode(tlv_data, command_data);
-    if (error == CHIP_NO_ERROR) {
-        emberAfDoorLockClusterSetAliroReaderConfigCallback((CommandHandler *)opaque_ptr, command_path, command_data);
-    }
-    return ESP_OK;
-}
-
-static esp_err_t esp_matter_command_callback_clear_aliro_reader_config(const ConcreteCommandPath &command_path, TLVReader &tlv_data,
-                                                                       void *opaque_ptr)
-{
-    chip::app::Clusters::DoorLock::Commands::ClearAliroReaderConfig::DecodableType command_data;
-    CHIP_ERROR error = Decode(tlv_data, command_data);
-    if (error == CHIP_NO_ERROR) {
-        emberAfDoorLockClusterClearAliroReaderConfigCallback((CommandHandler *)opaque_ptr, command_path, command_data);
-    }
-    return ESP_OK;
-}
 
 namespace esp_matter {
 namespace cluster {
@@ -445,16 +212,17 @@ uint32_t get_id()
     return AliroProvisioning::Id;
 }
 
-esp_err_t add(cluster_t *cluster)
+esp_err_t add(cluster_t *cluster, config_t *config)
 {
     VerifyOrReturnError(cluster, ESP_ERR_INVALID_ARG);
+    VerifyOrReturnError(config, ESP_ERR_INVALID_ARG);
     update_feature_map(cluster, get_id());
-    attribute::create_aliro_reader_verification_key(cluster, NULL, 0);
-    attribute::create_aliro_reader_group_identifier(cluster, NULL, 0);
-    attribute::create_aliro_reader_group_sub_identifier(cluster, NULL, 0);
+    attribute::create_aliro_reader_verification_key(cluster, config->aliro_reader_verification_key, sizeof(config->aliro_reader_verification_key));
+    attribute::create_aliro_reader_group_identifier(cluster, config->aliro_reader_group_identifier, sizeof(config->aliro_reader_group_identifier));
+    attribute::create_aliro_reader_group_sub_identifier(cluster, config->aliro_reader_group_sub_identifier, sizeof(config->aliro_reader_group_sub_identifier));
+    attribute::create_number_of_aliro_credential_issuer_keys_supported(cluster, config->number_of_aliro_credential_issuer_keys_supported);
+    attribute::create_number_of_aliro_endpoint_keys_supported(cluster, config->number_of_aliro_endpoint_keys_supported);
     attribute::create_aliro_expedited_transaction_supported_protocol_versions(cluster, NULL, 0, 0);
-    attribute::create_number_of_aliro_credential_issuer_keys_supported(cluster, 0);
-    attribute::create_number_of_aliro_endpoint_keys_supported(cluster, 0);
     command::create_set_aliro_reader_config(cluster);
     command::create_clear_aliro_reader_config(cluster);
 
@@ -468,15 +236,16 @@ uint32_t get_id()
     return AliroBLEUWB::Id;
 }
 
-esp_err_t add(cluster_t *cluster)
+esp_err_t add(cluster_t *cluster, config_t *config)
 {
     VerifyOrReturnError(cluster, ESP_ERR_INVALID_ARG);
+    VerifyOrReturnError(config, ESP_ERR_INVALID_ARG);
     uint32_t feature_map = get_feature_map_value(cluster);
     VerifyOrReturnError(has_feature(aliro_provisioning), ESP_ERR_INVALID_ARG);
     update_feature_map(cluster, get_id());
-    attribute::create_aliro_group_resolving_key(cluster, NULL, 0);
+    attribute::create_aliro_group_resolving_key(cluster, config->aliro_group_resolving_key, sizeof(config->aliro_group_resolving_key));
+    attribute::create_aliro_ble_advertising_version(cluster, config->aliro_ble_advertising_version);
     attribute::create_aliro_supported_bleuwb_protocol_versions(cluster, NULL, 0, 0);
-    attribute::create_aliro_ble_advertising_version(cluster, 0);
 
     return ESP_OK;
 }
@@ -713,21 +482,21 @@ attribute_t *create_aliro_reader_verification_key(cluster_t *cluster, uint8_t *v
 {
     uint32_t feature_map = get_feature_map_value(cluster);
     VerifyOrReturnValue(has_feature(aliro_provisioning), NULL);
-    return esp_matter::attribute::create(cluster, AliroReaderVerificationKey::Id, ATTRIBUTE_FLAG_MANAGED_INTERNALLY | ATTRIBUTE_FLAG_NULLABLE, esp_matter_attr_val(value, length));
+    return esp_matter::attribute::create(cluster, AliroReaderVerificationKey::Id, ATTRIBUTE_FLAG_NULLABLE, esp_matter_attr_val(value, length));
 }
 
 attribute_t *create_aliro_reader_group_identifier(cluster_t *cluster, uint8_t *value, uint16_t length)
 {
     uint32_t feature_map = get_feature_map_value(cluster);
     VerifyOrReturnValue(has_feature(aliro_provisioning), NULL);
-    return esp_matter::attribute::create(cluster, AliroReaderGroupIdentifier::Id, ATTRIBUTE_FLAG_MANAGED_INTERNALLY | ATTRIBUTE_FLAG_NULLABLE, esp_matter_attr_val(value, length));
+    return esp_matter::attribute::create(cluster, AliroReaderGroupIdentifier::Id, ATTRIBUTE_FLAG_NULLABLE, esp_matter_attr_val(value, length));
 }
 
 attribute_t *create_aliro_reader_group_sub_identifier(cluster_t *cluster, uint8_t *value, uint16_t length)
 {
     uint32_t feature_map = get_feature_map_value(cluster);
     VerifyOrReturnValue(has_feature(aliro_provisioning), NULL);
-    return esp_matter::attribute::create(cluster, AliroReaderGroupSubIdentifier::Id, ATTRIBUTE_FLAG_MANAGED_INTERNALLY, esp_matter_attr_val(value, length));
+    return esp_matter::attribute::create(cluster, AliroReaderGroupSubIdentifier::Id, ATTRIBUTE_FLAG_NONE, esp_matter_attr_val(value, length));
 }
 
 attribute_t *create_aliro_expedited_transaction_supported_protocol_versions(cluster_t *cluster, uint8_t *value, uint16_t length, uint16_t count)
@@ -741,7 +510,7 @@ attribute_t *create_aliro_group_resolving_key(cluster_t *cluster, uint8_t *value
 {
     uint32_t feature_map = get_feature_map_value(cluster);
     VerifyOrReturnValue(has_feature(aliro_bleuwb), NULL);
-    return esp_matter::attribute::create(cluster, AliroGroupResolvingKey::Id, ATTRIBUTE_FLAG_MANAGED_INTERNALLY | ATTRIBUTE_FLAG_NULLABLE, esp_matter_attr_val(value, length));
+    return esp_matter::attribute::create(cluster, AliroGroupResolvingKey::Id, ATTRIBUTE_FLAG_NULLABLE, esp_matter_attr_val(value, length));
 }
 
 attribute_t *create_aliro_supported_bleuwb_protocol_versions(cluster_t *cluster, uint8_t *value, uint16_t length, uint16_t count)
@@ -755,52 +524,52 @@ attribute_t *create_aliro_ble_advertising_version(cluster_t *cluster, uint8_t va
 {
     uint32_t feature_map = get_feature_map_value(cluster);
     VerifyOrReturnValue(has_feature(aliro_bleuwb), NULL);
-    return esp_matter::attribute::create(cluster, AliroBLEAdvertisingVersion::Id, ATTRIBUTE_FLAG_MANAGED_INTERNALLY, esp_matter_attr_val(value));
+    return esp_matter::attribute::create(cluster, AliroBLEAdvertisingVersion::Id, ATTRIBUTE_FLAG_NONE, esp_matter_attr_val(value));
 }
 
 attribute_t *create_number_of_aliro_credential_issuer_keys_supported(cluster_t *cluster, uint16_t value)
 {
     uint32_t feature_map = get_feature_map_value(cluster);
     VerifyOrReturnValue(has_feature(aliro_provisioning), NULL);
-    return esp_matter::attribute::create(cluster, NumberOfAliroCredentialIssuerKeysSupported::Id, ATTRIBUTE_FLAG_MANAGED_INTERNALLY, esp_matter_attr_val(value));
+    return esp_matter::attribute::create(cluster, NumberOfAliroCredentialIssuerKeysSupported::Id, ATTRIBUTE_FLAG_NONE, esp_matter_attr_val(value));
 }
 
 attribute_t *create_number_of_aliro_endpoint_keys_supported(cluster_t *cluster, uint16_t value)
 {
     uint32_t feature_map = get_feature_map_value(cluster);
     VerifyOrReturnValue(has_feature(aliro_provisioning), NULL);
-    return esp_matter::attribute::create(cluster, NumberOfAliroEndpointKeysSupported::Id, ATTRIBUTE_FLAG_MANAGED_INTERNALLY, esp_matter_attr_val(value));
+    return esp_matter::attribute::create(cluster, NumberOfAliroEndpointKeysSupported::Id, ATTRIBUTE_FLAG_NONE, esp_matter_attr_val(value));
 }
 
 } /* attribute */
 namespace command {
 command_t *create_lock_door(cluster_t *cluster)
 {
-    return esp_matter::command::create(cluster, LockDoor::Id, COMMAND_FLAG_ACCEPTED, esp_matter_command_callback_lock_door);
+    return esp_matter::command::create(cluster, LockDoor::Id, COMMAND_FLAG_ACCEPTED, NULL);
 }
 
 command_t *create_unlock_door(cluster_t *cluster)
 {
-    return esp_matter::command::create(cluster, UnlockDoor::Id, COMMAND_FLAG_ACCEPTED, esp_matter_command_callback_unlock_door);
+    return esp_matter::command::create(cluster, UnlockDoor::Id, COMMAND_FLAG_ACCEPTED, NULL);
 }
 
 command_t *create_unlock_with_timeout(cluster_t *cluster)
 {
-    return esp_matter::command::create(cluster, UnlockWithTimeout::Id, COMMAND_FLAG_ACCEPTED, esp_matter_command_callback_unlock_with_timeout);
+    return esp_matter::command::create(cluster, UnlockWithTimeout::Id, COMMAND_FLAG_ACCEPTED, NULL);
 }
 
 command_t *create_set_week_day_schedule(cluster_t *cluster)
 {
     uint32_t feature_map = get_feature_map_value(cluster);
     VerifyOrReturnValue(has_feature(weekday_access_schedules), NULL);
-    return esp_matter::command::create(cluster, SetWeekDaySchedule::Id, COMMAND_FLAG_ACCEPTED, esp_matter_command_callback_set_week_day_schedule);
+    return esp_matter::command::create(cluster, SetWeekDaySchedule::Id, COMMAND_FLAG_ACCEPTED, NULL);
 }
 
 command_t *create_get_week_day_schedule(cluster_t *cluster)
 {
     uint32_t feature_map = get_feature_map_value(cluster);
     VerifyOrReturnValue(has_feature(weekday_access_schedules), NULL);
-    return esp_matter::command::create(cluster, GetWeekDaySchedule::Id, COMMAND_FLAG_ACCEPTED, esp_matter_command_callback_get_week_day_schedule);
+    return esp_matter::command::create(cluster, GetWeekDaySchedule::Id, COMMAND_FLAG_ACCEPTED, NULL);
 }
 
 command_t *create_get_week_day_schedule_response(cluster_t *cluster)
@@ -814,21 +583,21 @@ command_t *create_clear_week_day_schedule(cluster_t *cluster)
 {
     uint32_t feature_map = get_feature_map_value(cluster);
     VerifyOrReturnValue(has_feature(weekday_access_schedules), NULL);
-    return esp_matter::command::create(cluster, ClearWeekDaySchedule::Id, COMMAND_FLAG_ACCEPTED, esp_matter_command_callback_clear_week_day_schedule);
+    return esp_matter::command::create(cluster, ClearWeekDaySchedule::Id, COMMAND_FLAG_ACCEPTED, NULL);
 }
 
 command_t *create_set_year_day_schedule(cluster_t *cluster)
 {
     uint32_t feature_map = get_feature_map_value(cluster);
     VerifyOrReturnValue(has_feature(year_day_access_schedules), NULL);
-    return esp_matter::command::create(cluster, SetYearDaySchedule::Id, COMMAND_FLAG_ACCEPTED, esp_matter_command_callback_set_year_day_schedule);
+    return esp_matter::command::create(cluster, SetYearDaySchedule::Id, COMMAND_FLAG_ACCEPTED, NULL);
 }
 
 command_t *create_get_year_day_schedule(cluster_t *cluster)
 {
     uint32_t feature_map = get_feature_map_value(cluster);
     VerifyOrReturnValue(has_feature(year_day_access_schedules), NULL);
-    return esp_matter::command::create(cluster, GetYearDaySchedule::Id, COMMAND_FLAG_ACCEPTED, esp_matter_command_callback_get_year_day_schedule);
+    return esp_matter::command::create(cluster, GetYearDaySchedule::Id, COMMAND_FLAG_ACCEPTED, NULL);
 }
 
 command_t *create_get_year_day_schedule_response(cluster_t *cluster)
@@ -842,21 +611,21 @@ command_t *create_clear_year_day_schedule(cluster_t *cluster)
 {
     uint32_t feature_map = get_feature_map_value(cluster);
     VerifyOrReturnValue(has_feature(year_day_access_schedules), NULL);
-    return esp_matter::command::create(cluster, ClearYearDaySchedule::Id, COMMAND_FLAG_ACCEPTED, esp_matter_command_callback_clear_year_day_schedule);
+    return esp_matter::command::create(cluster, ClearYearDaySchedule::Id, COMMAND_FLAG_ACCEPTED, NULL);
 }
 
 command_t *create_set_holiday_schedule(cluster_t *cluster)
 {
     uint32_t feature_map = get_feature_map_value(cluster);
     VerifyOrReturnValue(has_feature(holiday_schedules), NULL);
-    return esp_matter::command::create(cluster, SetHolidaySchedule::Id, COMMAND_FLAG_ACCEPTED, esp_matter_command_callback_set_holiday_schedule);
+    return esp_matter::command::create(cluster, SetHolidaySchedule::Id, COMMAND_FLAG_ACCEPTED, NULL);
 }
 
 command_t *create_get_holiday_schedule(cluster_t *cluster)
 {
     uint32_t feature_map = get_feature_map_value(cluster);
     VerifyOrReturnValue(has_feature(holiday_schedules), NULL);
-    return esp_matter::command::create(cluster, GetHolidaySchedule::Id, COMMAND_FLAG_ACCEPTED, esp_matter_command_callback_get_holiday_schedule);
+    return esp_matter::command::create(cluster, GetHolidaySchedule::Id, COMMAND_FLAG_ACCEPTED, NULL);
 }
 
 command_t *create_get_holiday_schedule_response(cluster_t *cluster)
@@ -870,21 +639,21 @@ command_t *create_clear_holiday_schedule(cluster_t *cluster)
 {
     uint32_t feature_map = get_feature_map_value(cluster);
     VerifyOrReturnValue(has_feature(holiday_schedules), NULL);
-    return esp_matter::command::create(cluster, ClearHolidaySchedule::Id, COMMAND_FLAG_ACCEPTED, esp_matter_command_callback_clear_holiday_schedule);
+    return esp_matter::command::create(cluster, ClearHolidaySchedule::Id, COMMAND_FLAG_ACCEPTED, NULL);
 }
 
 command_t *create_set_user(cluster_t *cluster)
 {
     uint32_t feature_map = get_feature_map_value(cluster);
     VerifyOrReturnValue(has_feature(user), NULL);
-    return esp_matter::command::create(cluster, SetUser::Id, COMMAND_FLAG_ACCEPTED, esp_matter_command_callback_set_user);
+    return esp_matter::command::create(cluster, SetUser::Id, COMMAND_FLAG_ACCEPTED, NULL);
 }
 
 command_t *create_get_user(cluster_t *cluster)
 {
     uint32_t feature_map = get_feature_map_value(cluster);
     VerifyOrReturnValue(has_feature(user), NULL);
-    return esp_matter::command::create(cluster, GetUser::Id, COMMAND_FLAG_ACCEPTED, esp_matter_command_callback_get_user);
+    return esp_matter::command::create(cluster, GetUser::Id, COMMAND_FLAG_ACCEPTED, NULL);
 }
 
 command_t *create_get_user_response(cluster_t *cluster)
@@ -898,14 +667,14 @@ command_t *create_clear_user(cluster_t *cluster)
 {
     uint32_t feature_map = get_feature_map_value(cluster);
     VerifyOrReturnValue(has_feature(user), NULL);
-    return esp_matter::command::create(cluster, ClearUser::Id, COMMAND_FLAG_ACCEPTED, esp_matter_command_callback_clear_user);
+    return esp_matter::command::create(cluster, ClearUser::Id, COMMAND_FLAG_ACCEPTED, NULL);
 }
 
 command_t *create_set_credential(cluster_t *cluster)
 {
     uint32_t feature_map = get_feature_map_value(cluster);
     VerifyOrReturnValue(has_feature(user), NULL);
-    return esp_matter::command::create(cluster, SetCredential::Id, COMMAND_FLAG_ACCEPTED, esp_matter_command_callback_set_credential);
+    return esp_matter::command::create(cluster, SetCredential::Id, COMMAND_FLAG_ACCEPTED, NULL);
 }
 
 command_t *create_set_credential_response(cluster_t *cluster)
@@ -919,7 +688,7 @@ command_t *create_get_credential_status(cluster_t *cluster)
 {
     uint32_t feature_map = get_feature_map_value(cluster);
     VerifyOrReturnValue(has_feature(user), NULL);
-    return esp_matter::command::create(cluster, GetCredentialStatus::Id, COMMAND_FLAG_ACCEPTED, esp_matter_command_callback_get_credential_status);
+    return esp_matter::command::create(cluster, GetCredentialStatus::Id, COMMAND_FLAG_ACCEPTED, NULL);
 }
 
 command_t *create_get_credential_status_response(cluster_t *cluster)
@@ -933,28 +702,28 @@ command_t *create_clear_credential(cluster_t *cluster)
 {
     uint32_t feature_map = get_feature_map_value(cluster);
     VerifyOrReturnValue(has_feature(user), NULL);
-    return esp_matter::command::create(cluster, ClearCredential::Id, COMMAND_FLAG_ACCEPTED, esp_matter_command_callback_clear_credential);
+    return esp_matter::command::create(cluster, ClearCredential::Id, COMMAND_FLAG_ACCEPTED, NULL);
 }
 
 command_t *create_unbolt_door(cluster_t *cluster)
 {
     uint32_t feature_map = get_feature_map_value(cluster);
     VerifyOrReturnValue(has_feature(unbolting), NULL);
-    return esp_matter::command::create(cluster, UnboltDoor::Id, COMMAND_FLAG_ACCEPTED, esp_matter_command_callback_unbolt_door);
+    return esp_matter::command::create(cluster, UnboltDoor::Id, COMMAND_FLAG_ACCEPTED, NULL);
 }
 
 command_t *create_set_aliro_reader_config(cluster_t *cluster)
 {
     uint32_t feature_map = get_feature_map_value(cluster);
     VerifyOrReturnValue(has_feature(aliro_provisioning), NULL);
-    return esp_matter::command::create(cluster, SetAliroReaderConfig::Id, COMMAND_FLAG_ACCEPTED, esp_matter_command_callback_set_aliro_reader_config);
+    return esp_matter::command::create(cluster, SetAliroReaderConfig::Id, COMMAND_FLAG_ACCEPTED, NULL);
 }
 
 command_t *create_clear_aliro_reader_config(cluster_t *cluster)
 {
     uint32_t feature_map = get_feature_map_value(cluster);
     VerifyOrReturnValue(has_feature(aliro_provisioning), NULL);
-    return esp_matter::command::create(cluster, ClearAliroReaderConfig::Id, COMMAND_FLAG_ACCEPTED, esp_matter_command_callback_clear_aliro_reader_config);
+    return esp_matter::command::create(cluster, ClearAliroReaderConfig::Id, COMMAND_FLAG_ACCEPTED, NULL);
 }
 
 } /* command */
@@ -1030,6 +799,9 @@ cluster_t *create(endpoint_t *endpoint, config_t *config, uint8_t flags)
         event::create_door_lock_alarm(cluster);
         event::create_lock_operation(cluster);
         event::create_lock_operation_error(cluster);
+
+        cluster::set_init_and_shutdown_callbacks(cluster, ESPMatterDoorLockClusterServerInitCallback,
+                                                 ESPMatterDoorLockClusterServerShutdownCallback);
     }
 
     if (flags & CLUSTER_FLAG_CLIENT) {

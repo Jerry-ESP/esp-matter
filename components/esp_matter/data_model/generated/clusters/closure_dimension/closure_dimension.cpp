@@ -206,14 +206,18 @@ attribute_t *create_resolution(cluster_t *cluster, uint16_t value)
 {
     uint32_t feature_map = get_feature_map_value(cluster);
     VerifyOrReturnValue(has_feature(positioning), NULL);
-    return esp_matter::attribute::create(cluster, Resolution::Id, ATTRIBUTE_FLAG_NONE, esp_matter_attr_val(value));
+    attribute_t *attribute = esp_matter::attribute::create(cluster, Resolution::Id, ATTRIBUTE_FLAG_NONE, esp_matter_attr_val(value));
+    esp_matter::attribute::add_bounds(attribute, esp_matter_attr_val(static_cast<uint16_t>(Resolution::Min)), esp_matter_attr_val(static_cast<uint16_t>(Resolution::Max)));
+    return attribute;
 }
 
 attribute_t *create_step_value(cluster_t *cluster, uint16_t value)
 {
     uint32_t feature_map = get_feature_map_value(cluster);
     VerifyOrReturnValue(has_feature(positioning), NULL);
-    return esp_matter::attribute::create(cluster, StepValue::Id, ATTRIBUTE_FLAG_NONE, esp_matter_attr_val(value));
+    attribute_t *attribute = esp_matter::attribute::create(cluster, StepValue::Id, ATTRIBUTE_FLAG_NONE, esp_matter_attr_val(value));
+    esp_matter::attribute::add_bounds(attribute, esp_matter_attr_val(static_cast<uint16_t>(StepValue::Min)), esp_matter_attr_val(static_cast<uint16_t>(StepValue::Max)));
+    return attribute;
 }
 
 attribute_t *create_unit(cluster_t *cluster, uint8_t value)

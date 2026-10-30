@@ -24,8 +24,8 @@ namespace humidistat {
 namespace feature {
 namespace humidifier {
 typedef struct config {
-    nullable<uint8_t> mist_type;
-    config() : mist_type() {}
+    uint8_t mist_type;
+    config() : mist_type(1) {}
 } config_t;
 uint32_t get_id();
 esp_err_t add(cluster_t *cluster, config_t *config);
@@ -52,7 +52,7 @@ typedef struct config {
     uint8_t max_setpoint;
     uint8_t step;
     uint8_t target_setpoint;
-    config() : user_setpoint(0), min_setpoint(0), max_setpoint(0), step(0), target_setpoint(0) {}
+    config() : user_setpoint(0), min_setpoint(0), max_setpoint(0), step(1), target_setpoint(0) {}
 } config_t;
 uint32_t get_id();
 esp_err_t add(cluster_t *cluster, config_t *config);
@@ -109,7 +109,7 @@ attribute_t *create_min_setpoint(cluster_t *cluster, uint8_t value);
 attribute_t *create_max_setpoint(cluster_t *cluster, uint8_t value);
 attribute_t *create_step(cluster_t *cluster, uint8_t value);
 attribute_t *create_target_setpoint(cluster_t *cluster, uint8_t value);
-attribute_t *create_mist_type(cluster_t *cluster, nullable<uint8_t> value);
+attribute_t *create_mist_type(cluster_t *cluster, uint8_t value);
 attribute_t *create_continuous(cluster_t *cluster, bool value);
 attribute_t *create_sleep(cluster_t *cluster, bool value);
 attribute_t *create_optimal(cluster_t *cluster, bool value);
