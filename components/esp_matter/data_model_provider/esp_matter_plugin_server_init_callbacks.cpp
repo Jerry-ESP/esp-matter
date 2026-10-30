@@ -35,6 +35,8 @@ void MatterProxyDiscoveryPluginServerInitCallback() {}
 void MatterProxyConfigurationPluginServerInitCallback() {}
 void MatterActivatedCarbonFilterMonitoringPluginServerInitCallback() {}
 void MatterHepaFilterMonitoringPluginServerInitCallback() {}
+void MatterWaterTankLevelMonitoringPluginServerInitCallback() {}
+void MatterDoorLockPluginServerInitCallback() {}
 void MatterAirQualityPluginServerInitCallback() {}
 void MatterCarbonMonoxideConcentrationMeasurementPluginServerInitCallback() {}
 void MatterCarbonDioxideConcentrationMeasurementPluginServerInitCallback() {}

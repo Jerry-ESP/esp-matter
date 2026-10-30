@@ -22,6 +22,7 @@
 #include <data_model/esp_matter_data_model.h>
 #include <data_model_provider/esp_matter_data_model_provider.h>
 #include <lib/support/CodeUtils.h>
+#include <lib/support/TypeTraits.h>
 #include <lib/support/logging/CHIPLogging.h>
 #include <unordered_map>
 
@@ -52,31 +53,37 @@ void ESPMatterSmokeCoAlarmClusterServerInitCallback(EndpointId endpointId)
         const uint32_t featureMap = read_feature_map_u32(endpointId, SmokeCoAlarm::Id);
 
         SmokeCoAlarmCluster::Config config;
-        config.featureMap = BitFlags<Feature>(featureMap);
-
-        SmokeCoAlarmCluster::OptionalAttributeSet optAttribs;
+        if (featureMap & to_underlying(Feature::kSmokeAlarm)) {
+            SmokeCoAlarmCluster::SmokeAlarmConfig smokeConfig;
+            smokeConfig.withContaminationState =
+                endpoint::is_attribute_enabled(endpointId, SmokeCoAlarm::Id, ContaminationState::Id);
+            if (endpoint::is_attribute_enabled(endpointId, SmokeCoAlarm::Id, SmokeSensitivityLevel::Id)) {
+                uint8_t sensitivity = to_underlying(SensitivityEnum::kStandard);
+                read_attribute_raw_value(endpointId, SmokeCoAlarm::Id, SmokeSensitivityLevel::Id, sensitivity);
+                smokeConfig.sensitivityLevel = static_cast<SensitivityEnum>(sensitivity);
+            }
+            config.WithSmokeAlarm(smokeConfig);
+        }
+        if (featureMap & to_underlying(Feature::kCoAlarm)) {
+            config.WithCOAlarm();
+        }
         if (endpoint::is_attribute_enabled(endpointId, SmokeCoAlarm::Id, DeviceMuted::Id)) {
-            optAttribs.Set<DeviceMuted::Id>();
+            config.WithDeviceMuted();
         }
         if (endpoint::is_attribute_enabled(endpointId, SmokeCoAlarm::Id, InterconnectSmokeAlarm::Id)) {
-            optAttribs.Set<InterconnectSmokeAlarm::Id>();
+            config.WithInterconnectSmokeAlarm();
         }
         if (endpoint::is_attribute_enabled(endpointId, SmokeCoAlarm::Id, InterconnectCOAlarm::Id)) {
-            optAttribs.Set<InterconnectCOAlarm::Id>();
-        }
-        if (endpoint::is_attribute_enabled(endpointId, SmokeCoAlarm::Id, ContaminationState::Id)) {
-            optAttribs.Set<ContaminationState::Id>();
-        }
-        if (endpoint::is_attribute_enabled(endpointId, SmokeCoAlarm::Id, SmokeSensitivityLevel::Id)) {
-            optAttribs.Set<SmokeSensitivityLevel::Id>();
+            config.WithInterconnectCOAlarm();
         }
         if (endpoint::is_attribute_enabled(endpointId, SmokeCoAlarm::Id, ExpiryDate::Id)) {
-            optAttribs.Set<ExpiryDate::Id>();
+            uint32_t expiryDate = 0;
+            read_attribute_raw_value(endpointId, SmokeCoAlarm::Id, ExpiryDate::Id, expiryDate);
+            config.WithExpiryDate(expiryDate);
         }
         if (endpoint::is_attribute_enabled(endpointId, SmokeCoAlarm::Id, Unmounted::Id)) {
-            optAttribs.Set<Unmounted::Id>();
+            config.WithUnmounted();
         }
-        config.optionalAttribs = optAttribs;
 
         entry.server.Create(endpointId, config);
     }

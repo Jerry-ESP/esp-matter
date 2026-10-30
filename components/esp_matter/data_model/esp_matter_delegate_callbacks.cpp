@@ -23,6 +23,7 @@
 #include <app/clusters/mode-base-server/mode-base-server.h>
 #include <clusters/EnergyEvse/ClusterId.h>
 #include <clusters/energy_evse/integration.h>
+#include <clusters/thermostat/integration.h>
 #include <app/clusters/microwave-oven-control-server/microwave-oven-control-server.h>
 #include <app/clusters/microwave-oven-control-server/MicrowaveOvenControlCluster.h>
 #include <app/clusters/microwave-oven-control-server/IntegrationDelegate.h>
@@ -457,9 +458,9 @@ void DeviceEnergyManagementDelegateInitCB(void *delegate, uint16_t endpoint_id)
 
 void DoorLockDelegateInitCB(void *delegate, uint16_t endpoint_id)
 {
-    VerifyOrReturn(delegate != nullptr);
-    DoorLock::Delegate *door_lock_delegate = static_cast<DoorLock::Delegate*>(delegate);
-    (void)DoorLockServer::Instance().SetDelegate(endpoint_id, door_lock_delegate);
+    // TODO: The DoorLock cluster is now code driven and the ember DoorLockServer singleton is
+    // gone; the delegate is a constructor argument of DoorLockCluster. Restore delegate wiring
+    // together with the DoorLock cluster integration.
 }
 
 void BooleanStateConfigurationDelegateInitCB(void *delegate, uint16_t endpoint_id)
@@ -687,9 +688,9 @@ void ActionsDelegateInitCB(void *delegate, uint16_t endpoint_id)
 
 void ThermostatDelegateInitCB(void *delegate, uint16_t endpoint_id)
 {
-    // TODO: The Thermostat cluster is now code driven and composed from per-feature
-    // delegates chosen at compile time; the old SetDefaultDelegate API is gone.
-    // Restore delegate wiring together with the Thermostat cluster integration.
+    VerifyOrReturn(delegate != nullptr);
+    chip::app::Clusters::Thermostat::SetDefaultDelegate(
+        endpoint_id, static_cast<chip::app::Clusters::Thermostat::Delegate *>(delegate));
 }
 
 void TemperatureControlDelegateInitCB(void *delegate, [[maybe_unused]] uint16_t endpoint_id)

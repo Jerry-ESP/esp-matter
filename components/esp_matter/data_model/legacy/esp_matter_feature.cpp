@@ -4334,8 +4334,8 @@ esp_err_t add(cluster_t *cluster)
     VerifyOrReturnError(cluster, ESP_ERR_INVALID_ARG, ESP_LOGE(TAG, "Cluster cannot be NULL"));
     update_feature_map(cluster, get_id());
     // Attributes
-    attribute::create_resolution(cluster, 0);
-    attribute::create_step_value(cluster, 0);
+    attribute::create_resolution(cluster, 1);
+    attribute::create_step_value(cluster, 1);
     // Commands
     command::create_step(cluster);
     return ESP_OK;

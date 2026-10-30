@@ -33,8 +33,7 @@ list(APPEND INCLUDE_DIRS_LIST   "${MATTER_SDK_PATH}/third_party/pigweed/repo/pw_
                                 "${MATTER_SDK_PATH}/third_party/pigweed/repo/pw_toolchain/public"
                                 "${MATTER_SDK_PATH}/third_party/pigweed/repo/pw_polyfill/public")
 
-# data_model/compat carries stand-ins for headers upstream generates per app from ZAP.
-set(PRIV_INCLUDE_DIRS_LIST "data_model/compat" "client/private")
+set(PRIV_INCLUDE_DIRS_LIST "client/private")
 
 if (NOT CONFIG_ESP_MATTER_ENABLE_MATTER_SERVER)
     list(APPEND EXCLUDE_SRCS_LIST "esp_matter_identify.cpp"
@@ -57,7 +56,10 @@ if (CONFIG_ESP_MATTER_ENABLE_MATTER_SERVER)
             if (C_CPP_FILES)
                 list(APPEND SRC_DIRS_LIST "${CLUSTER_DIR}")
             endif()
-            file(GLOB_RECURSE CODEGEN_FILES "${CLUSTER_DIR}/Codegen*.cpp")
+            # CodegenIntegration* targets the upstream CodegenDataModelProvider; esp-matter uses its
+            # own provider integrations. AttributeAccessorShim only resolves clusters registered
+            # through that codegen path, so it can never find an esp-matter-registered cluster.
+            file(GLOB_RECURSE CODEGEN_FILES "${CLUSTER_DIR}/Codegen*.cpp" "${CLUSTER_DIR}/AttributeAccessorShim.cpp")
             if (CODEGEN_FILES)
                 list(APPEND EXCLUDE_SRCS_LIST ${CODEGEN_FILES})
             endif()
