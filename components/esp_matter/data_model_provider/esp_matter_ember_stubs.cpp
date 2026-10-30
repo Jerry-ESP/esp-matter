@@ -871,3 +871,18 @@ Status MatterThermostatClusterServerPreAttributeChangedCallback(const chip::app:
 {
     return Status::Success;
 }
+
+// DoorLock migrated to a code-driven cluster upstream; its ember server (DoorLockServer) and
+// these Matter* callbacks now live only in door-lock-server/CodegenIntegration.cpp, which
+// esp_matter excludes from the build. The data model still wires them into the door_lock
+// function list, so provide no-op stubs.
+// TODO: Remove these once a door_lock provider integration registers DoorLockCluster.
+void MatterDoorLockClusterServerAttributeChangedCallback(const chip::app::ConcreteAttributePath &) {}
+
+void MatterDoorLockClusterServerShutdownCallback(chip::EndpointId) {}
+
+Status MatterDoorLockClusterServerPreAttributeChangedCallback(const chip::app::ConcreteAttributePath &,
+                                                              EmberAfAttributeType, uint16_t, uint8_t *)
+{
+    return Status::Success;
+}

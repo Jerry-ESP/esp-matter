@@ -1,3 +1,27 @@
+# 29-October-2026
+
+## Thermostat cluster: code-driven integration
+
+The Thermostat cluster now registers the upstream code-driven `ThermostatCluster` through the
+esp-matter data model provider (both legacy and generated data models), replacing the removed
+ember implementation. Highlights:
+
+- Default delegates adapt the esp-matter attribute store: reads serve stored values, writes
+  persist via the usual esp-matter path, so `esp_matter::attribute::update()` and NVS
+  persistence keep working unchanged.
+- Applications can override core behaviour with
+  `chip::app::Clusters::Thermostat::SetDefaultDelegate(endpoint_id, delegate)` or by passing
+  `config->delegate` (now a `chip::app::Clusters::Thermostat::Delegate *`) at cluster create.
+- Presets, matter schedules, suggestions, sensors and setpoint-hold are supported through
+  application-provided delegates: register them with
+  `chip::app::Clusters::Thermostat::SetDelegates(endpoint_id, delegates)` before
+  `esp_matter::start()`. Endpoints enabling such a feature without its delegate log an error
+  and are not registered. The deprecated setback and legacy schedule-configuration features
+  are not supported by the upstream code-driven cluster.
+- The `data_model/compat/app/static-cluster-config/Thermostat.h` stand-in header is removed
+  along with the upstream CodegenIntegration/AttributeAccessorShim compile path, which
+  esp-matter does not use.
+
 # 28-October-2026
 
 ## connectedhomeip submodule bump to v1.7 SVE (5bc438df24)

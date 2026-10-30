@@ -1376,6 +1376,9 @@ cluster_t *create(endpoint_t *endpoint, config_t *config, uint8_t flags)
             command::create_atomic_request(cluster);
             command::create_atomic_response(cluster);
         }
+
+        cluster::set_init_and_shutdown_callbacks(cluster, ESPMatterThermostatClusterServerInitCallback,
+                                                 ESPMatterThermostatClusterServerShutdownCallback);
     }
 
     if (flags & CLUSTER_FLAG_CLIENT) {

@@ -161,7 +161,7 @@ static void verify_cluster_lifecycle_no_heap_leak(chip::ClusterId cluster_id,
 
 // Shared provider implementation exercised by the concrete Resource Monitoring clusters below.
 // keep-sorted start sticky_comments=no
-// - ResourceMonitor: ActivatedCarbonFilterMonitoring, HepaFilterMonitoring
+// - ResourceMonitor: ActivatedCarbonFilterMonitoring, HepaFilterMonitoring, WaterTankLevelMonitoring (generated only)
 // keep-sorted end
 
 // -----------------------------------------------------------------------------
@@ -224,6 +224,12 @@ static cluster_t *create_soil_measurement_cluster(endpoint_t *endpoint, cluster:
     chip::app::Clusters::SoilMeasurement::SetSoilMoistureLimits(endpoint::get_id(endpoint), limits);
 
     return cluster::soil_measurement::create(endpoint, config, flags);
+}
+
+static cluster_t *create_thermostat_cluster(endpoint_t *endpoint, cluster::thermostat::config_t *config, uint8_t flags)
+{
+    config->feature_flags = cluster::thermostat::feature::heating::get_id();
+    return cluster::thermostat::create(endpoint, config, flags);
 }
 
 static cluster_t *create_closure_dimension_cluster(endpoint_t *endpoint, cluster::closure_dimension::config_t *config,
@@ -406,6 +412,8 @@ TEST_CLUSTER_LIFECYCLE("TemperatureControl", chip::app::Clusters::TemperatureCon
                        cluster::temperature_control::config_t, create_temperature_control_cluster)
 TEST_CLUSTER_LIFECYCLE("TemperatureMeasurement", chip::app::Clusters::TemperatureMeasurement::Id,
                        cluster::temperature_measurement::config_t, cluster::temperature_measurement::create)
+TEST_CLUSTER_LIFECYCLE("Thermostat", chip::app::Clusters::Thermostat::Id, cluster::thermostat::config_t,
+                       create_thermostat_cluster)
 TEST_CLUSTER_LIFECYCLE("ThreadBorderRouterManagement", chip::app::Clusters::ThreadBorderRouterManagement::Id,
                        cluster::thread_border_router_management::config_t, cluster::thread_border_router_management::create)
 TEST_CLUSTER_LIFECYCLE("ThreadNetworkDirectory", chip::app::Clusters::ThreadNetworkDirectory::Id,
@@ -414,6 +422,11 @@ TEST_CLUSTER_LIFECYCLE("UserLabel", chip::app::Clusters::UserLabel::Id, cluster:
                        cluster::user_label::create)
 TEST_CLUSTER_LIFECYCLE("ValveConfigurationAndControl", chip::app::Clusters::ValveConfigurationAndControl::Id,
                        cluster::valve_configuration_and_control::config_t, cluster::valve_configuration_and_control::create)
+#if CONFIG_ESP_MATTER_ENABLE_GENERATED_DATA_MODEL
+// WaterTankLevelMonitoring exists only in the generated data model.
+TEST_CLUSTER_LIFECYCLE("WaterTankLevelMonitoring", chip::app::Clusters::WaterTankLevelMonitoring::Id,
+                       cluster::water_tank_level_monitoring::config_t, cluster::water_tank_level_monitoring::create)
+#endif // CONFIG_ESP_MATTER_ENABLE_GENERATED_DATA_MODEL
 TEST_CLUSTER_LIFECYCLE("WiFiNetworkDiagnostics", chip::app::Clusters::WiFiNetworkDiagnostics::Id,
                        cluster::wifi_network_diagnostics::config_t, cluster::wifi_network_diagnostics::create)
 TEST_CLUSTER_LIFECYCLE("WindowCovering", chip::app::Clusters::WindowCovering::Id,

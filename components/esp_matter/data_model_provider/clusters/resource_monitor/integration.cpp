@@ -69,6 +69,21 @@ void ESPMatterResourceMonitoringClusterInitCallback(EndpointId endpointId, Clust
 {
     uint64_t index = ((uint64_t)(endpointId) << 32) + clusterId;
     if (!gServers[index].IsConstructed()) {
+        ResourceMonitoring::ClusterEntry clusterEntry;
+        switch (clusterId) {
+        case ActivatedCarbonFilterMonitoring::Id:
+            clusterEntry = kActivatedCarbonFilterMonitoring;
+            break;
+        case HepaFilterMonitoring::Id:
+            clusterEntry = kHepaFilterMonitoring;
+            break;
+        case WaterTankLevelMonitoring::Id:
+            clusterEntry = kWaterTankLevelMonitoring;
+            break;
+        default:
+            ChipLogError(AppServer, "Unsupported resource monitoring Cluster %" PRIu32, clusterId);
+            return;
+        }
         BitFlags<ResourceMonitoring::Feature> enabledFeatures;
         ResourceMonitoringCluster::OptionalAttributeSet optionalAttributeSet;
         Attributes::DegradationDirection::TypeInfo::Type degradationDirection;
@@ -76,7 +91,7 @@ void ESPMatterResourceMonitoringClusterInitCallback(EndpointId endpointId, Clust
         VerifyOrReturn(GetClusterConfig(endpointId, clusterId, enabledFeatures, optionalAttributeSet, degradationDirection,
                                         resetConditionCommandSupported) == ESP_OK,
                        ChipLogError(AppServer, "Failed to get config for Cluster %" PRIu32, clusterId));
-        gServers[index].Create(endpointId, clusterId, enabledFeatures, optionalAttributeSet, degradationDirection,
+        gServers[index].Create(endpointId, clusterEntry, enabledFeatures, optionalAttributeSet, degradationDirection,
                                resetConditionCommandSupported);
     }
     CHIP_ERROR err = esp_matter::data_model::provider::get_instance().registry().Register(gServers[index].Registration());
@@ -145,4 +160,14 @@ void ESPMatterHepaFilterMonitoringClusterServerInitCallback(EndpointId endpointI
 void ESPMatterHepaFilterMonitoringClusterServerShutdownCallback(EndpointId endpointId, ClusterShutdownType shutdownType)
 {
     ESPMatterResourceMonitoringClusterShutdownCallback(endpointId, HepaFilterMonitoring::Id, shutdownType);
+}
+
+void ESPMatterWaterTankLevelMonitoringClusterServerInitCallback(EndpointId endpointId)
+{
+    ESPMatterResourceMonitoringClusterInitCallback(endpointId, WaterTankLevelMonitoring::Id);
+}
+
+void ESPMatterWaterTankLevelMonitoringClusterServerShutdownCallback(EndpointId endpointId, ClusterShutdownType shutdownType)
+{
+    ESPMatterResourceMonitoringClusterShutdownCallback(endpointId, WaterTankLevelMonitoring::Id, shutdownType);
 }

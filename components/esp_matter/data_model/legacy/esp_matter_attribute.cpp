@@ -5082,14 +5082,20 @@ attribute_t *create_target_state(cluster_t *cluster, uint8_t *value, uint16_t le
 
 attribute_t *create_resolution(cluster_t *cluster, uint16_t value)
 {
-    return esp_matter::attribute::create(cluster, ClosureDimension::Attributes::Resolution::Id,
-                                         ATTRIBUTE_FLAG_NONE, esp_matter_uint16(value));
+    attribute_t *attribute = esp_matter::attribute::create(cluster, ClosureDimension::Attributes::Resolution::Id,
+                                                           ATTRIBUTE_FLAG_NONE, esp_matter_uint16(value));
+    VerifyOrReturnValue(attribute, NULL, ESP_LOGE(TAG, "Could not create attribute. cluster_id: 0x%08" PRIX32 "'s  attribute_id: 0x%08" PRIX32, cluster::get_id(cluster), ClosureDimension::Attributes::Resolution::Id));
+    esp_matter::attribute::add_bounds(attribute, esp_matter_attr_val((uint16_t)1), esp_matter_attr_val((uint16_t)65535));
+    return attribute;
 }
 
 attribute_t *create_step_value(cluster_t *cluster, uint16_t value)
 {
-    return esp_matter::attribute::create(cluster, ClosureDimension::Attributes::StepValue::Id,
-                                         ATTRIBUTE_FLAG_NONE, esp_matter_uint16(value));
+    attribute_t *attribute = esp_matter::attribute::create(cluster, ClosureDimension::Attributes::StepValue::Id,
+                                                           ATTRIBUTE_FLAG_NONE, esp_matter_uint16(value));
+    VerifyOrReturnValue(attribute, NULL, ESP_LOGE(TAG, "Could not create attribute. cluster_id: 0x%08" PRIX32 "'s  attribute_id: 0x%08" PRIX32, cluster::get_id(cluster), ClosureDimension::Attributes::StepValue::Id));
+    esp_matter::attribute::add_bounds(attribute, esp_matter_attr_val((uint16_t)1), esp_matter_attr_val((uint16_t)65535));
+    return attribute;
 }
 
 attribute_t *create_unit(cluster_t *cluster, uint8_t value)
