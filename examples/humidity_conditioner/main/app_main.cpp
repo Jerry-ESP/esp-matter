@@ -137,8 +137,8 @@ extern "C" void app_main()
     config.humidistat.features.sensor.target_setpoint = 50;
     config.humidistat.features.optimal.target_setpoint = 50;
     config.humidistat.features.optimal.optimal = false;
-    config.humidistat.features.humidifier.mist_type =
-        nullable<uint8_t>(static_cast<uint8_t>(Humidistat::MistTypeBitmap::kMistCold));
+    config.humidistat.features.humidifier.mist_type = 
+        static_cast<uint8_t>(Humidistat::MistTypeBitmap::kMistCold);
     // fan_auto is the generated name of the spec Auto feature (0x10).
     config.humidistat.feature_flags = cluster::humidistat::feature::humidifier::get_id() |
                                       cluster::humidistat::feature::dehumidifier::get_id() |
