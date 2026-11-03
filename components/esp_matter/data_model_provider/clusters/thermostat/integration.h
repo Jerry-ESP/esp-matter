@@ -21,23 +21,18 @@ namespace chip::app::Clusters::Thermostat {
 /**
  * Application-provided delegates for Thermostat features whose state and semantics the
  * application owns. The esp-matter integration provides attribute-store-backed defaults for
- * the core cluster, heating/cooling/auto setpoints and occupancy; the delegates below have no
- * usable default and must be supplied by the application when the corresponding feature is
- * enabled on the endpoint.
+ * the core cluster, heating/cooling/auto setpoints, setpoint-hold and occupancy; the delegates
+ * below have no usable default and must be supplied by the application when the corresponding
+ * feature is enabled on the endpoint. The thermostat-suggestions and thermostat-sensors
+ * features are not supported yet.
  */
 struct EndpointDelegates {
     /** Optional override for the core delegate (local temperature, system mode, ...). */
     Delegate *core = nullptr;
-    /** Enables TemperatureSetpointHold attributes; not tied to a feature bit. */
-    ThermostatHold::Delegate *hold = nullptr;
     /** Required when the presets feature is enabled. */
     ThermostatPresets::Delegate *presets = nullptr;
-    /** Required when the suggestions feature is enabled (implies presets). */
-    ThermostatSuggestions::Delegate *suggestions = nullptr;
     /** Required when the matter-schedules feature is enabled. */
     ThermostatSchedules::Delegate *schedules = nullptr;
-    /** Required when the sensors feature is enabled. */
-    ThermostatSensors::Delegate *sensors = nullptr;
 };
 
 /**
