@@ -59,9 +59,14 @@ if (CONFIG_ESP_MATTER_ENABLE_MATTER_SERVER)
             # CodegenIntegration* targets the upstream CodegenDataModelProvider; esp-matter uses its
             # own provider integrations. AttributeAccessorShim only resolves clusters registered
             # through that codegen path, so it can never find an esp-matter-registered cluster.
-            file(GLOB_RECURSE CODEGEN_FILES "${CLUSTER_DIR}/Codegen*.cpp" "${CLUSTER_DIR}/AttributeAccessorShim.cpp")
-            if (CODEGEN_FILES)
-                list(APPEND EXCLUDE_SRCS_LIST ${CODEGEN_FILES})
+            # Exception: door-lock-server's CodegenIntegration carries the complete ember
+            # DoorLockServer (users, credentials, schedules) and its command entry points, running
+            # over the ember-compat shims, so keep compiling it.
+            if (NOT CLUSTER_DIR MATCHES "door-lock-server")
+                file(GLOB_RECURSE CODEGEN_FILES "${CLUSTER_DIR}/Codegen*.cpp" "${CLUSTER_DIR}/AttributeAccessorShim.cpp")
+                if (CODEGEN_FILES)
+                    list(APPEND EXCLUDE_SRCS_LIST ${CODEGEN_FILES})
+                endif()
             endif()
         endforeach()
 

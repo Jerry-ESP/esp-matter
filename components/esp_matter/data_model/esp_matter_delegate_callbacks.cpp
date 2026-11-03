@@ -458,9 +458,9 @@ void DeviceEnergyManagementDelegateInitCB(void *delegate, uint16_t endpoint_id)
 
 void DoorLockDelegateInitCB(void *delegate, uint16_t endpoint_id)
 {
-    // TODO: The DoorLock cluster is now code driven and the ember DoorLockServer singleton is
-    // gone; the delegate is a constructor argument of DoorLockCluster. Restore delegate wiring
-    // together with the DoorLock cluster integration.
+    VerifyOrReturn(delegate != nullptr);
+    DoorLock::Delegate *door_lock_delegate = static_cast<DoorLock::Delegate*>(delegate);
+    (void)DoorLockServer::Instance().SetDelegate(endpoint_id, door_lock_delegate);
 }
 
 void BooleanStateConfigurationDelegateInitCB(void *delegate, uint16_t endpoint_id)
