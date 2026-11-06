@@ -29,8 +29,14 @@ Use the branch corresponding to the Matter version you plan to certify for firmw
      - `release/v1.4 <https://github.com/espressif/esp-matter/tree/release/v1.4>`__
    * - Matter 1.4.2
      - `release/v1.4.2 <https://github.com/espressif/esp-matter/tree/release/v1.4.2>`__
-   * - Matter 1.5
+   * - Matter 1.5/1.5.1
      - `release/v1.5 <https://github.com/espressif/esp-matter/tree/release/v1.5>`__
+   * - Matter 1.6
+     - `release/v1.6 <https://github.com/espressif/esp-matter/tree/release/v1.6>`__
+   * - Matter 1.6.1
+     - `release/v1.6.1 <https://github.com/espressif/esp-matter/tree/release/v1.6.1>`__
+
+Note: Matter 1.1 - Matter 1.3 are sunsetted, they are unavailable to new product certifications, please use the corresponding branch above for firmware development.
 
 Product Attestation Authority (PAA) Generation
 ~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~
@@ -89,6 +95,8 @@ When generating test product firmware, the following configurations can be set i
     CONFIG_FACTORY_PARTITION_DAC_PROVIDER=y
     CONFIG_FACTORY_COMMISSIONABLE_DATA_PROVIDER=y
     CONFIG_FACTORY_DEVICE_INSTANCE_INFO_PROVIDER=y
+
+    Note: The Factory Bin File generated above should be flashed to CONFIG_CHIP_FACTORY_NAMESPACE_PARTITION_LABEL partition, the default value is "nvs".
 
 OTA File Generation
 ~~~~~~~~~~~~~~~~~~~
@@ -193,7 +201,7 @@ The PICS file is used to define all Matter features of the product, including en
 
 The `PICS Tool <https://picstool.csa-iot.org/>`__ website is a tool for opening, modifying, validating, and saving XML format PICS files. `Pics_xml_template_files <https://groups.csa-iot.org/wg/matter-csg/document/40537>`__ contains all PICS file templates, with each XML file defining the feature characteristics of one or more clusters.
 
-The `PICS-generator tool <https://github.com/project-chip/connectedhomeip/tree/master/src/tools/PICS-generator>`__ can generate PICS files based on Pics_xml_template_files. This tool reads the clusters, attributes, commands, features, and events supported by the device under test and outputs a PICS file. Note: This tool cannot automatically generate the Base.xml file, which needs to be opened with PICS TOOL and manually configured. Reference commands are as follows:
+The `PICS-generator tool <https://github.com/project-chip/connectedhomeip/tree/master/src/tools/PICS-generator>`__ can generate PICS files based on Pics_xml_template_files. This tool reads the clusters, attributes, commands, features, and events supported by the device under test and outputs a PICS file. Note: This tool can generate the Base.xml file, but cannot select all the supported options, needs to open with `PICS TOOL <https://picstool.csa-iot.org/>`__ and manually configure. Reference commands are as follows:
 
 ::
 
@@ -259,6 +267,15 @@ Different Matter versions use different `Test Harness tool versions <https://com
    * - Matter 1.5
      - v2.14+fall2025
      - ca9d111
+   * - Matter 1.5.1
+     - v2.14.1+winter2026
+     - e9ecfc2
+   * - Matter 1.6
+     - v2.15+spring2026
+     - e91ea83
+   * - Matter 1.6.1
+     - v2.16.1+summer2026
+     - b91b83f
 
 Test Harness Setup
 ~~~~~~~~~~~~~~~~~~~
@@ -270,8 +287,8 @@ Submitting Certification Application Online
 
 After the device under test passes all tests from the testing organization, users can fill out the application on the CSA certification application `website <https://zigbeecertifiedproducts.knack.com/zigbee-certified#home/>`__ . The following explanation uses Add New Product Application as an example.
 
-Information to Fill In
-~~~~~~~~~~~~~~~~~~~~~~
+Application Information to Fill In
+~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~
 
 .. list-table:: Application Parameters Description
    :widths: 30 70
@@ -282,17 +299,17 @@ Information to Fill In
    * - Your Company
      - Manufacturer name, usually just select from the dropdown list
    * - Product Name
-     - Product name, defined by the manufacturer
+     - Product name, defined by the manufacturer, shall same with the product name in the product
    * - Product Short Description
-     - Custom short product description
+     - Custom short product description to describe the product
    * - Product Long Description
-     - Custom long product description
+     - Custom long product description to describe the product's features and capabilities.
    * - Product Link URL
      - Optional, product description link
    * - Product Image
      - Optional, product image
    * - Date Product can be Displayed
-     - Date when the product will be publicly displayed on the CSA website
+     - Date when the product will be publicly displayed on the CSA website, it will affect the product's display date on DCL website.
    * - Product Type
      - Product certification type, select end device or platform certification. Device manufacturers generally select End Device
    * - Completed optional TIS/TRP testing
@@ -300,55 +317,90 @@ Information to Fill In
    * - Application Type
      - Application protocol type to be certified, select Matter
    * - Application Type Version
-     - Matter protocol version, select Matter 1.1, Matter 1.2, etc. as needed
+     - Matter protocol version, select Matter 1.1, Matter 1.2, etc. as needed, shall same with the Matter version in the product
    * - Compliant Platform
      - Optional, if applying for certification based on Espressif's certified platform, select ESP32-C-Series or ESP32-H-Series from the dropdown list
    * - Firmware Version
-     - Firmware version number, consistent with software version string in BasicInformation Cluster
+     - Firmware version string, consistent with software version string in BasicInformation Cluster
    * - Hardware Version
-     - Hardware version number, consistent with hardware version string in BasicInformation Cluster
+     - Hardware version string, consistent with hardware version string in BasicInformation Cluster
    * - SKU
-     - Optional, manufacturer-defined, usually the product model
+     - Optional, recommend to fill in, manufacturer-defined, usually the product model
    * - Product ID (PID)
-     - Product ID, consistent with Product ID in BasicInformation Cluster
+     - Product ID, manufacturer-defined, consistent with Product ID in BasicInformation Cluster
    * - Vendor ID (VID)
      - Vendor ID, the ID assigned to the manufacturer by CSA
    * - Transport Used
      - Check the transport protocols supported by the product. For example, for a WiFi product that supports BLE commissioning, check Wi-Fi and Bluetooth
-   * - Use 3rd DAC
+   * - Use 3rd party manufacturer's DAC
      - Optional, if using a third-party DAC, select Yes and fill in dac_origin_vendor_id and dac_origin_product_id
    * - dac_origin_vendor_id
-     - If using a third-party DAC, fill in the DAC's Vendor ID
+     - Optional, if using a third-party DAC, fill in the DAC's Vendor ID
    * - dac_origin_product_id
-     - If using a third-party DAC, fill in the DAC's Product ID
+     - Optional, if using a third-party DAC, fill in the DAC's Product ID
    * - authorized_paa_list
-     - Optional, default is empty
+     - Optional, default is blank
    * - SoftwareVersion Attribute (integer)
      - Software version number, consistent with software version in BasicInformation Cluster
    * - Technical Category
      - Technical category, select Matter
    * - Primary Technical Sub Category
-     - Primary technical subcategory (device type). If the certified device includes multiple device types, select the primary device type
+     - Primary device type, if the certified device includes multiple application endpoints, select the primary device type; if the certified device includes only one application endpoint, left blank
    * - Technical Sub Categories
-     - Technical subcategories (device types), select all supported device types
+     - All supported application endpoints' device types, if the certified device includes multiple application endpoints, select all the supported device types
    * - Parent Functional Categories
-     - Parent functional category. For end products, select a category that matches the actual functionality
+     - Parent functional category, select which functional category the product belongs to, such as sensors or lighting
    * - Functional Sub Categories
-     - Functional subcategories. For end products, select one or more categories that match the actual product functionality
-   * - Submit for processing
-     - Select submit or save the filled record
+     - Functional subcategories. A detailed function catalog, selecting all the functions supported by the product.
    * - Declaration of Conformance Document
-     - Doc document
+     - Doc document, signed by the manufacturer and the testing organization, shall be uploaded here
    * - PICS Document
-     - PICS file in zip format
+     - PICS file in zip format, shall be uploaded here
    * - Supplemental PICS Document
      - Optional, supplemental PICS file, default is not filled
    * - External Certificate
-     - Can be left blank for Matter certification
+     - Optional, external certificate, can be left blank for Matter certification, if the product is Matter over Thread device, you shall also get the Thread product certificate and upload it to this field.
    * - Transport Attestations
-     - Transport attestation documents consistent with the transport protocols checked in Transport Used. Can be declared based on Espressif certificates or certificates derived from Espressif certificates
+     - Transport attestation documents consistent with the transport protocols checked in Transport Used field, signed by the manufacturer, shall be uploaded here. Can be declared based on Espressif certificates or certificates derived from Espressif certificates, include Bluetooth, Wi-Fi, Thread, Ethernet, etc.
    * - Security Attestation
-     - Security attestation document
+     - Security attestation document, signed by the manufacturer, shall be uploaded here
+
+For portfolio/family certification, you shall also fill in the following information for each subdevice, can also use the bulk upload feature to fill in the information for multiple subdevices at once, can be found in the "Bulk Upload" button on the top right corner of the page.
+
+.. list-table:: Portfolio/Family subdevice information Description
+   :widths: 30 70
+   :header-rows: 1
+
+   * - Parameter Name
+     - Description
+   * - Portfolio Variant Name
+     - Subdevice product name, defined by the manufacturer, shall same with the product name in the subdevice
+   * - Portfolio Product SKU
+     - Subdevice product SKU, defined by the manufacturer
+   * - Changes from Fully Tested Portfolio SKU
+     - Describe the detailed changes from the fully tested portfolio SKU, such as color, power supply, etc.
+   * - Portfolio Variant Firmware Version
+     - Firmware version string, consistent with software version string in BasicInformation Cluster of the subdevice
+   * - Portfolio Variant Hardware Version
+     - Hardware version string, consistent with hardware version string in BasicInformation Cluster of the subdevice
+   * - Portfolio Variant Product ID (PID)
+     - Product ID, manufacturer-defined, consistent with Product ID in BasicInformation Cluster of the subdevice, should be different from the fully tested portfolio SKU.
+   * - Portfolio Variant Device Type
+     - Subdevice device type ID
+   * - Variant Technical Sub Categories
+     - All supported application endpoints' device types, if the certified device includes multiple application endpoints, select all the supported device types
+   * - SoftwareVersion Attribute (integer)
+     - Software version number, consistent with software version in BasicInformation Cluster of the subdevice
+   * - dac_origin_vendor_id
+     - Optional, if using a third-party DAC, fill in the DAC's Vendor ID
+   * - dac_origin_product_id
+     - Optional, if using a third-party DAC, fill in the DAC's Product ID
+   * - Product Link URL
+     - Optional, product description link
+
+Note: For Matter over Thread device, product certificates can be derived from the Thread certificates of the Espressif chip platform.
+
+After filling in the above information, click the Submit button to submit the application, then you will enter the Add Test Report page, select the test report uploaded by the testing organization, and click the Assign button to assign the test report to the application.
 
 `Declaration of Conformance <https://groups.csa-iot.org/wg/members-all/document/126>`__ (Doc) Instructions
 ~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~
@@ -365,20 +417,15 @@ Security Attestation Instructions
 
 Fill in based on the Security Attestation template provided by Espressif. After completion, sign and upload yourself.
 
-Get the AID and test report
-~~~~~~~~~~~~~~~~~~~~~~~~~~~~
-
-After completing and submitting the application, you will receive an Application ID (AID). Provide this ID to the certification testing organization, and the testing organization will upload the product test report to the CSA certification body.
-
 Other steps
 ~~~~~~~~~~~~
 
-After completing the application and payment, the CSA certification team will review the application and test report submitted by the manufacturer. If there are issues, the manufacturer will be notified by email. If there are no issues, the certification is passed, and the official CD file will be issued.
+After completing the application and payment, the CSA certification team will review the application. If there are issues, the manufacturer will be notified by email. If there are no issues, the certification is passed, and the official CD file will be issued.
 
 Filling in Certified Product Information on DCL Website
 --------------------------------------------------------
 
-After the product passes certification, manufacturers also need to add Model, Model Version, and Compliance on the `Distributed Compliance Ledger <https://webui.dcl.csa-iot.org/>`__ (DCL). Refer to the documentation: `HowTo - Writing to the DCL.pdf <https://groups.csa-iot.org/wg/members-all/document/27881>`__ .
+After the product passes certification, manufacturers also need to register a DCL account and add Model, Model Version, and Compliance for the product on the `Distributed Compliance Ledger <https://webui.dcl.csa-iot.org/>`__ (DCL). Refer to the documentation: `HowTo - Writing to the DCL.pdf <https://groups.csa-iot.org/wg/members-all/document/27881>`__ .
 
 Other notes for some certification test cases
 ----------------------------------------------
