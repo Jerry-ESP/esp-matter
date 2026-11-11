@@ -282,3 +282,8 @@ esp_err_t bridge_register_commands()
 }
 } // namespace console
 } // namespace esp_matter
+
+extern "C" esp_err_t esp_matter_console_bridge_register_commands(void)
+{
+    return esp_matter::console::bridge_register_commands();
+}

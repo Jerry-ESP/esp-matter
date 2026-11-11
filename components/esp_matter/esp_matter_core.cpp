@@ -56,6 +56,10 @@
 #include <esp_matter_mem.h>
 #include <esp_matter_providers.h>
 
+/* Defined by esp_matter_bridge when that component is linked. Weak so apps
+ * that do not use the bridge resolve this to null instead of failing to link. */
+extern "C" esp_err_t esp_matter_console_bridge_register_commands(void) __attribute__((weak));
+
 using chip::DeviceLayer::ChipDeviceEvent;
 using chip::DeviceLayer::ConfigurationMgr;
 using chip::DeviceLayer::ConnectivityManager;
@@ -379,9 +383,9 @@ esp_err_t start(event_callback_t callback, intptr_t callback_arg)
     // In case create event loop returns ESP_ERR_INVALID_STATE it is not necessary to fail startup
     // as of it means that default event loop is already initialized and no additional actions should be done.
     VerifyOrReturnError((err == ESP_OK || err == ESP_ERR_INVALID_STATE), err, ESP_LOGE(TAG, "Error create default event loop"));
-#if CHIP_DEVICE_CONFIG_ENABLE_WIFI
-    VerifyOrReturnError(chip::DeviceLayer::Internal::ESP32Utils::InitWiFiStack() == CHIP_NO_ERROR, ESP_FAIL, ESP_LOGE(TAG, "Error initializing Wi-Fi stack"));
-#endif // CHIP_DEVICE_CONFIG_ENABLE_WIFI
+// #if CHIP_DEVICE_CONFIG_ENABLE_WIFI
+//     VerifyOrReturnError(chip::DeviceLayer::Internal::ESP32Utils::InitWiFiStack() == CHIP_NO_ERROR, ESP_FAIL, ESP_LOGE(TAG, "Error initializing Wi-Fi stack"));
+// #endif // CHIP_DEVICE_CONFIG_ENABLE_WIFI
 #ifdef CONFIG_ESP_MATTER_ENABLE_DATA_MODEL
     esp_matter_ota_requestor_init();
 #endif // CONFIG_ESP_MATTER_ENABLE_DATA_MODEL
@@ -408,6 +412,14 @@ esp_err_t start(event_callback_t callback, intptr_t callback_arg)
         err = node::store_min_unused_endpoint_id();
     }
 #endif // defined(CONFIG_ESP_MATTER_ENABLE_MATTER_SERVER) && defined(CONFIG_ESP_MATTER_ENABLE_DATA_MODEL)
+
+    if (esp_matter_console_bridge_register_commands) {
+        esp_matter_console_bridge_register_commands();
+    }
+
+#if CHIP_DEVICE_CONFIG_ENABLE_WIFI
+    VerifyOrReturnError(chip::DeviceLayer::Internal::ESP32Utils::InitWiFiStack() == CHIP_NO_ERROR, ESP_FAIL, ESP_LOGE(TAG, "Error initializing Wi-Fi stack"));
+#endif // CHIP_DEVICE_CONFIG_ENABLE_WIFI
     return err;
 }
 
